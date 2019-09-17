@@ -1,0 +1,855 @@
+﻿
+UPLOAD_EXCEL
+item
+METHOD upload_excel.
+
+CALL FUNCTION 'F4_FILENAME'
+IMPORTING
+file_name     = ex_file_name.
+IF ex_file_name IS INITIAL.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>not_found.
+ENDIF.
+
+ENDMETHOD.
+CONVERT_EXCEL_TO_SAP
+item
+METHOD convert_excel_to_sap.
+DATA : lt_raw TYPE truxs_t_text_data.
+
+*Decoding EXCEL format in SAP data format
+CALL FUNCTION 'TEXT_CONVERT_XLS_TO_SAP'
+EXPORTING
+i_line_header        = abap_true
+i_tab_raw_data       = lt_raw
+i_filename           = im_filename
+TABLES
+i_tab_converted_data = ex_outtab
+EXCEPTIONS
+conversion_failed    = 1
+OTHERS               = 2.
+IF sy-subrc NE 0.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>conversion_failed.
+ENDIF.
+ENDMETHOD.
+GET_MONTH_NAME
+item
+METHOD get_month_name.
+CALL FUNCTION 'MONTH_NAMES_GET'
+EXPORTING
+language    = sy-langu
+TABLES
+month_names = month_names.
+ENDMETHOD.
+UPDATE_YSS_T_ORDERS
+item
+METHOD update_yss_t_orders.
+MODIFY yss_t_orders FROM TABLE im_order_tab.
+IF sy-subrc EQ 0.
+COMMIT WORK.
+ex_ret_msg = 'Data saved successfully'.
+ex_status  = 'S'.
+ELSE.
+ROLLBACK WORK.
+ex_ret_msg = 'Error while saving the data'.
+ex_status  = 'E'.
+ENDIF.
+ENDMETHOD.
+CREATE_EDIT_DELIVERY_SO
+item
+METHOD create_edit_delivery_so.
+*-----------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  : Abhishek
+* Created on  : 21.10.2018
+* Description : Method to create delivery order
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+TYPES :BEGIN OF lty_lips,
+vbeln TYPE vbeln_vl,  "Delivery
+posnr TYPE posnr_vl,  "Delivery Item
+pstyv TYPE pstyv_vl,  "Delivery item category
+matnr TYPE matnr,     "Material Number
+matwa TYPE matwa,     "Material entered
+matkl TYPE matkl,     "Material Group
+werks TYPE werks,     "Plant
+lgort TYPE lgort_d,   "Storage Location
+charg TYPE charg_d,   "Batch Number
+lfimg TYPE lfimg,     "Actual quantity delivered (in sales
+meins TYPE meins,
+vrkme TYPE vrkme,     "Sales unit
+umvkz TYPE umvkz,
+umvkn TYPE umvkn,
+vgbel TYPE vgbel,     "Document number of the reference doc
+vgpos TYPE vgpos,     "Item number of the reference item
+vkbur TYPE vkbur,     "Sales Office
+vkgrp TYPE vkgrp,     "Sales Group
+vtweg TYPE vtweg,     "Distribution Channel
+spart TYPE spart,     "Division
+uecha TYPE uecha,     "Higher-Level Item of Batch Split Ite
+END OF lty_lips.
+
+DATA :ls_header_data       TYPE bapiobdlvhdrchg,
+ls_header_control    TYPE bapiobdlvhdrctrlchg,
+ls_techn_control     TYPE bapidlvcontrol,
+lt_item_data         TYPE STANDARD TABLE OF bapiobdlvitemchg,
+ls_item_data         TYPE bapiobdlvitemchg,
+lt_item_control      TYPE STANDARD TABLE OF bapiobdlvitemctrlc
+ls_item_control      TYPE bapiobdlvitemctrlchg,
+ls_created_items     TYPE bapidlvitemcreated,
+ls_created_items_tmp TYPE bapidlvitemcreated,
+lt_return            TYPE TABLE OF bapiret2,
+lv_errmsg            TYPE bapi_msg,
+lv_del_flag          TYPE flag,
+lv_item_num          TYPE posnr,
+lv_batch_num         TYPE posnr,
+lv_index             TYPE i,
+lt_header_deadlines  TYPE STANDARD TABLE OF bapidlvdeadln,
+ls_header_deadlines  TYPE bapidlvdeadln,
+lv_date              TYPE char14,
+lv_inco1             TYPE inco1,
+lt_lips              TYPE STANDARD TABLE OF lty_lips,
+lt_lips_tmp          TYPE STANDARD TABLE OF lty_lips,
+lwa_lips             TYPE lty_lips.
+
+DATA : ls_return TYPE bapiret2.
+DATA : lt_serial_num TYPE STANDARD TABLE OF bapidlvserialnumber.
+
+*    READ TABLE ch_delivery_tables-lips WITH KEY lfimg = '' TRANSPORTING
+*    IF sy-subrc EQ 0.
+*      RAISE EXCEPTION TYPE ycx_ss_exception
+*        EXPORTING
+*          textid = ycx_ss_exception=>delivery_qty_zero.
+*    ENDIF.
+IF im_action EQ yss_cl_type_pool=>yss_c_cd OR im_action EQ yss_cl_ty
+CALL FUNCTION 'BAPI_OUTB_DELIVERY_CREATE_SLS'
+EXPORTING
+ship_point        = im_dlvcreateheader-ship_point
+due_date          = im_dlvcreateheader-due_date
+debug_flg         = im_dlvcreateheader-debug_flg
+no_dequeue        = ' '
+IMPORTING
+delivery          = ex_delivery
+num_deliveries    = ex_num_deliveries
+TABLES
+serial_numbers    = lt_serial_num
+sales_order_items = im_dlvreftosalesorder
+deliveries        = ex_deliveries
+created_items     = ex_created_items
+return            = ex_return.
+
+CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+EXPORTING
+wait   = 'X'
+IMPORTING
+return = ls_return.
+IF ls_return IS NOT INITIAL.
+APPEND ls_return TO ex_return.
+ENDIF.
+
+CALL FUNCTION 'DEQUEUE_EVVBLKE'
+EXPORTING
+mode_likp = yss_cl_type_pool=>yss_c_e
+mandt     = sy-mandt
+vbeln     = ex_delivery.
+IF ex_delivery IS INITIAL OR im_action EQ yss_cl_type_pool=>yss_c_
+RETURN.
+ENDIF.
+
+*** Edit the ch_delivery_Tables - LIPS table based on the newly created
+SORT ch_delivery_tables-lips BY vgbel vgpos.
+lv_item_num = 0. lv_batch_num = 900001.
+LOOP AT ch_delivery_tables-lips ASSIGNING FIELD-SYMBOL(<lfs_lips>)
+IF <lfs_lips>-uecha IS INITIAL .
+lv_item_num = lv_item_num + 10.
+<lfs_lips>-posnr = lv_item_num.
+ENDIF.
+IF <lfs_lips>-uecha IS NOT INITIAL .
+<lfs_lips>-uecha = lv_item_num.
+<lfs_lips>-posnr = lv_batch_num.
+lv_batch_num = lv_batch_num + 1.
+ENDIF.
+ENDLOOP.
+CLEAR : lv_batch_num,lv_item_num.
+ENDIF.
+
+IF ex_delivery IS INITIAL.
+READ TABLE ch_delivery_tables-likp INTO DATA(ls_likp) INDEX 1.
+IF sy-subrc EQ 0.
+ex_delivery = ls_likp-vbeln.
+ENDIF.
+ENDIF.
+
+ls_header_data-deliv_numb    = ex_delivery.
+ls_header_control-deliv_numb = ex_delivery.
+ls_techn_control-upd_ind     = yss_cl_type_pool=>yss_c_x.
+
+************************************************************************
+IF im_action EQ yss_cl_type_pool=>yss_c_ud AND im_salesorder IS NOT
+SELECT SINGLE inco1 FROM vbkd INTO lv_inco1 WHERE vbeln EQ im_sale
+IF sy-subrc EQ 0.
+IF lv_inco1 NE ls_likp-inco1.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>different_incoterms.
+ENDIF.
+ENDIF.
+CALL METHOD yss_cl_amazon_process=>add_so_bdc
+EXPORTING
+im_req_params      = im_req_params
+im_salesorder      = im_salesorder
+im_from_item       = im_from_item
+im_to_item         = im_to_item
+im_selection_date  = im_selection_date
+im_delivery        = ex_delivery
+IMPORTING
+ex_return          = ex_return
+CHANGING
+ch_delivery_tables = ch_delivery_tables
+ch_open_quantity   = ch_open_quantity.
+RETURN.
+ENDIF.
+************************************************************************
+
+SELECT  vbeln posnr pstyv matnr matwa matkl werks lgort charg lfimg
+vrkme umvkz umvkn vgbel vgpos vkbur vkgrp vtweg spart uecha
+FROM lips INTO TABLE lt_lips
+WHERE vbeln EQ ex_delivery.
+IF sy-subrc EQ 0.
+*     Do nothing
+ENDIF.
+
+
+* Check if any delivery item is deleted
+*    READ TABLE im_delivery_tables_inx WITH KEY upd_flag = yss_cl_type_p
+*    IF sy-subrc EQ 0.
+*      lv_del_flag = abap_true.
+* If delivery item is delete then delete all the item using flag del_ite
+LOOP AT lt_lips INTO lwa_lips.
+
+APPEND INITIAL LINE TO lt_item_control ASSIGNING FIELD-SYMBOL(<lfs
+<lfs_item_control>-deliv_numb = ex_delivery.
+<lfs_item_control>-deliv_item = lwa_lips-posnr.
+
+APPEND INITIAL LINE TO lt_item_data ASSIGNING FIELD-SYMBOL(<lfs_it
+<lfs_item_data>-deliv_numb      = lwa_lips-vbeln.
+<lfs_item_data>-deliv_item      = lwa_lips-posnr.
+<lfs_item_data>-material        = lwa_lips-matnr.
+<lfs_item_data>-dlv_qty         = lwa_lips-lfimg.     " Pass requi
+<lfs_item_data>-dlv_qty_imunit  = lwa_lips-lfimg.     " Pass unit
+<lfs_item_data>-sales_unit      = lwa_lips-meins.
+<lfs_item_data>-fact_unit_nom   = lwa_lips-umvkz.
+<lfs_item_data>-fact_unit_denom = lwa_lips-umvkn.
+<lfs_item_data>-batch           = lwa_lips-charg.     " Pass the b
+
+READ TABLE im_delivery_tables_inx WITH KEY item_num = lwa_lips-pos
+upd_flag = yss_cl_type_
+IF sy-subrc EQ 0." AND im_action EQ yss_cl_type_pool=>yss_c_ud.
+<lfs_item_control>-del_item   = yss_cl_type_pool=>yss_c_x. "Set
+CONTINUE.
+ENDIF.
+IF lwa_lips-charg IS INITIAL OR lwa_lips-lfimg IS INITIAL OR lwa_l
+<lfs_item_control>-chg_delqty = yss_cl_type_pool=>yss_c_x.
+CONTINUE.
+ELSE.
+<lfs_item_control>-del_item   = yss_cl_type_pool=>yss_c_x. "Set
+ENDIF.
+
+CLEAR lwa_lips.
+ENDLOOP.
+
+* Get the highest item number
+SORT lt_lips BY posnr DESCENDING.
+READ TABLE lt_lips INTO lwa_lips INDEX 1.
+IF sy-subrc EQ 0.
+lv_item_num = lwa_lips-posnr.
+ENDIF.
+
+SORT lt_lips BY vbeln posnr.
+lt_lips_tmp = lt_lips.
+
+***    SORT ch_delivery_tables-lips BY vgbel vgpos.
+*    Delete the line items where batch numbers are not initial
+DELETE lt_lips_tmp WHERE charg NE ''.
+
+*      Loop on main item numbers like 10,20,30...
+LOOP AT lt_lips_tmp INTO lwa_lips.
+CLEAR lv_index.
+
+*    Read the line items(90001,90002....) from the simulated LIPS(portal
+READ TABLE ch_delivery_tables-lips INTO DATA(ls_sim_lips_tmp) WITH
+
+
+IF sy-subrc NE 0.
+CONTINUE.
+ENDIF.
+
+lv_index = sy-tabix.
+
+LOOP AT ch_delivery_tables-lips INTO DATA(ls_sim_lips) FROM lv_ind
+IF ls_sim_lips-vgbel NE ls_sim_lips_tmp-vgbel OR ls_sim_lips-vgp
+EXIT.
+ENDIF.
+IF ls_sim_lips-charg IS INITIAL OR ls_sim_lips-lfimg IS INITIAL
+CONTINUE.
+ENDIF.
+lv_item_num = lv_item_num + 1.
+APPEND INITIAL LINE TO lt_item_control ASSIGNING <lfs_item_contr
+<lfs_item_control>-deliv_numb = ex_delivery.
+<lfs_item_control>-deliv_item = lv_item_num.
+<lfs_item_control>-chg_delqty = yss_cl_type_pool=>yss_c_x.
+
+APPEND INITIAL LINE TO lt_item_data ASSIGNING <lfs_item_data>.
+<lfs_item_data>-deliv_numb      = ex_delivery.
+<lfs_item_data>-deliv_item      = lv_item_num.
+<lfs_item_data>-material        = ls_sim_lips-matnr.
+<lfs_item_data>-sales_unit      = ls_sim_lips-meins.
+<lfs_item_data>-fact_unit_nom   = ls_sim_lips-umvkz.
+<lfs_item_data>-fact_unit_denom = ls_sim_lips-umvkn.
+<lfs_item_data>-batch           = ls_sim_lips-charg.  " Pass the
+<lfs_item_data>-hieraritem      = lwa_lips-posnr.     " Pass par
+<lfs_item_data>-usehieritm      = '1'.                " Pass par
+<lfs_item_data>-dlv_qty         = ls_sim_lips-lfimg.  " Pass req
+<lfs_item_data>-dlv_qty_imunit  = ls_sim_lips-lfimg.  " Pass uni
+
+ENDLOOP.
+ENDLOOP.
+*    ENDIF.
+
+* For Delivery document date
+READ TABLE ch_delivery_tables-likp INTO ls_likp INDEX 1.
+IF sy-subrc EQ 0 AND ( ls_likp-bldat LE sy-datum OR ls_likp-wadat_is
+
+*      ls_header_control-unload_pt_flg  = abap_true.
+*      ls_header_control-pick_date_flg  = abap_true.
+*      ls_header_control-trsp_date_flg  = abap_true.
+*      ls_header_control-load_date_flg  = abap_true.
+*      ls_header_control-gdsi_date_flg  = abap_true.
+*      ls_header_control-deliv_date_flg = abap_true.
+
+ls_header_deadlines-timetype = 'WSHDRLFDAT'.   "Delivery date
+lv_date = ls_likp-bldat.
+CONCATENATE lv_date '000000' INTO lv_date.
+ls_header_deadlines-deliv_numb = ex_delivery.
+ls_header_deadlines-timestamp_utc = lv_date.
+*      ls_header_deadlines-timezone = 'INDIA'.
+APPEND ls_header_deadlines TO lt_header_deadlines.
+CLEAR ls_header_deadlines.
+
+ls_header_deadlines-timetype = 'WSHDRWADAT'.   "Planned goods issu
+lv_date = ls_likp-wadat.
+CONCATENATE lv_date '000000' INTO lv_date.
+ls_header_deadlines-deliv_numb = ex_delivery.
+ls_header_deadlines-timestamp_utc = lv_date.
+*      ls_header_deadlines-timezone = 'INDIA'.
+APPEND ls_header_deadlines TO lt_header_deadlines.
+CLEAR ls_header_deadlines.
+
+ls_header_deadlines-timetype = 'WSHDRWADTI'.   "Actual goods issue
+lv_date = ls_likp-wadat_ist.
+*      CONCATENATE lv_date '000000' INTO lv_date.
+ls_header_deadlines-deliv_numb = ex_delivery.
+*      ls_header_deadlines-timestamp_utc = lv_date. "Commented on 13/08/
+ls_header_deadlines-timestamp_utc = sy-datum.  "Added on 13/08
+*      ls_header_deadlines-timezone = 'INDIA'.
+APPEND ls_header_deadlines TO lt_header_deadlines.
+CLEAR ls_header_deadlines.
+
+ls_header_deadlines-timetype = 'WSHDRLDDAT'.   "Loading date
+lv_date = ls_likp-bldat.
+CONCATENATE lv_date '000000' INTO lv_date.
+ls_header_deadlines-deliv_numb = ex_delivery.
+ls_header_deadlines-timestamp_utc = lv_date.
+*      ls_header_deadlines-timezone = 'INDIA'.
+APPEND ls_header_deadlines TO lt_header_deadlines.
+CLEAR ls_header_deadlines.
+
+ls_header_deadlines-timetype = 'WSHDRTDDAT'.   "Transportation pla
+*      lv_date = ls_likp-wadat.
+*      CONCATENATE lv_date '000000' INTO lv_date.
+ls_header_deadlines-deliv_numb = ex_delivery.
+ls_header_deadlines-timestamp_utc = lv_date.
+*      ls_header_deadlines-timezone = 'INDIA'.
+APPEND ls_header_deadlines TO lt_header_deadlines.
+CLEAR ls_header_deadlines.
+
+ls_header_deadlines-timetype = 'WSHDRKODAT'.   "Picking date
+lv_date = ls_likp-kodat.
+CONCATENATE lv_date '000000' INTO lv_date.
+ls_header_deadlines-deliv_numb = ex_delivery.
+ls_header_deadlines-timestamp_utc = lv_date.
+*      ls_header_deadlines-timezone = 'INDIA'.
+APPEND ls_header_deadlines TO lt_header_deadlines.
+CLEAR ls_header_deadlines.
+
+ENDIF.
+
+CALL FUNCTION 'BAPI_OUTB_DELIVERY_CHANGE'
+EXPORTING
+header_data      = ls_header_data
+header_control   = ls_header_control
+delivery         = ex_delivery
+techn_control    = ls_techn_control
+TABLES
+header_deadlines = lt_header_deadlines
+item_data        = lt_item_data
+item_control     = lt_item_control
+return           = lt_return.
+
+LOOP AT lt_return INTO DATA(lwa_return).
+APPEND INITIAL LINE TO ex_return ASSIGNING FIELD-SYMBOL(<lfs_retur
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = lwa_return-id
+lang      = sy-langu
+no        = lwa_return-number     "msgnr
+v1        = lwa_return-message_v1 "msgv1
+v2        = lwa_return-message_v2 "msgv2
+v3        = lwa_return-message_v3 "msgv3
+v4        = lwa_return-message_v4 "msgv4
+IMPORTING
+msg       = lv_errmsg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+<lfs_return> = lwa_return.
+<lfs_return>-message = lv_errmsg.
+ENDLOOP.
+
+CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+EXPORTING
+wait   = 'X'
+IMPORTING
+return = ls_return.
+IF ls_return IS NOT INITIAL.
+APPEND ls_return TO ex_return.
+ENDIF.
+
+*   Backdated sales order
+IF ls_likp-bldat LE sy-datum.
+CALL METHOD delv_back_dated_bdc
+EXPORTING
+im_delivery        = ex_delivery
+IMPORTING
+ex_return          = ex_return
+CHANGING
+ch_delivery_tables = ch_delivery_tables.
+ENDIF.
+ENDMETHOD.
+DELV_BACK_DATED_BDC
+item
+METHOD delv_back_dated_bdc.
+DATA: lt_bdcdata   TYPE STANDARD TABLE OF bdcdata,
+lt_errmsgs   TYPE STANDARD TABLE OF bdcmsgcoll,
+lo_exception TYPE REF TO ycx_ss_exception,
+lwa_return   TYPE bapiret2,
+lv_errmsg    TYPE bapi_msg,
+lv_fval      TYPE bdc_fval,
+lv_bldat     TYPE bdc_fval,
+lv_wadti     TYPE bdc_fval,
+lv_btgew     TYPE bdc_fval,
+lv_num(2)    TYPE n,
+lv_mbdat     TYPE char20 VALUE 'LIPS-MBDAT(&)'.
+
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPMV50A' im_dynpro =
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval = 'LI
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '/0
+
+lv_fval = im_delivery.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-VBELN' im_fval = lv_
+
+READ TABLE ch_delivery_tables-likp INTO DATA(ls_likp) INDEX 1. " WIT
+IF sy-subrc EQ 0 .
+WRITE ls_likp-bldat     TO lv_bldat.      "Document date
+lv_btgew = ls_likp-btgew. SHIFT lv_btgew LEFT DELETING LEADING spa
+ENDIF.
+
+LOOP AT ch_delivery_tables-lips INTO DATA(ls_lips).
+IF lv_num EQ 00.
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPMV50A' im_dynp
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval =
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-BLDAT' im_fval =
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval =
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-BTGEW' im_fval =
+
+IF ls_likp-wadat_ist IS NOT INITIAL.
+WRITE ls_likp-wadat_ist TO lv_wadti.      "Actual PGI date
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-WADAT_IST' im_
+ENDIF.
+ENDIF.
+
+* Update the Item date MBDAT
+lv_num = lv_num + 1. CLEAR lv_fval.
+lv_fval = lv_mbdat.
+REPLACE ALL OCCURRENCES OF '&' IN lv_fval WITH lv_num.
+SHIFT lv_fval LEFT DELETING LEADING space.
+CALL METHOD bdc_field EXPORTING im_fnam = lv_fval im_fval = lv_bld
+IF lv_num EQ 07.
+CLEAR lv_num.
+ENDIF.
+ENDLOOP.
+
+CALL TRANSACTION 'VL02N' USING lt_bdcdata UPDATE 'S' MODE 'N' MESSAG
+LOOP AT lt_errmsgs INTO DATA(ls_errmsgs).
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_errmsg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-type    = ls_errmsgs-msgtyp.
+lwa_return-id      = ls_errmsgs-msgid.
+lwa_return-number  = ls_errmsgs-msgnr.
+lwa_return-message = lv_errmsg.
+APPEND lwa_return TO ex_return.
+ENDLOOP.
+
+ENDMETHOD.
+BDC_DYNPRO
+item
+METHOD bdc_dynpro.
+DATA : lwa_bdcdata TYPE bdcdata.
+
+lwa_bdcdata-program  = im_program.
+lwa_bdcdata-dynpro   = im_dynpro.
+lwa_bdcdata-dynbegin = 'X'.
+APPEND lwa_bdcdata TO ex_bdcdata.
+ENDMETHOD.
+BDC_FIELD
+item
+METHOD bdc_field.
+DATA : lwa_bdcdata TYPE bdcdata.
+
+*    IF im_fval <> nodata.
+CLEAR lwa_bdcdata.
+lwa_bdcdata-fnam = im_fnam.
+lwa_bdcdata-fval = im_fval.
+APPEND lwa_bdcdata TO ex_bdcdata.
+ENDMETHOD.
+CANCEL_SALESORDER
+item
+METHOD cancel_salesorder.
+***********************************************************************
+* Administration:                                                     *
+*---------------------------------------------------------------------*
+* Created by  : Incresol Software Services Pvt. Ltd.
+* Created on  : 08-March-2018
+* Description : Cancel Sales Order
+***********************************************************************
+* Change History:                                                     *
+* --------------------------------------------------------------------*
+* Date       | Change ID     |  Short Description                     *
+* --------------------------------------------------------------------*
+* DD-MM-YYYY | USERID.DDMMYY |                                        *
+* --------------------------------------------------------------------*
+
+* Data Declarations
+DATA : ls_salesorder TYPE yss_s_so,
+ls_order_inx  TYPE bapisdh1x,
+lt_return     TYPE bapiret2_tab,
+ls_return     TYPE bapiret2,
+lv_so         TYPE vbeln.
+
+* Fill Bapi Structure for delete flag
+ls_order_inx-updateflag = yss_cl_type_pool=>yss_c_d.
+* Bapi to Cancel Sales Order
+LOOP AT im_salesorder INTO ls_salesorder.
+
+* Add leading zero's
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+EXPORTING
+input  = ls_salesorder-vbeln
+IMPORTING
+output = ls_salesorder-vbeln.
+
+CALL FUNCTION 'BAPI_SALESORDER_CHANGE'
+EXPORTING
+salesdocument    = ls_salesorder-vbeln
+*           ORDER_HEADER_IN  =
+order_header_inx = ls_order_inx
+TABLES
+return           = lt_return.
+READ TABLE lt_return INTO ls_return WITH KEY type = 'S'
+number = '008'.
+IF sy-subrc = 0.
+*Commit
+CALL FUNCTION 'BAPI_TRANSACTION_COMMIT'
+EXPORTING
+wait = abap_true.
+ENDIF.
+*Success/Error Messages
+IF lt_return IS NOT INITIAL.
+LOOP AT lt_return INTO ls_return.
+ls_return-message_v2 = ls_salesorder-vbeln.
+MODIFY lt_return FROM ls_return TRANSPORTING message_v2.
+CLEAR : ls_return.
+ENDLOOP.
+APPEND LINES OF lt_return TO ex_return.
+ENDIF.
+CLEAR : ls_salesorder,lt_return.
+ENDLOOP.
+
+ENDMETHOD.
+ADD_SO_BDC
+item
+METHOD add_so_bdc.
+DATA: lt_bdcdata   TYPE STANDARD TABLE OF bdcdata,
+lt_errmsgs   TYPE STANDARD TABLE OF bdcmsgcoll,
+lo_exception TYPE REF TO ycx_ss_exception,
+ls_likp      TYPE likp,
+lwa_return   TYPE bapiret2,
+lv_errmsg    TYPE bapi_msg,
+lv_fval      TYPE bdc_fval.
+
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPMV50A' im_dynpro =
+
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval = 'LI
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '/0
+lv_fval = im_delivery.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-VBELN' im_fval = lv_
+READ TABLE ch_delivery_tables-likp INTO ls_likp WITH KEY vbeln = im_
+IF sy-subrc EQ 0 .
+WRITE ls_likp-bldat TO lv_fval.
+ENDIF.
+
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPMV50A' im_dynpro =
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '=R
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-BLDAT' im_fval = lv_
+
+WRITE ls_likp-wadat TO lv_fval.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval = 'LI
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-WADAT' im_fval = lv_
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-WAUHR' im_fval = '00
+
+CLEAR lv_fval. lv_fval = ls_likp-btgew. SHIFT lv_fval LEFT DELETING
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-BTGEW' im_fval = lv_
+CLEAR lv_fval. lv_fval = ls_likp-gewei.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-GEWEI' im_fval = lv_
+
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPMV50A' im_dynpro =
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval = 'LV
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '=E
+
+CLEAR lv_fval. WRITE im_selection_date TO lv_fval.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LV50C-DATBI' im_fval = lv
+CLEAR lv_fval. lv_fval = im_salesorder.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LV50C-VBELN' im_fval = lv
+CLEAR lv_fval. lv_fval = im_from_item. SHIFT lv_fval LEFT DELETING L
+CALL METHOD bdc_field EXPORTING im_fnam = 'LV50C-ABPOS' im_fval = lv
+CLEAR lv_fval. lv_fval = im_to_item.   SHIFT lv_fval LEFT DELETING L
+CALL METHOD bdc_field EXPORTING im_fnam = 'LV50C-BIPOS' im_fval = lv
+
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPMV50A' im_dynpro =
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '=S
+
+CLEAR lv_fval.  WRITE ls_likp-bldat TO lv_fval.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-BLDAT' im_fval = lv_
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval = 'LI
+CLEAR lv_fval.  WRITE ls_likp-wadat TO lv_fval.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-WADAT' im_fval = lv_
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-WAUHR' im_fval = '00
+*    CLEAR lv_fval. lv_fval = ls_likp-btgew.
+*    CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-BTGEW' im_fval = '4
+CLEAR lv_fval. lv_fval = ls_likp-gewei.
+CALL METHOD bdc_field EXPORTING im_fnam = 'LIKP-GEWEI' im_fval = lv_
+
+CALL TRANSACTION 'VL02N' USING lt_bdcdata UPDATE 'S' MODE 'N' MESSAG
+
+LOOP AT lt_errmsgs INTO DATA(ls_errmsgs).
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_errmsg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-type    = ls_errmsgs-msgtyp.
+lwa_return-id      = ls_errmsgs-msgid.
+lwa_return-number  = ls_errmsgs-msgnr.
+lwa_return-message = lv_errmsg.
+APPEND lwa_return TO ex_return.
+ENDLOOP.
+
+REFRESH : ch_delivery_tables-likp, ch_delivery_tables-lips,ch_open_q
+
+TRY.
+CALL METHOD get_delivery_details
+EXPORTING
+im_req_params     = im_req_params
+im_deliv_num      = im_delivery
+IMPORTING
+ex_header_details = ls_likp
+ex_item_details   = ch_delivery_tables-lips
+ex_open_quantity  = ch_open_quantity.
+CATCH ycx_ss_exception INTO lo_exception.
+lo_exception->log_exception( ).
+* Prepare Return Message
+APPEND LINES OF lo_exception->prepare_bapi_return( ) TO ex_retur
+ENDTRY.
+APPEND ls_likp TO ch_delivery_tables-likp.
+CLEAR ls_likp.
+ENDMETHOD.
+GET_DELIVERY_DETAILS
+item
+METHOD get_delivery_details.
+*-----------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  : Abhishek T
+* Created on  :
+* Description : Get delivery details(Header and Item) for delivery numbe
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+"
+DATA : ls_likp          TYPE likp,
+lt_lips          TYPE TABLE OF lips,
+lv_vbeln         TYPE vbeln_vl,
+lt_open_quantity TYPE yss_tt_open_quantity.
+
+lv_vbeln = im_deliv_num.
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+EXPORTING
+input  = lv_vbeln
+IMPORTING
+output = lv_vbeln.
+
+CLEAR : ex_open_quantity,ex_header_details,ex_item_details.
+*Fetch Delivery Header Data LIKP
+SELECT SINGLE *
+FROM likp
+INTO ls_likp
+WHERE vbeln = lv_vbeln.
+*        AND vstel = im_req_params-werks.  "+++GANGADHAR20180406 check w
+IF sy-subrc NE 0 OR ( ls_likp-vstel NE im_req_params-werks AND ls_li
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>delivery_does_not_exist
+msgv1  = ycx_ss_exception=>format( lv_vbeln ).
+ELSEIF sy-subrc NE 0 OR ( ls_likp-werks IS NOT INITIAL AND ls_likp-w
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>po_delivery_does_not_exist
+msgv1  = ycx_ss_exception=>format( lv_vbeln )
+msgv2  = ycx_ss_exception=>format( im_req_params-werks ).
+ELSE.
+ex_header_details = ls_likp.
+ENDIF.
+
+*Fetch Delivery Item Data LIPS
+SELECT * FROM lips
+INTO TABLE lt_lips
+WHERE vbeln = ls_likp-vbeln.
+IF sy-subrc NE 0.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>delivery_details_not_found.
+ELSE.
+ex_item_details = lt_lips.
+ENDIF.
+
+* Get the Salesorder requested delivery date.
+READ TABLE lt_lips INTO DATA(ls_lips) INDEX 1.
+IF sy-subrc EQ 0.
+SELECT SINGLE vdatu FROM vbak INTO ex_header_details-aedat WHERE v
+IF sy-subrc EQ 0.
+* Do nothing
+ENDIF.
+ENDIF.
+
+* Get the delivery status details whether PGI completed or not
+DATA : lv_wbstk TYPE wbstk.
+SELECT SINGLE wbstk FROM vbuk INTO lv_wbstk WHERE vbeln EQ lv_vbeln.
+IF sy-subrc EQ 0 AND lv_wbstk NE yss_cl_type_pool=>yss_c_c.
+ex_pgi_pending = abap_true.
+ENDIF.
+
+
+*Fetch delivery open quantity data VBBE
+SELECT vbeln
+posnr
+etenr
+matnr
+werks
+charg
+vbtyp
+omeng
+vmeng
+FROM vbbe
+INTO TABLE lt_open_quantity
+FOR ALL ENTRIES IN lt_lips WHERE vbeln = lt_lips-vgbel AND
+posnr = lt_lips-vgpos.
+IF sy-subrc EQ 0.
+ex_open_quantity = lt_open_quantity.
+ENDIF.
+ENDMETHOD.
+READ_FILE_FROM_APPLN_SERVER
+item
+method READ_FILE_FROM_APPLN_SERVER.
+DATA : lv_response TYPE string,
+lv_msg      TYPE string,
+lt_data     TYPE TABLE OF x255,
+wa_line     TYPE x255,
+wa_bin      TYPE solix.
+
+FIELD-SYMBOLS <hex_container> TYPE x.
+CLEAR: ex_data,ex_response.
+*--- Open application server file path
+OPEN DATASET im_file_path FOR INPUT IN BINARY MODE MESSAGE lv_msg.
+*--- Display error messages if any.
+IF sy-subrc NE 0.
+*      RAISE EXCEPTION TYPE /incasp/cx_asp_tax
+*        EXPORTING
+*          textid  = /incasp/cx_asp_tax=>general_message
+*          message = lv_msg.
+ex_response = 'File not found'(003).
+RETURN.
+ELSE.
+*  Read Data from application server file path
+DO.
+READ DATASET im_file_path INTO wa_line.
+IF sy-subrc = 0.
+APPEND wa_line TO ex_data.
+ELSE.
+APPEND wa_line TO ex_data.
+EXIT.
+ENDIF.
+ENDDO.
+ENDIF.
+*--Close the Application server file (Mandatory).
+CLOSE DATASET im_file_path.
+endmethod.
