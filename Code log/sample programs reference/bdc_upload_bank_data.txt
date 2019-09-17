@@ -1,0 +1,190 @@
+REPORT Z02_22_12_2016_BANKDATA
+       NO STANDARD PAGE HEADING LINE-SIZE 255.
+
+SELECTION-SCREEN : BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-000.
+PARAMETERS : P_FILE TYPE RLGRAP-FILENAME.
+SELECTION-SCREEN : END OF BLOCK B1.
+
+TYPES : BEGIN OF TY_FI01,
+        BANKS TYPE BNKA-BANKS,""--BANK COUNTREY
+        BANKL TYPE BNKA-BANKL,""--BANK KEY
+        BANKA TYPE BNKA-BANKA,""--BANK NAME
+        PROVZ TYPE BNKA-PROVZ,""--REGION
+        STRAS TYPE BNKA-STRAS,""--STREET
+        ORT01 TYPE BNKA-ORT01,""--CITY
+        BRNCH TYPE BNKA-BRNCH,""--BANK BRANCH
+        END OF TY_FI01.
+DATA : WA_FI01 TYPE TY_FI01,
+       IT_FI01 TYPE TABLE OF TY_FI01,
+       WA_BDCDATA TYPE BDCDATA,
+       IT_BDCDATA TYPE TABLE OF BDCDATA.
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR P_FILE.
+  PERFORM OPEN_FILE.
+
+
+START-OF-SELECTION.
+
+  PERFORM OPEN_GROUP.
+  PERFORM UPLOAD_DATA.
+  PERFORM PROCESS_DATA.
+  PERFORM CLOSE_GROUP.
+
+*&---------------------------------------------------------------------*
+*&      Form  OPEN_FILE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM OPEN_FILE .
+
+  CALL FUNCTION 'F4_FILENAME'
+    EXPORTING
+      PROGRAM_NAME  = SYST-CPROG
+      DYNPRO_NUMBER = SYST-DYNNR
+      FIELD_NAME    = 'P_FILE'
+    IMPORTING
+      FILE_NAME     = P_FILE.
+
+
+ENDFORM.                    " OPEN_FILE
+
+
+*&---------------------------------------------------------------------*
+*&      Form  OOPEN_GROUP
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM OPEN_GROUP.
+  CALL FUNCTION 'BDC_OPEN_GROUP'
+    EXPORTING
+      CLIENT = SY-MANDT
+      GROUP  = 'BDC'
+      KEEP   = 'X'
+      USER   = SY-UNAME.
+
+ENDFORM   .                 "OPEN_GROUP
+"OOPEN_GROUP
+*&---------------------------------------------------------------------*
+*&      Form  UPLOAD_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM UPLOAD_DATA .
+
+  DATA : FNAME TYPE STRING.
+  FNAME = P_FILE.
+  CALL FUNCTION 'GUI_UPLOAD'
+    EXPORTING
+      FILENAME            = FNAME
+      HAS_FIELD_SEPARATOR = 'X'
+    TABLES
+      DATA_TAB            = IT_FI01.
+ENDFORM.                    " UPLOAD_DATA
+
+*&---------------------------------------------------------------------*
+*&      Form  PROCESS_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM PROCESS_DATA.
+
+  LOOP AT IT_FI01 INTO WA_FI01.
+    CLEAR IT_BDCDATA.
+
+    PERFORM BDC_DYNPRO      USING 'SAPMF02B' '0100'.
+    PERFORM BDC_FIELD       USING 'BDC_CURSOR'
+                                  'BNKA-BANKL'.
+    PERFORM BDC_FIELD       USING 'BDC_OKCODE'
+                                  '/00'.
+    PERFORM BDC_FIELD       USING 'BNKA-BANKS'
+                                  WA_FI01-BANKS.
+    PERFORM BDC_FIELD       USING 'BNKA-BANKL'
+                                  WA_FI01-BANKL.
+
+    PERFORM BDC_DYNPRO      USING 'SAPMF02B' '0110'.
+    PERFORM BDC_FIELD       USING 'BDC_CURSOR'
+                                  'BNKA-BRNCH'.
+    PERFORM BDC_FIELD       USING 'BDC_OKCODE'
+                                  '=UPDA'.
+    PERFORM BDC_FIELD       USING 'BNKA-BANKA'
+                                  WA_FI01-BANKA.
+    PERFORM BDC_FIELD       USING 'BNKA-PROVZ'
+                                  WA_FI01-PROVZ.
+    PERFORM BDC_FIELD       USING 'BNKA-STRAS'
+                                  WA_FI01-STRAS.
+    PERFORM BDC_FIELD       USING 'BNKA-ORT01'
+                                  WA_FI01-ORT01.
+    PERFORM BDC_FIELD       USING 'BNKA-BRNCH'
+                                  WA_FI01-BRNCH.
+
+    PERFORM BDC_TRANSACTION USING 'FI01'.
+  ENDLOOP.
+ENDFORM.                    "PROCESS_DATA
+
+*&---------------------------------------------------------------------*
+*&      Form  BDC_DYNPRO
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_0106   text
+*      -->P_0107   text
+*----------------------------------------------------------------------*
+FORM BDC_DYNPRO  USING    A B.
+  WA_BDCDATA-PROGRAM = A.
+  WA_BDCDATA-DYNPRO = B.
+  WA_BDCDATA-DYNBEGIN = 'X'.
+  APPEND WA_BDCDATA TO IT_BDCDATA.
+  CLEAR WA_BDCDATA.
+
+ENDFORM.                    " BDC_DYNPRO
+*&---------------------------------------------------------------------*
+*&      Form  BDC_FIELD
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_0111   text
+*      -->P_0112   text
+*----------------------------------------------------------------------*
+FORM BDC_FIELD  USING A B.
+
+  WA_BDCDATA-FNAM = A.
+  WA_BDCDATA-FVAL = B.
+  APPEND WA_BDCDATA TO IT_BDCDATA.
+  CLEAR WA_BDCDATA.
+
+ENDFORM.                    " BDC_FIELD
+*&---------------------------------------------------------------------*
+*&      Form  CLOSE_GROUP
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM CLOSE_GROUP .
+CALL FUNCTION 'BDC_CLOSE_GROUP'.
+
+
+ENDFORM.                    " CLOSE_GROUP
+*&---------------------------------------------------------------------*
+*&      Form  BDC_TRANSACTION
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_0176   text
+*----------------------------------------------------------------------*
+FORM BDC_TRANSACTION  USING  FI01.
+
+  CALL FUNCTION 'BDC_INSERT'
+    EXPORTING
+      TCODE      = FI01
+    TABLES
+      DYNPROTAB  = IT_BDCDATA.
+
+ENDFORM.                    " BDC_TRANSACTION

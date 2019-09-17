@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script>
+  function FreteCharge()
+{
+  if(document.getElementById("changeCriteria").value==0)
+ {
+ document.getElementById("frete1").style.display="none";
+ document.getElementById("frete2").style.display="none";
+ }
+ else if(document.getElementById("changeCriteria").value==1)
+ {
+ document.getElementById("frete1").style.display="block";
+  document.getElementById("frete2").style.display="none";
+ }
+ else if(document.getElementById("changeCriteria").value==2)
+ {
+ document.getElementById("frete1").style.display="none";
+ document.getElementById("frete2").style.display="block";
+   }
+}
+
+  </script>
+</head>
+<style>
+.clear-fix{clear:both;}
+
+ a:hover,a:visited {
+    color: #427fed;
+    cursor: pointer;
+    text-decoration: underline; }
+</style>
+
+
+<body>
+<h1 style="text-align:center"><img src="googlelogo_color_112x36dp.png"></h1>
+<h1 style="text-align:center;color:#555;font-size:38px;font-weight:lighter;margin-top:10px;font-family:'Open Sans',arial;-webkit-font-smoothing:antialiased;">One account. All of Google.</h1>
+<h3 style="text-align:center;color:#555;font-size:25px;font-weight:lighter;margin-top:10px;font-family:'Open Sans',arial;-webkit-font-smoothing:antialiased;">Sign in with your Google Account</h3>
+
+<div class="" style="width:380px;height:350px;background:#f7f7f7;position:relative;margin-left: 480px;border-radius: 10px;">
+<img src="avatarLOGO.png" style="margin-left:130px;margin-top:20px">
+<input type="text" placeholder="Enter your email" style="width:285px;border-radius:5px;height:45px; margin-left: 45px;margin-top: 15px; font-size: 17px;">
+<input type="text" placeholder="password" style="width:285px;border-radius:5px;height:45px; margin-left: 45px;margin-top:5px; font-size: 17px;">
+<input type="submit" value="Login" style="width:285px;border-radius:5px;height:35px;color:#fff; margin-left: 45px;margin-top:5px; font-size: 17px;background:#4d90fe;cursor:pointer"><br>
+<a href="https://accounts.google.com/signin/usernamerecovery?continue=https%3A%2F%2Fplus.google.com%2Fcollections%2Ffeatured&osid=1&hl=en" style="margin-right:45px;margin-top:10px;float:right;text-decoration:none;font-size:12px;font-family:arial">Find my account</a>
+</div>
+
+
+<div class="" style="float:middle;font-size:14px;margin-top:20px">
+<a href="https://accounts.google.com/SignUp?continue=https%3A%2F%2Fplus.google.com%2Fcollections%2Ffeatured" style="margin-left:625px;text-decoration:none;font-size:14px;font-family:arial">Create account</a>
+</div>
+
+<h5 style="text-align:center;color:#555;font-size:15px;font-weight:lighter;margin-top:10px;font-family:'Open Sans',arial;-webkit-font-smoothing:antialiased;">One Google Account for everything Google</h5>
+<div class=""><img src="all_logo.png" style="width:230px;height:25px;float:left;margin-left:560px"></div>
+<div class="" style="width:100%;height:30px;background:#f7f7f7;margin-top:70px;margin-left:-8px;position:absolute;color:grey">
+<a href="" style="text-decoration:none;cursor:pointer;color:grey;font-size:13px;font-family:arial">About Google</a>
+<a href="" style="text-decoration:none;cursor:pointer;color:grey;font-size:13px;font-family:arial;margin-left:10px">Privacy</a>
+<a href="" style="text-decoration:none;cursor:pointer;color:grey;font-size:13px;font-family:arial;margin-left:10px">Terms</a>
+<a href="" style="text-decoration:none;cursor:pointer;color:grey;font-size:13px;font-family:arial;margin-left:10px">Help</a>
+
+<div class="" style="width:200px;height:30px;color:black;float: right;background:#f7f7f7; margin-right: 10px; text-align: center;">
+<img src="universal_language_settings-21.png" width="20" height="20">
+<select id="changeCriteria" onchange="FreteCharge()" style="height:31px;margin-right:-22px;">
+  <option value="">select language</option>
+  <option value="1">‪Afrikaans‬</option>
+  <option value="">azərbaycan dili‬</option>
+  <option value="">‪Bahasa Melayu‬</option>
+  <option value="">català‬</option>
+  <option value="">‪Čeština‬</option>
+  <option value="">‪Dansk‬</option>
+  <option value="">Deutsch‬</option>
+  <option value="">eesti‬</option>
+  <option value="">English (United Kingdom)‬</option>
+  <option value="">English (United States)‬</option>
+  <option value="">Español (España)‬</option>
+  <option value="">Español (Latinoamérica)‬</option>
+  <option value="">‪euskara‬</option>
+  <option value="">‪Filipino‬</option>
+  <option value=""> ‪Français (Canada)</option>
+  <option value="">‪Français (France)‬</option>
+  <option value="">‪galego‬</option>
+  </div>
+  <div id="frete1" class="" style="display:none">test 1</div>
+  <div id="frete2" class="" style="display:none;">test 2</div>
+
+</div>
+<div class="clear-fix"></div>
+</body>
+
+</html>

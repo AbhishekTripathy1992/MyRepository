@@ -1,0 +1,117 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_19_12_ALV_TYPE
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_19_12_ALV_TYPE.
+TYPE-POOLS : SLIS.
+TABLES : VBRK.
+SELECTION-SCREEN : BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-000.
+SELECT-OPTIONS : S_VBELN FOR VBRK-VBELN.
+SELECTION-SCREEN : END OF BLOCK B1.
+
+TYPES : BEGIN OF TY_VBRK,
+        VBELN TYPE VBRK-VBELN,
+        FKDAT TYPE VBRK-FKDAT,
+        MATNR TYPE VBRP-MATNR,
+        ARKTX TYPE VBRP-ARKTX,
+        FKIMG TYPE VBRP-FKIMG,
+        NETWR TYPE VBRP-NETWR,
+        END OF TY_VBRK.
+
+TYPES : BEGIN OF TY_MARA,
+        MATNR TYPE MATNR,
+        MTART TYPE MTART,
+        MATKL TYPE MATKL,
+        MEINS TYPE MEINS,
+        MAKTX TYPE MAKTX,
+        MAKTG TYPE MAKTG,
+        END OF TY_MARA.
+
+DATA : WA_MARA TYPE TY_MARA,
+       IT_MARA TYPE TABLE OF TY_MARA,
+       WA_VBRK TYPE TY_VBRK,
+       IT_VBRK TYPE TABLE OF TY_VBRK.
+
+DATA : FNAM TYPE MATNR,
+       FVAL(10) TYPE C.
+DATA : WA_FCAT TYPE SLIS_FIELDCAT_ALV,
+       IT_FCAT TYPE SLIS_T_FIELDCAT_ALV,
+       WA_LAYOUT TYPE SLIS_LAYOUT_ALV.
+
+START-OF-SELECTION.
+  PERFORM FETCH_DATA.
+  PERFORM DISPLAY.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM FETCH_DATA.
+
+  SELECT VBRK~VBELN
+         VBRK~FKDAT
+         VBRP~MATNR
+         VBRP~ARKTX
+         VBRP~FKIMG
+         VBRP~NETWR INTO TABLE IT_VBRK FROM VBRK INNER JOIN VBRP ON VBRK~VBELN = VBRP~VBELN
+         WHERE VBRK~VBELN IN S_VBELN.
+ENDFORM.                    "FETCH_DATA
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM DISPLAY.
+  WA_FCAT-FIELDNAME = 'VBELN'.
+  WA_FCAT-SELTEXT_M = 'BILL NO'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'FKDAT'.
+  WA_FCAT-SELTEXT_M = 'DATE'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+
+  WA_FCAT-FIELDNAME = 'MATNR'.
+  WA_FCAT-SELTEXT_M = 'MAT_NO'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+
+  WA_FCAT-FIELDNAME = 'ARKTX'.
+  WA_FCAT-SELTEXT_M = 'DESC'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'FKIMG'.
+  WA_FCAT-SELTEXT_M = 'QUANTITY'.
+  WA_FCAT-EDIT = 'X'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'NETWR'.
+  WA_FCAT-SELTEXT_M = 'AMOUNT'.
+  WA_FCAT-DO_SUM = 'X'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+WA_LAYOUT-ZEBRA = 'X'.
+WA_LAYOUT-COLWIDTH_OPTIMIZE = 'X'.
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      I_CALLBACK_PROGRAM = SY-REPID
+      IS_LAYOUT          = WA_LAYOUT
+      IT_FIELDCAT        = IT_FCAT
+    TABLES
+      T_OUTTAB           = IT_VBRK.
+CALL FUNCTION 'REUSE_ALV_LIST_DISPLAY'
+ EXPORTING
+
+   I_CALLBACK_PROGRAM             = SY-REPID
+   IS_LAYOUT                      = WA_LAYOUT
+   IT_FIELDCAT                    = IT_FCAT
+  TABLES
+    T_OUTTAB                       = IT_VBRK.
+ENDFORM.                    "DISPLAY

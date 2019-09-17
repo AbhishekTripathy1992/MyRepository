@@ -1,0 +1,26 @@
+*&---------------------------------------------------------------------*
+*& Report  Y02_CSTMR_SHORT_DESCRIPTION
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y02_CSTMR_SHORT_DESCRIPTION.
+
+TYPES : BEGIN OF TY_TAB,
+        TABNAME TYPE DD03M-TABNAME,
+        FIELDNAME TYPE DD03M-FIELDNAME,
+        DDTEXT TYPE DD03M-DDTEXT,
+        END OF TY_TAB.
+
+DATA : WA_TAB TYPE TY_TAB,
+       IT_TAB TYPE TABLE OF TY_TAB.
+SELECT TABNAME FIELDNAME DDTEXT FROM DD03M INTO TABLE IT_TAB
+WHERE DDTEXT LIKE '%Customer%' AND
+      TABNAME EQ 'KNA1'.
+LOOP AT IT_TAB INTO WA_TAB.
+  WRITE :/ SY-TABIX,WA_TAB-TABNAME,
+         30 WA_TAB-FIELDNAME,
+         60 WA_TAB-DDTEXT.
+ENDLOOP.

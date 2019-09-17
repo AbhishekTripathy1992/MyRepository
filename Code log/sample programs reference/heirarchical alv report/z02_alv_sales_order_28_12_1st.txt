@@ -1,0 +1,197 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_ALV_SALES_ORDER_28_12
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_ALV_SALES_ORDER_28_12_YR.
+
+INCLUDE Z02_TOP.                                           "#EC INCL_OK
+
+START-OF-SELECTION.
+
+  PERFORM GET_DATA_VBAP.
+  PERFORM GET_KNA1.
+  PERFORM GET_MAKT.
+  PERFORM PROCESS_DATA.
+  PERFORM LAYOUT.
+  PERFORM FCAT.
+  PERFORM KEY.
+  PERFORM DISPLAY.
+*&---------------------------------------------------------------------*
+*&      Form  GET_DATA_VBAP
+*&---------------------------------------------------------------------*
+*    FETCHING ALL DATA FROM VBAK AND VBAP
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM GET_DATA_VBAP .
+  SELECT  VBAK~VBELN
+          VBAK~KUNNR
+          VBAP~MATNR
+          INTO TABLE IT_VBAK FROM VBAK INNER JOIN VBAP ON VBAK~VBELN = VBAP~VBELN .
+  IF SY-SUBRC NE 0.
+    MESSAGE E003(Z02).
+  ENDIF.
+ENDFORM.                    " GET_DATA_VBAP
+*&---------------------------------------------------------------------*
+*       FETCHING NAME FOR CUSTOMER FROM KNA1 TABLE
+*----------------------------------------------------------------------*
+FORM GET_KNA1 .
+  IF IT_VBAK IS NOT INITIAL.
+    SORT IT_VBAK BY KUNNR.
+    SELECT KUNNR
+           NAME1
+    FROM   KNA1
+    INTO TABLE IT_KNA1
+    FOR ALL ENTRIES IN IT_VBAK
+    WHERE KUNNR = IT_VBAK-KUNNR.
+  ENDIF.
+ENDFORM.                    " GET_KNA1
+*&---------------------------------------------------------------------*
+*&      FETCHING MATERIAL DESCRIPTION DETAILS FROM MAKT TABLE
+*       FOR PARTICULAR MATERIAL NUMBER
+*----------------------------------------------------------------------*
+FORM GET_MAKT .
+  IF IT_VBAK IS NOT INITIAL.
+    SELECT MATNR
+           MAKTX
+      FROM MAKT
+      INTO TABLE IT_MAKT
+      FOR ALL ENTRIES IN IT_VBAK
+      WHERE MATNR = IT_VBAK-MATNR AND SPRAS EQ 'EN'.
+  ENDIF.
+
+ENDFORM.                    " GET_MAKT
+*&---------------------------------------------------------------------*
+*           COMBINING DATA IN THE FINAL INTERNAL TABLE
+*----------------------------------------------------------------------*
+FORM PROCESS_DATA .
+  SORT  IT_KNA1 BY KUNNR.
+  IT_MAKT1 = IT_MAKT.
+  SORT IT_MAKT1 BY MATNR.
+  DELETE ADJACENT DUPLICATES FROM IT_MAKT1 COMPARING MATNR.
+
+  LOOP AT IT_VBAK INTO WA_VBAK.
+
+    WA_FINAL-KUNNR = WA_VBAK-KUNNR.
+    READ TABLE IT_KNA1 INTO WA_KNA1 WITH KEY KUNNR = WA_VBAK-KUNNR BINARY SEARCH.
+    IF SY-SUBRC EQ 0.
+      WA_FINAL-NAME1 = WA_KNA1-NAME1.
+    ELSE.
+      WA_FINAL-NAME1 = 'N/A'.
+    ENDIF.
+    WA_FINAL-VBELN = WA_VBAK-VBELN.
+    WA_FINAL-MATNR = WA_VBAK-MATNR.
+
+    READ TABLE IT_MAKT1 INTO WA_MAKT WITH KEY MATNR = WA_VBAK-MATNR BINARY SEARCH.
+    IF SY-SUBRC EQ 0.
+      WA_FINAL-MAKTX = WA_MAKT-MAKTX.
+    ENDIF.
+
+    APPEND WA_FINAL TO IT_FINAL.
+    CLEAR : WA_FINAL,WA_KNA1,WA_MAKT,WA_VBAK.
+  ENDLOOP.
+
+ENDFORM.                    " PROCESS_DATA
+
+*&---------------------------------------------------------------------*
+*&      Form  LAYOUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM LAYOUT .
+  WA_LAYOUT-ZEBRA = 'X'.
+  WA_LAYOUT-COLWIDTH_OPTIMIZE = 'X'.
+ENDFORM.                    " LAYOUT
+*-*.                    " SORT
+*&---------------------------------------------------------------------*
+*&      Form  FCAT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM FCAT .
+  PERFORM FCAT1 USING 'VBELN' 'SALES_DOC_NUMBER' 'IT_FINAL1'.
+  PERFORM FCAT1 USING 'KUNNR' 'CUST_NO'           'IT_FINAL1'.
+  PERFORM FCAT1 USING 'NAME1' 'NAME'             'IT_FINAL1'.
+  PERFORM FCAT1 USING 'MATNR' 'MAT_CODE'          'IT_FINAL'.
+  PERFORM FCAT1 USING 'MAKTX' 'DESCRIPTION'      'IT_FINAL'.
+ENDFORM.                    " FCAT
+*&---------------------------------------------------------------------*
+*&      Form  KEY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM KEY .
+  KEY-HEADER01 = 'VBELN'.
+  KEY-ITEM01 = 'VBELN'.
+ENDFORM.                    " KEY
+
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM DISPLAY .
+
+  IT_FINAL1 = IT_FINAL.
+  SORT IT_FINAL1 BY VBELN.
+  DELETE ADJACENT DUPLICATES FROM IT_FINAL1 COMPARING VBELN.
+
+  CALL FUNCTION 'REUSE_ALV_HIERSEQ_LIST_DISPLAY'
+    EXPORTING
+      I_CALLBACK_PROGRAM = SY-REPID
+      IS_LAYOUT          = WA_LAYOUT
+      IT_FIELDCAT        = IT_FCAT
+      I_TABNAME_HEADER   = 'IT_FINAL1'
+      I_TABNAME_ITEM     = 'IT_FINAL'
+      IS_KEYINFO         = KEY
+    TABLES
+      T_OUTTAB_HEADER    = IT_FINAL1
+      T_OUTTAB_ITEM      = IT_FINAL.
+
+ENDFORM.                    " DISPLAY
+*&---------------------------------------------------------------------*
+*&      Form  FCAT1
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_A  text
+*      -->P_B  text
+*      -->P_C  text
+*----------------------------------------------------------------------*
+" FCAT1
+*&---------------------------------------------------------------------*
+*&      Form  FCAT_VBELN
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*      -->P_0356   text
+*      -->P_0357   text
+*      -->P_0358   text
+*----------------------------------------------------------------------*
+FORM FCAT1  USING A TYPE ANY B TYPE ANY C TYPE ANY .
+
+  WA_FCAT-FIELDNAME = A.
+  WA_FCAT-SELTEXT_M = B.
+  WA_FCAT-TABNAME = C.
+  WA_FCAT-COL_POS = 1.
+  APPEND WA_FCAT TO IT_FCAT.
+  WA_FCAT-COL_POS = WA_FCAT-COL_POS + 1.
+ENDFORM.                    " FCAT_VBELN

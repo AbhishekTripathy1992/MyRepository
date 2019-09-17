@@ -1,0 +1,129 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_INTERACTIVE_CLASIICAL
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_INTERACTIVE_CLASIICAL.
+
+TABLES : MARA,MARD.
+
+SELECTION-SCREEN : BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-000.
+SELECT-OPTIONS : S_MATNR FOR MARA-MATNR.
+SELECTION-SCREEN : END OF BLOCK B1.
+
+TYPES : BEGIN OF TY_MARA,
+        MATNR TYPE MATNR,
+        MTART TYPE MTART,
+        MATKL TYPE MATKL,
+        MEINS TYPE MEINS,
+        BRGEW TYPE BRGEW,
+        NTGEW TYPE NTGEW,
+        END OF TY_MARA.
+
+TYPES : BEGIN OF TY_MAKT,
+        MATNR TYPE MATNR,
+        MAKTX TYPE MAKTX,
+        MAKTG TYPE MAKTG,
+        END OF TY_MAKT.
+
+TYPES : BEGIN OF TY_MARD,
+        MATNR TYPE MATNR,
+        WERKS TYPE MARD-WERKS,
+        LGORT TYPE MARD-LGORT,
+        END OF TY_MARD.
+
+DATA : WA_MARA TYPE TY_MARA,
+       IT_MARA TYPE TABLE OF TY_MARA,
+       WA_MAKT TYPE TY_MAKT,
+       IT_MAKT TYPE TABLE OF TY_MAKT,
+       WA_MARD TYPE TY_MARD,
+       IT_MARD TYPE TABLE OF TY_MARD.
+
+DATA : FNAM(20) ,
+       FVAL(18).
+
+START-OF-SELECTION.
+
+  SELECT MATNR
+         MTART
+         MATKL
+         MEINS
+         BRGEW
+         NTGEW FROM MARA INTO TABLE IT_MARA WHERE MATNR IN S_MATNR.
+
+
+  WRITE :10 'MATERIAL NO',
+         30 'TYPE',
+         50 'GROUP',
+         70 'UNIT',
+         90 'GROSS WT',
+         110 'NET WT'.
+  ULINE.
+  LOOP AT IT_MARA INTO WA_MARA.
+
+    WRITE :/10 WA_MARA-MATNR HOTSPOT COLOR 2,
+           30 WA_MARA-MTART,
+           50 WA_MARA-MATKL,
+           70 WA_MARA-MEINS,
+              WA_MARA-BRGEW UNDER 'GROSS WT' LEFT-JUSTIFIED,
+              WA_MARA-NTGEW UNDER 'NET WT' LEFT-JUSTIFIED.
+  ENDLOOP.
+
+
+
+AT LINE-SELECTION.
+
+  GET CURSOR FIELD FNAM VALUE FVAL.
+
+  CASE SY-LSIND.
+    WHEN 1.
+
+      IF FNAM = 'WA_MARA-MATNR'.
+        CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+          EXPORTING
+            INPUT  = FVAL
+          IMPORTING
+            OUTPUT = FVAL.
+        SELECT MATNR
+           MAKTX
+           MAKTG FROM MAKT INTO TABLE IT_MAKT WHERE MATNR = FVAL."  AND SPRAS = 'EN'.
+        WRITE :10 'MATERIAL NO',
+               30 'DESCRIPTION',
+               50 'IN CAPS'.
+
+        LOOP AT IT_MAKT INTO WA_MAKT.
+          WRITE :/10 WA_MAKT-MATNR HOTSPOT COLOR 2,
+                    30 WA_MAKT-MAKTX,
+                    50 WA_MAKT-MAKTG.
+        ENDLOOP.
+      ENDIF.
+
+    WHEN 2.
+      IF FNAM = 'WA_MAKT-MATNR'.
+        CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+          EXPORTING
+            INPUT  = FVAL
+          IMPORTING
+            OUTPUT = FVAL.
+        SELECT  MATNR
+                WERKS
+                LGORT FROM MARD INTO TABLE IT_MARD WHERE MATNR = FVAL .
+        WRITE :10 'MATERIAL NO',
+               30 '',
+               50 'IN CAPS'.
+
+        LOOP AT IT_MARD INTO WA_MARD.
+          WRITE :/10 WA_MARD-MATNR HOTSPOT COLOR 2,
+                    30 WA_MARD-WERKS,
+                    50 WA_MARD-LGORT.
+        ENDLOOP.
+      ENDIF.
+    WHEN 3.
+      IF FNAM = 'WA_MARD-MATNR'.
+        SET PARAMETER ID 'MAT' FIELD FVAL.
+        CALL TRANSACTION 'MM03' AND SKIP FIRST SCREEN .
+      ENDIF.
+  ENDCASE.

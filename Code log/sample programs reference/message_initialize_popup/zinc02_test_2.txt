@@ -1,0 +1,50 @@
+REPORT ZINC02_TEST_2.
+data: begin of itab occurs 10,
+        msgty type msgty,
+        msg   type msgv1,
+      end of itab.
+
+data: gv_msgid type arbgb value 'FR'.
+
+start-of-selection.
+
+  call function 'MESSAGES_INITIALIZE'.
+
+  itab-msgty = 'S'.
+  itab-msg = 'Test message Success'.
+  append itab.
+  itab-msgty = 'E'.
+  itab-msg = 'Test message Error'.
+  append itab.
+  itab-msgty = 'I'.
+  itab-msg = 'Test message Info'.
+  append itab.
+
+  loop at itab.
+    call function 'MESSAGE_STORE'
+      exporting
+        arbgb                  = gv_msgid
+        msgty                  = itab-msgty
+        msgv1                  = itab-msg
+        txtnr                  = '600'
+      exceptions
+        message_type_not_valid = 1
+        not_active             = 2
+        others                 = 3.
+  endloop.
+
+  call function 'MESSAGES_STOP'
+    exceptions
+      a_message = 1
+      e_message = 2
+      i_message = 3
+      w_message = 4
+      others    = 5.
+
+  call function 'MESSAGES_SHOW'
+    exporting
+      show_linno         = ' '
+    exceptions
+      inconsistent_range = 1
+      no_messages        = 2
+      others             = 3.

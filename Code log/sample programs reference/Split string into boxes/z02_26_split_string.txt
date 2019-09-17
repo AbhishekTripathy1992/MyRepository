@@ -1,0 +1,59 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_26_SPLIT_STRING
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_26_SPLIT_STRING.
+
+PARAMETERS : P_WORD TYPE STRING.
+
+DATA : X TYPE I,
+       P TYPE I.
+
+DATA : Y TYPE STRING,
+      IT TYPE TABLE OF STRING.
+
+X = STRLEN( P_WORD ).
+DATA : M TYPE I.
+
+IF X MOD 3 EQ 0.
+  P = X / 3.
+  DO P TIMES.
+    Y = P_WORD+M(3).
+    M = M + 3.
+    APPEND Y TO IT.
+  ENDDO.
+
+
+ELSEIF X MOD 3 EQ 2.
+  P = ( X - 2 ) / 3.
+  DO P TIMES.
+    Y = P_WORD+M(3).
+    M = M + 3.
+    APPEND Y TO IT.
+  ENDDO.
+  P = X - 2.
+  Y = P_WORD+P(2).
+  APPEND Y TO IT.
+
+ELSEIF X MOD 2 EQ 0.
+  P = X / 2.
+  DO P TIMES.
+    Y = P_WORD+M(2).
+    M = M + 2.
+    APPEND Y TO IT.
+  ENDDO.
+ENDIF.
+
+LOOP AT IT INTO Y.
+  WRITE :/  SY-ULINE(10),
+          / SY-VLINE,
+            Y CENTERED,
+         10 SY-VLINE.
+ENDLOOP.
+WRITE :/ SY-ULINE(10).
+
+WRITE :/ 'NO OF CHARACTER',X.

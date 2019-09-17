@@ -1,0 +1,12 @@
+body {background:lightgray; padding:0; margin:0;}
+.main-block{background:#fff; border:1px solid #000; width:450px; height:300px; position:relative; margin-top:155px; margin-left:455px;display:block;border-radius:20px}
+
+input[type=submit] {
+    width: 28%;
+    padding: 10px 16px;
+    margin: 15px 175px 30px 155px;
+    border-radius: 10%;
+    border: 2px solid #ccc;
+    background: brown;
+    color: white;
+    cursor: pointer;

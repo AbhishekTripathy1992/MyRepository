@@ -1,0 +1,36 @@
+REPORT zpopup_for_table.
+TYPES: BEGIN OF gty_listtab,
+         field(280) TYPE c,
+       END OF gty_listtab.
+DATA : gwa_listtab TYPE gty_listtab,
+       gt_listtab  TYPE TABLE OF gty_listtab.
+
+gwa_listtab-field = 'First line to display'.
+APPEND gwa_listtab TO gt_listtab.
+
+gwa_listtab-field = 'Second line to display'.
+APPEND gwa_listtab TO gt_listtab.
+
+gwa_listtab-field = 'Third line to display'.
+APPEND gwa_listtab TO gt_listtab.
+
+gwa_listtab-field = 'Fourth line to display'.
+APPEND gwa_listtab TO gt_listtab.
+
+gwa_listtab-field = 'Fifth line to display'.
+APPEND gwa_listtab TO gt_listtab.
+CALL FUNCTION 'POPUP_WITH_TABLE'
+  EXPORTING
+    endpos_col   = 40
+    endpos_row   = 10
+    startpos_col = 1
+    startpos_row = 2
+    titletext    = 'Popup for table'
+  TABLES
+    valuetab     = gt_listtab
+  EXCEPTIONS
+    break_off    = 1
+    OTHERS       = 2.
+IF sy-subrc <> 0.
+* Implement suitable error handling here
+ENDIF.

@@ -1,0 +1,150 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_20_12_2016_VBRK_VBRP_8196
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_20_12_2016_VBRK_VBRP_8196.
+
+TABLES : VBRK,VBRP.
+SELECT-OPTIONS : S_VBELN FOR VBRK-VBELN.
+
+TYPES : BEGIN OF TY_VBRK,
+        VBELN TYPE VBELN_VF,
+        FKART TYPE FKART,
+        FKTYP TYPE FKTYP,
+        VBTYP TYPE VBTYP,
+        POSNR TYPE VBRP-POSNR,
+        FKIMG TYPE VBRP-FKIMG,
+        VRKME TYPE VBRP-VRKME,
+  COLOR(4) TYPE C,
+  SORT(1) TYPE C,
+  END OF TY_VBRK.
+DATA : X(10) TYPE C , IT TYPE TABLE OF I.
+DATA : N TYPE I.
+DATA : WA_VBRK TYPE TY_VBRK,
+       IT_VBRK TYPE TABLE OF TY_VBRK,
+       WA_FCAT TYPE SLIS_FIELDCAT_ALV,
+       IT_FCAT TYPE SLIS_T_FIELDCAT_ALV,
+       WA_LAYOUT TYPE SLIS_LAYOUT_ALV.
+
+PERFORM FETCH_DATA.
+PERFORM FIELDCATLOUGE.
+PERFORM DISPLAY_DATA.
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM FETCH_DATA.
+  SORT IT_VBRK BY POSNR.
+  SELECT VBRK~VBELN
+    VBRK~FKART
+    VBRK~FKTYP
+    VBRK~VBTYP
+    VBRP~POSNR
+    VBRP~FKIMG
+    VBRP~VRKME INTO TABLE IT_VBRK FROM VBRK INNER JOIN VBRP ON VBRK~VBELN = VBRP~VBELN
+    WHERE VBRK~VBELN IN S_VBELN.
+
+  LOOP AT IT_VBRK INTO WA_VBRK.
+
+    AT NEW VBELN.
+      X = 0.
+    ENDAT.
+
+    AT NEW POSNR.
+      X = X + 1.
+    ENDAT.
+
+    AT END OF VBELN.
+      IF X = 1.
+        WA_VBRK-COLOR = 'C600'.
+         WA_VBRK-SORT = 1.
+        MODIFY IT_VBRK FROM WA_VBRK TRANSPORTING COLOR SORT WHERE VBELN = WA_VBRK-VBELN.
+      ELSEIF ( X > 1 AND X <= 3 ).
+        WA_VBRK-COLOR = 'C200'.
+         WA_VBRK-SORT = 2.
+        MODIFY IT_VBRK FROM WA_VBRK TRANSPORTING COLOR SORT WHERE VBELN = WA_VBRK-VBELN.
+      ELSEIF ( X > 3 AND X <= 6 ).
+        WA_VBRK-COLOR = 'C400'.
+         WA_VBRK-SORT = 3.
+        MODIFY IT_VBRK FROM WA_VBRK TRANSPORTING COLOR SORT WHERE VBELN = WA_VBRK-VBELN.
+      ELSEIF ( X > 6 AND X <= 10 ).
+        WA_VBRK-COLOR = 'C100'.
+         WA_VBRK-SORT = 4.
+        MODIFY IT_VBRK FROM WA_VBRK TRANSPORTING COLOR SORT WHERE VBELN = WA_VBRK-VBELN.
+      ELSEIF ( X > 10 ).
+        WA_VBRK-COLOR = 'C700'.
+         WA_VBRK-SORT = 5.
+        MODIFY IT_VBRK FROM WA_VBRK TRANSPORTING COLOR SORT WHERE VBELN = WA_VBRK-VBELN.
+      ENDIF.
+    ENDAT.
+  ENDLOOP.
+  SORT IT_VBRK BY SORT.
+ENDFORM.                    "FETCH_DATA
+*&---------------------------------------------------------------------*
+*&      Form  FIELDCATLOUGE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM FIELDCATLOUGE .
+
+*WA_LAYOUT-ZEBRA = 'X'.
+  WA_LAYOUT-COLWIDTH_OPTIMIZE = 'X'.
+  WA_LAYOUT-INFO_FIELDNAME = 'COLOR'.
+
+
+  WA_FCAT-FIELDNAME = 'VBELN'.
+  WA_FCAT-SELTEXT_M = 'DOCUMEN NO'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'FKART'.
+  WA_FCAT-SELTEXT_M = 'BILL TYPE'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'FKTYP'.
+  WA_FCAT-SELTEXT_M = 'CATAGORY'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+
+  WA_FCAT-FIELDNAME = 'POSNR'.
+  WA_FCAT-SELTEXT_M = 'ITEM'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'FKIMG'.
+  WA_FCAT-SELTEXT_M = 'QUANTITY'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+  WA_FCAT-FIELDNAME = 'VRKME'.
+  WA_FCAT-SELTEXT_M = 'SALES UNIT'.
+  APPEND WA_FCAT TO IT_FCAT.
+
+
+ENDFORM.                    " FIELDCATLOUGE
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM DISPLAY_DATA .
+
+
+
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      I_CALLBACK_PROGRAM = SY-REPID
+      IS_LAYOUT          = WA_LAYOUT
+      IT_FIELDCAT        = IT_FCAT
+    TABLES
+      T_OUTTAB           = IT_VBRK.
+
+ENDFORM.                    " DISPLAY_DATA

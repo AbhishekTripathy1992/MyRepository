@@ -1,0 +1,65 @@
+REPORT  zsr_test NO STANDARD PAGE HEADING.
+PARAMETERS : p_inp1 TYPE i,
+             p_inp2 TYPE i.
+
+DATA v_return TYPE i.
+
+*----------------------------------------------------------------------*
+*       CLASS cl_ret_para DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_ret_para DEFINITION.
+  PUBLIC SECTION.
+    METHODS m_ret_para IMPORTING i_inp1        TYPE i
+                                 i_inp2        TYPE i
+                       RETURNING VALUE(return) TYPE i.
+ENDCLASS.                    "cl_ret_para DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS cl_ret_para IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_ret_para IMPLEMENTATION.
+  METHOD m_ret_para.
+    return = i_inp1 * i_inp2.
+
+    WRITE: / i_inp1, '*',
+             i_inp2, '=', return.
+  ENDMETHOD.                    "m_ret_para
+ENDCLASS.                    "cl_ret_para IMPLEMENTATION
+
+START-OF-SELECTION.
+  DATA obj TYPE REF TO cl_ret_para.
+  CREATE OBJECT obj.
+  CALL METHOD obj->m_ret_para
+    EXPORTING
+      i_inp1 = p_inp1
+      i_inp2 = p_inp2
+    RECEIVING
+      return = v_return.
+
+  v_return = obj->m_ret_para( i_inp1 = p_inp1 i_inp2 = p_inp2 ).
+  WRITE: / 'Calling from outside v_return =', v_return.
+
+  MOVE obj->m_ret_para( i_inp1 = p_inp1 i_inp2 = p_inp2 ) TO v_return.
+  WRITE: / 'Calling from outside by Move =', v_return.
+
+
+
+
+
+
+
+**************************************************************
+We use returning parameter to get values from a method. Some pre-requisites are there if we use Returning parameter as follows.
+
+1.       If we use Returning parameter then we can’t use Exporting or Changing parameter in that method.
+2.       Returning parameter is passed by value only.
+3.       Only one Returning parameter can be used in a method.
+
+In the following example we have a method m_ret_para which contains one Returning parameter and it is called by Value (name of returning parameter). We already have two import parameters and we are importing two different values into this method. Now to capture the returning value we need to have a variable and it is v_return here.
+
+We are calculating the value of the return with parameter name inside the method. After that at the time of calling it needs to be received into the variable v_return. We also have different formats of receiving of the returning parameter.
+**************************************************************

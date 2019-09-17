@@ -1,0 +1,32 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z02_TEST_2_PBO
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'STATUS_100'.
+    DATA : gcl_obj TYPE REF TO gcl_tree.
+
+  CREATE OBJECT gobj_container
+    EXPORTING
+      container_name = 'CUSTOM'.
+
+  CREATE OBJECT gcl_obj
+    EXPORTING
+      parent              = gobj_container
+      no_html_header      = 'X'
+      node_selection_mode = cl_gui_column_tree=>node_sel_mode_single.
+
+  SET HANDLER gcl_obj->ondrag FOR gcl_obj.
+  SET HANDLER gcl_obj->ondrop FOR gcl_obj.
+
+  CALL METHOD gcl_obj->fetch_data.
+  CALL METHOD gcl_obj->create_fieldcat.
+  CALL METHOD gcl_obj->dnd_behaviour.
+*  CALL METHOD gcl_obj->register_event.
+  CALL METHOD gcl_obj->display_tree.
+
+ENDMODULE.                 " STATUS_0100  OUTPUT

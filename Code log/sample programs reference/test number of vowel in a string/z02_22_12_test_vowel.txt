@@ -1,0 +1,30 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_22_12_TEST_VOWEL
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_22_12_TEST_VOWEL.
+
+PARAMETERS : P_WORD TYPE STRING.
+
+DATA : X TYPE I,
+       Y TYPE I,
+       N TYPE I,
+       M(1) TYPE C.
+X = STRLEN( P_WORD ).
+
+DO X TIMES.
+  M = P_WORD+N(1).
+  N = N + 1.
+  IF M CA  'A''I''O''E''U'.
+    Y = Y + 1.
+  ENDIF.
+ENDDO.
+
+N = X - Y.
+
+WRITE : 'NUMBER OF VOWEL : ',Y,
+      / 'NO OF CONSONENT :',N.

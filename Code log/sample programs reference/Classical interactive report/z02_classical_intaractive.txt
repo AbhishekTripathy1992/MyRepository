@@ -1,0 +1,155 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_CLASSICAL_INTARACTIVE
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_CLASSICAL_INTARACTIVE.
+TABLES : VBRK.
+SELECTION-SCREEN : BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-000.
+SELECT-OPTIONS : S_VBELN FOR VBRK-VBELN.
+SELECTION-SCREEN : END OF BLOCK B1.
+
+TYPES : BEGIN OF TY_VBRK,
+        VBELN TYPE VBRK-VBELN,
+        FKDAT TYPE VBRK-FKDAT,
+        MATNR TYPE VBRP-MATNR,
+        ARKTX TYPE VBRP-ARKTX,
+        FKIMG TYPE VBRP-FKIMG,
+        NETWR TYPE VBRP-NETWR,
+        END OF TY_VBRK.
+
+TYPES : BEGIN OF TY_MARA,
+        MATNR TYPE MATNR,
+        MTART TYPE MTART,
+        MATKL TYPE MATKL,
+        MEINS TYPE MEINS,
+        MAKTX TYPE MAKTX,
+        MAKTG TYPE MAKTG,
+        END OF TY_MARA.
+
+DATA : WA_MARA TYPE TY_MARA,
+       IT_MARA TYPE TABLE OF TY_MARA,
+       WA_VBRK TYPE TY_VBRK,
+       IT_VBRK TYPE TABLE OF TY_VBRK.
+
+DATA : FNAM TYPE MATNR,
+       FVAL(10) TYPE C.
+
+
+START-OF-SELECTION.
+  PERFORM FETCH_DATA.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+FORM FETCH_DATA.
+
+  SELECT VBRK~VBELN
+         VBRK~FKDAT
+         VBRP~MATNR
+         VBRP~ARKTX
+         VBRP~FKIMG
+         VBRP~NETWR INTO TABLE IT_VBRK FROM VBRK INNER JOIN VBRP ON VBRK~VBELN = VBRP~VBELN
+         WHERE VBRK~VBELN IN S_VBELN.
+
+  WRITE :/ SY-VLINE,
+          10 'BILL NUMBER'  CENTERED,25 SY-VLINE,
+          30 'BILL DATE'    CENTERED,45 SY-VLINE,
+          50 'MATERIAL_NO'  CENTERED,65 SY-VLINE,
+          70 'DESCRIPTION'  CENTERED,100 SY-VLINE,
+          101 'QUANTITY'    CENTERED,119 SY-VLINE,
+          120 'AMOUNT'      CENTERED,140 SY-VLINE.
+  WRITE : SY-ULINE(140).
+  LOOP AT IT_VBRK INTO WA_VBRK.
+    AT NEW VBELN.
+      WRITE :/ SY-VLINE,WA_VBRK-VBELN HOTSPOT UNDER 'BILL NUMBER' COLOR 7, 140 SY-VLINE.
+    ENDAT.
+    WRITE :/  SY-ULINE(140),
+           / SY-VLINE,
+*           WA_VBRK-VBELN  UNDER 'BILL NUMBER'
+             WA_VBRK-FKDAT  UNDER 'BILL DATE',45 SY-VLINE,
+             WA_VBRK-MATNR  UNDER 'MATERIAL_NO' HOTSPOT,65 SY-VLINE,
+             WA_VBRK-ARKTX  UNDER 'DESCRIPTION',100 SY-VLINE,
+             WA_VBRK-FKIMG  UNDER 'QUANTITY',119 SY-VLINE,
+             WA_VBRK-NETWR  UNDER 'AMOUNT', 140 SY-VLINE.
+
+    AT END OF VBELN.
+      SUM.
+      WRITE: SY-ULINE(140),
+           / SY-VLINE,54 'TOTAL' COLOR 7 ,100 SY-VLINE,
+             WA_VBRK-FKIMG  UNDER 'QUANTITY' COLOR 3,119 SY-VLINE,
+             WA_VBRK-NETWR  UNDER 'AMOUNT' COLOR 5,140 SY-VLINE,
+           /  SY-ULINE(140).
+
+    ENDAT.
+    AT LAST.
+      SUM.
+      WRITE: SY-ULINE(140),
+           / SY-VLINE,50 'GRAND TOTAL' COLOR 1,100 SY-VLINE,
+             WA_VBRK-FKIMG UNDER 'QUANTITY' COLOR 3,119 SY-VLINE,
+             WA_VBRK-NETWR UNDER 'AMOUNT' COLOR 5, 140 SY-VLINE.
+    ENDAT.
+  ENDLOOP.
+
+  WRITE :/ SY-ULINE(140).
+ENDFORM.                    "FETCH_DATA
+
+"""""""""""""""""""""""""""""""INTERACTION"""""""""""""""""""""""
+
+
+AT LINE-SELECTION.
+  GET CURSOR FIELD FNAM VALUE FVAL.
+  CASE SY-LSIND.
+    WHEN 1.
+
+      IF FNAM = 'WA_VBRK-MATNR'.
+        SELECT  MARA~MATNR
+                MARA~MTART
+                MARA~MATKL
+                MARA~MEINS
+                MAKT~MAKTX
+                MAKT~MAKTG INTO TABLE IT_MARA FROM MARA INNER JOIN MAKT ON MARA~MATNR = MAKT~MATNR
+                WHERE MARA~MATNR = FVAL AND SPRAS EQ 'EN'.
+
+        WRITE : 10 'MATERIAL NUMBER',
+                30 'TYPE',
+                50 'MAT_GROUP',
+                70 'UNIT',
+                90 'DECRIPTION',
+                130 'DEC_UP'.
+        ULINE.
+        LOOP AT IT_MARA INTO WA_MARA.
+          WRITE :     SY-ULINE(180),
+                   /  SY-VLINE,
+                        10 WA_MARA-MATNR HOTSPOT,
+                           SY-VLINE,
+                        30 WA_MARA-MTART,
+                           SY-VLINE,
+                        50 WA_MARA-MATKL,
+                           SY-VLINE,
+                        70 WA_MARA-MEINS,
+                           SY-VLINE,
+                        90 WA_MARA-MAKTX ,
+                        129  SY-VLINE,
+                        130 WA_MARA-MAKTG,
+                        180  SY-VLINE .
+
+        ENDLOOP.
+        WRITE :/  SY-ULINE(180).
+      ELSEIF FNAM = 'WA_VBRK-VBELN'.
+        SET PARAMETER ID 'VF' FIELD FVAL.
+        CALL TRANSACTION 'VF03' AND SKIP FIRST SCREEN.
+      ENDIF.
+
+    WHEN 2.
+      IF FNAM = 'WA_MARA-MATNR'.
+        SET PARAMETER ID 'MAT' FIELD FVAL.
+        CALL TRANSACTION 'MM03' AND SKIP FIRST SCREEN.
+      ENDIF.
+  ENDCASE.

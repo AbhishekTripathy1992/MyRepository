@@ -1,0 +1,76 @@
+"------method implementation for check box operation------
+
+  METHOD : CHECKBOX_CHANGE.
+    "---local data declaration dor using the checkbox--
+    DATA : LT_CHILD TYPE LVC_T_NKEY,
+           LW_CHILD TYPE LVC_S_NKEY.
+    DATA : ET_ITEM_LAYOUT TYPE LVC_T_LAYI,
+           L_WA_ITEM_LAYOUT TYPE LVC_S_LAYI,
+
+          WA_OUTTAB_LINE TYPE TY_VBAP,
+
+          L_WA_ITEM_LAYOUT_C TYPE LVC_S_LACI,
+          LT_ITEM_LAYOUT_C TYPE LVC_T_LACI.
+
+    "----
+    CALL METHOD TREE->GET_CHILDREN
+      EXPORTING
+        I_NODE_KEY  = NODE_KEY
+      IMPORTING
+        ET_CHILDREN = LT_CHILD.
+
+    IF LT_CHILD IS NOT INITIAL.
+      CLEAR LT_CHILD.
+
+      """""""""""""""""""""""""""""""""""""""""""
+      CALL METHOD TREE->GET_SUBTREE
+        EXPORTING
+          I_NODE_KEY       = NODE_KEY
+        IMPORTING
+          ET_SUBTREE_NODES = LT_CHILD.
+
+      LOOP AT LT_CHILD INTO LW_CHILD.
+        IF LW_CHILD-NODE_KEY <> NODE_KEY.
+          REFRESH: ET_ITEM_LAYOUT.
+
+          CALL METHOD TREE->GET_OUTTAB_LINE
+            EXPORTING
+              I_NODE_KEY     = LW_CHILD-NODE_KEY
+            IMPORTING
+              E_OUTTAB_LINE  = WA_OUTTAB_LINE
+              ET_ITEM_LAYOUT = ET_ITEM_LAYOUT.
+*
+
+*
+          READ TABLE ET_ITEM_LAYOUT INTO L_WA_ITEM_LAYOUT
+           WITH KEY FIELDNAME = CL_GUI_ALV_TREE=>C_HIERARCHY_COLUMN_NAME.
+*
+
+          L_WA_ITEM_LAYOUT-CHOSEN = CHECKED.
+          MODIFY ET_ITEM_LAYOUT FROM L_WA_ITEM_LAYOUT INDEX SYST-TABIX.
+*
+          REFRESH: LT_ITEM_LAYOUT_C.
+
+          LOOP AT ET_ITEM_LAYOUT INTO L_WA_ITEM_LAYOUT.
+            MOVE-CORRESPONDING L_WA_ITEM_LAYOUT TO L_WA_ITEM_LAYOUT_C.
+            L_WA_ITEM_LAYOUT_C = L_WA_ITEM_LAYOUT.
+            L_WA_ITEM_LAYOUT_C-U_CHOSEN = 'X'.  " update CHOSEN field
+            APPEND L_WA_ITEM_LAYOUT_C TO LT_ITEM_LAYOUT_C.
+          ENDLOOP.
+*
+
+          CALL METHOD TREE->CHANGE_NODE
+            EXPORTING
+              I_NODE_KEY     = LW_CHILD-NODE_KEY
+              I_OUTTAB_LINE  = WA_OUTTAB_LINE
+              IT_ITEM_LAYOUT = LT_ITEM_LAYOUT_C.
+        ENDIF.
+      ENDLOOP.
+      IF LT_CHILD IS NOT INITIAL.
+        CALL METHOD TREE->EXPAND_NODE
+          EXPORTING
+            I_NODE_KEY = NODE_KEY.
+      ENDIF.
+
+    ENDIF.
+  ENDMETHOD.                    ":

@@ -1,0 +1,34 @@
+REPORT  zsr_test NO STANDARD PAGE HEADING.
+
+*----------------------------------------------------------------------*
+*       CLASS cl_pr_para DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_pr_para DEFINITION.
+  PUBLIC SECTION.
+    METHODS m_pr_para IMPORTING v_opt TYPE i OPTIONAL
+                                v_pre TYPE i
+                                PREFERRED PARAMETER v_pre.
+ENDCLASS.                    "cl_pr_para DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS cl_pr_para IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_pr_para IMPLEMENTATION.
+  METHOD m_pr_para.
+    WRITE: / 'Optional Parameter =',  v_opt,
+           / 'Preferred Parameter =', v_pre.
+  ENDMETHOD.                    "m_pr_para
+ENDCLASS.                    "cl_pr_para IMPLEMENTATION
+
+START-OF-SELECTION.
+  DATA obj TYPE REF TO cl_pr_para.
+  CREATE OBJECT obj.
+
+  CALL METHOD obj->m_pr_para( v_opt = 10
+                              v_pre = 12 ).
+  SKIP.
+  CALL METHOD obj->m_pr_para( 15 ).

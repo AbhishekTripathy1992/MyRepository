@@ -1,0 +1,18 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_TEST_2
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  z02_dnd_tree_tree.
+
+INCLUDE z02_dnd_tree_tree_top.
+INCLUDE z02_dnd_tree_tree_class.
+INCLUDE z02_dnd_tree_tree_pbo.
+INCLUDE z02_dnd_tree_tree_pai.
+
+START-OF-SELECTION.
+
+  CALL SCREEN 100.

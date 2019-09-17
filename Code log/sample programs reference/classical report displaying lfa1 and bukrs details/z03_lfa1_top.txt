@@ -1,0 +1,32 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z03_LFA1_TOP
+*&---------------------------------------------------------------------*
+DATA : GV_LIFNR TYPE LFA1-LIFNR,
+       GV_BUKRS TYPE LFB1-BUKRS.
+
+SELECTION-SCREEN : BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-000.
+SELECT-OPTIONS : S_LIFNR FOR GV_LIFNR OBLIGATORY,
+                S_BUKRS FOR GV_BUKRS.
+SELECTION-SCREEN : END OF BLOCK B1 .
+
+
+TYPES : BEGIN OF TY_LFA1,
+        LIFNR TYPE LFA1-LIFNR,
+        NAME1 TYPE LFA1-NAME1,
+        END OF TY_LFA1,
+        TY_T_LFA1 TYPE STANDARD TABLE OF TY_LFA1.           "#EC NEEDED
+
+TYPES : BEGIN OF TY_LFB1,
+        LIFNR TYPE LFB1-LIFNR,
+        BUKRS TYPE LFB1-BUKRS,
+        END OF TY_LFB1,
+        TY_T_LFB1 TYPE STANDARD TABLE OF TY_LFB1.           "#EC NEEDED
+
+DATA : WA_LFA1 TYPE TY_LFA1,                                "#EC NEEDED
+       IT_LFA1 TYPE TY_T_LFA1,                              "#EC NEEDED
+       WA_LFB1 TYPE TY_LFB1,                                "#EC NEEDED
+       IT_LFB1 TYPE TY_T_LFB1 ,                             "#EC NEEDED
+       IT_LFB1_1 TYPE TY_T_LFB1.                              "#EC NEEDED
+
+
+DATA : N TYPE I.                                            "#EC NEEDED

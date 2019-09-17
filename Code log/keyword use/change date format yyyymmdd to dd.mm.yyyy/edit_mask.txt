@@ -1,0 +1,1 @@
+WRITE im_data_ini TO lv_dt_ini USING EDIT MASK '__/__/____'.

@@ -1,0 +1,143 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z02_MAKE_ZIP_FILE_CLASS
+*&---------------------------------------------------------------------*
+CLASS gcl_zip DEFINITION.
+  PUBLIC SECTION.
+    TYPES: BEGIN OF bin_file,
+             name TYPE string,
+             size TYPE i,
+             data TYPE solix_tab,
+           END OF bin_file  .
+
+    CLASS-DATA: lv_filename     TYPE string,
+                wa_bindata      TYPE bin_file,
+                it_bindata      TYPE STANDARD TABLE OF bin_file,
+
+                lv_zip_xstring  TYPE xstring,
+                lv_xstring      TYPE xstring,
+                lv_path         TYPE string,
+                it_filetab      TYPE filetable,
+                wa_filetab      TYPE file_table,
+                v_filesize      TYPE i,
+                ret_code        TYPE i,
+                v_usr           TYPE i,
+                v_zip_size      TYPE i,
+                it_zip_bin_data TYPE STANDARD TABLE OF raw255,
+                v_dest_filepath TYPE string.
+
+    CLASS-METHODS :
+      select_file,
+      populate_data,
+      convert_data,
+      get_binary,
+      conv_xst_to_binary,
+      open_dialog,
+      download_zip.
+ENDCLASS.
+
+CLASS gcl_zip IMPLEMENTATION.
+*Step 2: Select files that you want to zip
+  METHOD select_file.
+    cl_gui_frontend_services=>file_open_dialog(
+          EXPORTING
+            window_title            = 'Select files that you want to ZIP'
+            multiselection          = 'X'
+          CHANGING
+            file_table                 = it_filetab
+            rc                              = ret_code
+            user_action             = v_usr
+            EXCEPTIONS
+              file_open_dialog_failed = 1
+              cntl_error              = 2
+              error_no_gui            = 3
+              not_supported_by_gui    = 4 ).
+if ret_code eq 0.
+  leave to SCREEN 0.
+  ENDIF.
+  ENDMETHOD.
+*Step 3: Populate the data of the selected files into internal table in “BIN” Format
+  METHOD populate_data.
+    LOOP AT it_filetab INTO wa_filetab.
+      lv_filename = wa_filetab-filename.
+      cl_gui_frontend_services=>gui_upload(
+        EXPORTING
+          filename                = lv_filename
+          filetype                = 'BIN'
+        IMPORTING
+          filelength              = wa_bindata-size
+        CHANGING
+          data_tab                = wa_bindata-data ).
+
+
+      CALL FUNCTION 'SO_SPLIT_FILE_AND_PATH'
+        EXPORTING
+          full_name     = lv_filename
+        IMPORTING
+          stripped_name = wa_bindata-name
+        EXCEPTIONS
+          x_error       = 1
+          OTHERS        = 2.
+
+      APPEND wa_bindata TO it_bindata.
+
+    ENDLOOP       .
+  ENDMETHOD.
+*Step 4: Convert the BIN file format to XSTRING format
+  METHOD convert_data.
+    LOOP AT it_bindata INTO wa_bindata.
+
+      CALL FUNCTION 'SCMS_BINARY_TO_XSTRING'
+        EXPORTING
+          input_length = wa_bindata-size
+        IMPORTING
+          buffer       = lv_xstring
+        TABLES
+          binary_tab   = wa_bindata-data.
+
+*Step 5:  Add file to ZIP folder
+
+      oref_zip->add( name    = wa_bindata-name
+                     content = lv_xstring ).
+
+    ENDLOOP.
+  ENDMETHOD.
+*Step 6: Get the binary string for ZIP file.
+  METHOD get_binary.
+
+    lv_zip_xstring = oref_zip->save( ).
+  ENDMETHOD.
+
+*Step 7: Convert XSTRING to BINARY table.
+  METHOD conv_xst_to_binary.
+    CALL FUNCTION 'SCMS_XSTRING_TO_BINARY'
+      EXPORTING
+        buffer        = lv_zip_xstring
+      IMPORTING
+        output_length = v_zip_size
+      TABLES
+        binary_tab    = it_zip_bin_data.
+  ENDMETHOD.
+*Step 8: Opens dialog box to save ZIP file in your desktop
+  METHOD open_dialog.
+    cl_gui_frontend_services=>file_save_dialog(
+      EXPORTING
+        window_title         = 'SELECT THE LOCATION TO SAVE THE FILE'
+        file_filter          = '(*.ZIP)|*.ZIP|'
+      CHANGING
+        filename             = lv_filename
+        path                 = lv_path
+        fullpath             = v_dest_filepath ).
+  ENDMETHOD.
+*step 9: download the file in zip format.
+  METHOD download_zip.
+    cl_gui_frontend_services=>gui_download(
+     EXPORTING
+       bin_filesize              = v_zip_size
+       filename                  = v_dest_filepath
+       filetype                  = 'BIN'
+     IMPORTING
+       filelength                = v_filesize
+     CHANGING
+       data_tab                  = it_zip_bin_data ).
+  ENDMETHOD.
+ENDCLASS.

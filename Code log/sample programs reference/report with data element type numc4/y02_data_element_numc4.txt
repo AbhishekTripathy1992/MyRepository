@@ -1,0 +1,22 @@
+*&---------------------------------------------------------------------*
+*& Report  Y02_NUMC_DOMAIN_FLDLENGTH_4
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y02_DATA_ELEMENT_NUMC4.
+TYPES : BEGIN OF TY_TAB,
+        ROLLNAME TYPE DD04L-ROLLNAME,
+        DOMNAME TYPE DD04L-DOMNAME,
+        END OF TY_TAB.
+
+        DATA : WA_TAB TYPE TY_TAB,
+               IT_TAB TYPE TABLE OF TY_TAB.
+SELECT ROLLNAME DOMNAME FROM DD04L INTO TABLE IT_TAB
+WHERE  DOMNAME EQ 'NUMC4'.
+  LOOP AT IT_TAB INTO WA_TAB.
+    WRITE :/ SY-TABIX,WA_TAB-ROLLNAME,
+          60 WA_TAB-DOMNAME.
+    ENDLOOP.

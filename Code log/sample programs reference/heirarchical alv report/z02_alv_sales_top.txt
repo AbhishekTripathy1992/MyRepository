@@ -1,0 +1,53 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z02_TOP
+*&---------------------------------------------------------------------*
+
+TYPES : BEGIN OF TY_VBAK,
+        VBELN TYPE VBAK-VBELN, "----SALES DOCUMENT NUMBER----
+        KUNNR TYPE VBAK-KUNNR, "-----CUSTOMER NUMBER-----
+        MATNR TYPE VBAP-MATNR, "------MATERIAL NUMBER
+        END OF TY_VBAK,
+        TY_T_VBAK TYPE STANDARD TABLE OF TY_VBAK.           "#EC NEEDED
+
+TYPES : BEGIN OF TY_MAKT,
+        MATNR TYPE MAKT-MATNR,
+        MAKTX TYPE MAKT-MAKTX,
+        END OF TY_MAKT,
+        TY_T_MAKT TYPE STANDARD TABLE OF TY_MAKT.           "#EC NEEDED
+
+TYPES : BEGIN OF TY_KNA1,
+        KUNNR TYPE KUNNR,
+        NAME1 TYPE NAME1,
+        END OF TY_KNA1,
+        TY_T_KNA1 TYPE STANDARD TABLE OF TY_KNA1.           "#EC NEEDED
+
+"------FINAL ITEM INTERNAL TABLE STRUCTURE----------
+TYPES : BEGIN OF TY_FINAL,
+        KUNNR TYPE VBAK-KUNNR,
+        NAME1 TYPE NAME1,
+        VBELN TYPE VBAK-VBELN,
+        MATNR TYPE VBAP-MATNR,
+        MAKTX TYPE MAKT-MAKTX,
+        END OF TY_FINAL,
+        TY_T_FINAL TYPE STANDARD TABLE OF TY_FINAL.         "#EC NEEDED
+
+DATA : WA_VBAK TYPE TY_VBAK,                                "#EC NEEDED
+       IT_VBAK TYPE TY_T_VBAK,                              "#EC NEEDED
+       WA_MAKT TYPE TY_MAKT,                                "#EC NEEDED
+       IT_MAKT TYPE TY_T_MAKT,                              "#EC NEEDED
+       IT_MAKT1 TYPE TY_T_MAKT,                             "#EC NEEDED
+       WA_KNA1 TYPE TY_KNA1,                                "#EC NEEDED
+       IT_KNA1 TYPE TY_T_KNA1,                              "#EC NEEDED
+      WA_FINAL TYPE TY_FINAL,                               "#EC NEEDED
+      IT_FINAL TYPE TY_T_FINAL,                             "#EC NEEDED
+     IT_FINAL1 TYPE TY_T_FINAL.                             "#EC NEEDED
+
+"--------SLIS DECLARATION--------
+DATA : IT_FCAT TYPE SLIS_T_FIELDCAT_ALV,                    "#EC NEEDED
+       WA_FCAT TYPE SLIS_FIELDCAT_ALV,                      "#EC NEEDED
+       WA_LAYOUT TYPE SLIS_LAYOUT_ALV,                      "#EC NEEDED
+       KEY TYPE SLIS_KEYINFO_ALV.                           "#EC NEEDED
+DATA : BEGIN OF WA_VBELN,                                   "#EC NEEDED
+       VBELN TYPE VBELN_VF,
+       END OF WA_VBELN.
+DATA: IT_VBELN LIKE TABLE OF WA_VBELN.                      "#EC NEEDED

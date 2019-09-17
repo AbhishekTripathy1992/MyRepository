@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  
+   <script>
+   function FreteCharge()
+{
+  if(document.getElementById("changeCriteria").value==0)
+ {
+ document.getElementById("frete1").style.display="none";
+ document.getElementById("frete2").style.display="none";
+ }
+ else if(document.getElementById("changeCriteria").value==1)
+ {
+ document.getElementById("frete1").style.display="block";
+  document.getElementById("frete2").style.display="none";
+  window.alert("admin please login");
+ }
+ else if(document.getElementById("changeCriteria").value==2)
+ {
+ document.getElementById("frete1").style.display="none";
+ document.getElementById("frete2").style.display="block";
+ window.alert("user please login");
+   }
+   }
+
+   
+   function showMe (it, box) { 
+   var vis = (box.checked) ? "block" : "none"; 
+   document.getElementById(it).style.display = vis;
+ } 
+
+ function popup(){
+document.getElementById('popup').style.display="block";
+document.getElementById('black-overlay').style.display="block";
+}
+
+function popupClose(){
+document.getElementById('popup').style.display = "none";
+document.getElementById('black-overlay').style.display="none";
+
+}
+
+function Validate(){
+var username=document.getElementById('user-name').value;
+var password=document.getElementById('password').value;
+if(username=='abhishek' && password=='abhishek@123')
+	{
+    window.document.location.href = 'http://wildmaniacindia.com/';
+	}
+	else
+	{   
+		window.alert("Please enter valid user name and password");
+		document.getElementById('login-message').innerHTML=x;
+	}
+	}
+</script>
+<head>
+<style>
+body{padding:0;font-size:15px;background:lightsalmon;color:black;width:1000px}
+.gradient {
+    background: -webkit-gradient(linear,left top,right bottom, from(firebrick), to(white))fixed;
+}
+.fixed-layout{margin-left:150px;margin-top:110px;width:1000px;display:block}
+.header{margin-top:-110px;background:lightcoral;width:1000px;position:fixed;font-family:arial;height:90px;box-shadow:8px 17px 49px -11px;}
+.header-left{background:white;padding:3px;margin:5px;solid#ccc;box-shadow:2px -2px 8px 5px}
+.header-right{background:lightsalmon;height:18px;padding:30px;margin:5px;solid#ccd;box-shadow:0px 1px 1px 5px}
+
+
+.float-left{float:left;}
+.float-right{float:right;}
+.clear-fix{clear:both;}
+
+.maincontent{margin-top:10px;margin-left:0px;font-size:16px;width:1000px;height:300px}
+.maincontent-left{width:500px;height:300px;border-radius:10px 10px 0px;border:5%;background:white}
+.maincontent-right{width:500px;height:300px;background:#d9f9f3;border-radius:12px 43px 25px 06px;font-color:green}
+.maincontent-left:hover{border:1px solid:black}
+
+.maincontent1{width:1000px;margin-top:50px;font-size:15px;height:200px;text-align:center}
+.maincontent1-left{height:200px;width:33%;border-radius:10px 10px 0px;border:5%;background:#25b587;box-shadow:2px 11px 16px -7px}
+.maincontent1-middle{height:200px;margin-left:5px;width:33%;border-radius:10px 10px 0px;border:5%;background:limegreen;box-shadow:2px 11px 16px -7px}
+.maincontent1-right{height:200px;width:33%;border-radius:10px 10px 0px;border:5%;background:lightyellow;box-shadow:2px 11px 16px -7px}
+.maincontent1-comm{margin-top:35px}
+.maincontent1-visitor{margin-top:35px}
+.tigerhead{width:auto}
+.image-list{height:200px;margin-left:40x;margin-right:25px;margin-top:100px;width:auto;background:transparent}
+div.images{
+    margin: 5px;
+    float: left;
+    width: 180px;
+	transition: transfrom .25s ease-in;
+}
+ul {
+
+	     list-style-type: none;
+    margin-top: 92px;
+    margin-left: 435px;
+     padding-top: 20px;
+     overflow: hidden;
+	 height :28px;   }
+    
+li { float: left;
+}
+
+li a {
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}	
+
+li a:hover {
+    background-color:black;
+	border-radius:15px 15px 15px 15px;
+}
+a:hover {
+background-color:transparent;border-radius:20px;
+}
+a:link {
+    color:white;
+    background-color: transparent;
+    text-decoration:none;
+}
+a:active {
+    color: red;
+    background-color: transparent;
+    text-decoration: none;
+}
+
+.popup-block {
+   background: cornsilk;
+    border:3px solid;
+    position: absolute;
+    border-radius: 10px;
+    width: 540px;
+    height: auto;
+    margin-left: 270px;
+    margin-top: -550px;
+    z-index: 999;
+    
+
+.close {color:red; float:right; font-size:20px; padding:10px;}
+ #black-overlay{background:#000; opacity:.3; width:100%; height:100%; position:absolute; z-index:99;}
+ .tab1 {background:red; border:1px solid #ccc; border-radius:5px; font-size:20px; padding:10px 20px; color:#fff; display:block}
+
+</style>
+</head>
+
+<body class="gradient">
+<div class="fixed-layout">
+<div class="header">
+<div class="header-left float-left"><a href="http://www.wildmaniacindia.com"><img src=wild.png width="350" height="70"></a></div>
+<div class="header-right float-right">wildlife of sundarban
+</div>
+<div style="margin-left:106px">
+<ul>
+<li><a href="">about us</a></li>
+<li><a href="">place to visit</a></li>
+<li><a href="">tourist attraction</a></li>
+<li><a href="">contact</a></li>
+<div class="clear-fix"></div>
+</div>
+</div>
+<div class="" style="width:500px;height:auto;background:white;border-radius:20px">
+<pre>    user name <input type="text" id="user-name" name="text" size="40" placeholder="username" height="30px" style="margin-top:20px;height:20px;border-radius:10px 10px 10px 10px"> </pre>
+<pre>    password  <input type="password" id="password" name="text" size="40" placeholder="password" height="30px" style="height:20px;border-radius:10px 10px 10px 10px"> </pre>
+<div class="" style="margin-left:20px" >
+ 
+
+ <select id="changeCriteria" onchange="FreteCharge()">
+  <option value="0">Please Select</option>
+   <option value="1">admin login</option>
+   <option value="2">user login</option>
+    </select>
+    </div>
+	
+<div id="frete1" class="" style="display:none;text-align:center">admin login</div>
+<div id="frete2" class="" style="display:none;text-align:center">user login</div>
+
+<div class="tab">
+<input onclick="Validate()" type ="submit" value="submit" style="width:100px;height:30px;border-radius:10px;background:black;color:white;text-shadow:10px;margin-left:200px" >
+</div>
+<div class="clear-fix"></div>
+</div>
+
+<div class="maincontent">
+<div class="maincontent-left float-left">
+<a href="http://wildmaniacindia.com"><img src="work.png" alt="work.png" height="300px" width="500px"></a>
+</div>
+<div class="maincontent-right float-left">
+ <div class="" style="padding:20px;font-size: 15px;font-family: arial;font-weight: normal;text-align: justify;">The Sundarbans (Bengali: সুন্দরবন, Shundorbôn) is a 
+ natural region in Bengal.It is the largest single
+ block of tidal halophytic mangrove forest in  the
+ world. The Sundarbans covers approximately 4000 sq
+ kms area is in India. The Sundarbans is a UNESCO 
+ World Heritage Site.The Sundarbans National Park is
+ a National Park,Tiger Reserve, and a Biosphere Reserve
+ located in the Sundarbans delta in the Indian state of
+ West Bengal.This region is densely covered by mangrove 
+ forests, and is one of thelargest reserves for the Bengal
+ tiger, Saltwater Crocodile, Spotted DeerWild Boar, Rhesus
+ Monkey, over 100 species of Birds,Snakes and various 
+ species of Marine life.We are the maniacs who revere nature 
+ in its truest form-Raw. We find music in the orchestra of
+ cicadas and do not mind getting lost in the trails of unknown,
+ among the greens. From the stripes to the spots, from the hooves
+ to the tusks, from the ones that glide over the clouds to the
+ ones that slide under the ground we revel them all.</div>
+
+</div>
+ <div class="clear-fix"></div>
+</div>
+<hr>
+<div id="black-overlay" style="display:none;"></div>
+ <div id="login-message"></div>
+ 
+ <!--------------------------------------------------------------------->
+<div class="image-list">
+
+
+<!----------------------first image------------------------>
+<div class="images">
+<div class="tab1" onClick="popup()"><a style="margin-left:20px;cursor:pointer">
+<img src="1.png" height="200" width="300" alt="rbt" style="border-radius:10px;margin-right:30px"></a></div>
+<div id="popup" class="popup-block" style="display:none;">
+<div onClick="popupClose()" class="close">
+<a style="cursor: pointer;"><pre><b><a style="align:right;cursor:pointer;float: RIGHT;MARGIN-RIGHT:20PX;border-radius:2px;font-size:17px;width;45px;background:crimson;">  X </a></pre><br>
+
+<h3 style="text-align:center">Royal Bengal Tiger</h3>
+<img src="1.png" height="300" width="500" alt="laptop" style="border-radius:10px;margin-left:20px"><br>
+<div class="" style="padding:20px;font-size: 12px;font-family: arial;font-weight: normal;text-align: justify;">
+The Bengal tiger (Panthera tigris tigris) is the most numerous tiger subspecies.By 2011, the total population was estimated at fewer than 2,500 individuals witha decreasing trend.None of the 'Tiger Conservation Landscapes' within the Bengaltiger's range is considered large enough to support an effective population sizeof 250 adult individuals.Since 2010, it is listed as Endangered on the IUCN Red List.As of 2010, Bengal tiger populations in India have been estimated at 1,706–1,909.As of 2014,they had reputedly increased to an estimated 2,226 individuals butthe method used in the census may not be accurate.Bengal tigers number around 440in Bangladesh and 163–253 in Nepal.Prior censuses placed the population of tigersin Bhutan at around 65-75 individuals,however, the latest census estimated that 103 wild Bengal tigers are living in the country.is traditionally fixed as the typical locality for the binomen Panthera tigris,to which the British taxonomistReginald Innes Pocock subordinated the Bengal tiger in1929 under the trinomen Panthera tigris tigris.The Bengal, Caspian and Siberian tigers,and lion rank among the biggest cats.</div>
+
+</b></a></div>
+</div>
+  <div class="desc" style="text-align:center">royal bengal tiger</div>
+</div>
+</div>
+
+<div class="maincontent1">
+<div class="maincontent1-left float-left">
+<b>Address</b><br>
+WildManiac India<br>
+C/o WildManiac SST<br>
+28/14 Dhakuria Station Road,<br>
+Kolkata - 700031<br>
+P: +91- 9126524910, +91- 9874190961<br>
+E: wildmaniacsst@gmail.com
+</div>
+<div class="maincontent1-middle float-left">
+<b>Customer support</b><br>
+Travel tips<br>
+Booking tips<br>
+
+</div>
+<div class="maincontent1-right float-right">
+<b>Our Social Appearance</b><br>
+  tweeter
+  <a href="https://twitter.com"><img src="tw.png" height="30" width="30"></a><br>
+  Facebook<a href="https://www.facebook.com/WildManiac-India-1623911094507954/"><img src="fb.png" height="30" width="30"  style="border-radius:30px"></a>
+</div>
+<div class="maincontent1-comm float-left"><textarea name="message" placeholder="comment here" rows="10" cols="50" placeholder="comment here....."></textarea>
+<input type="submit" value="submit">
+</div>
+
+<div class="maincontent1-visitor float-right">
+<input type="text" name="message" placeholder="first name"><br>
+<input type="text" name="message" placeholder="last name"><br>
+<input type="text" name="message" placeholder="email id"><br>
+<input type="text" name="message" placeholder="phone +91"><br>
+<input type="text" name="message" placeholder="city"><br>
+<input type="text" name="message" placeholder="state"><br>
+<input type="radio" name="gender" value="male" checked> Male
+  <input type="radio" name="gender" value="female"> Female
+  <input type="radio" name="gender" value="other"> Other<br>
+
+<input type="submit" value="register as new visitor" placeholder="register" style="width:20">
+</div>
+ <div class="clear-fix"></div>
+<div class="" style="margin-bottom:20px;"><img src="footer.png" width="100%" height="30"></div>
+</div>
+<br>
+<hr>
+</div>
+</body>
+</html>

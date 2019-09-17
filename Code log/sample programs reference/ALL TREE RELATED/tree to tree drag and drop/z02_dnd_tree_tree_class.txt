@@ -1,0 +1,205 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z02_TEST_2_CLASS
+*&---------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+*       CLASS gcl_tree DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS gcl_tree DEFINITION INHERITING FROM cl_gui_alv_tree.
+  PUBLIC SECTION.
+    DATA : gt_table       TYPE TABLE OF z02_table,
+           gt_table_dummy TYPE TABLE OF z02_table,
+           gwa_table      TYPE z02_table,
+
+           gt_fcat        TYPE lvc_t_fcat,
+           gwa_fcat       TYPE lvc_s_fcat.
+
+    METHODS :
+              fetch_data,
+              create_fieldcat,
+              create_layout,
+              display_tree,
+              dnd_behaviour,                     " Drag and drop behavour
+              register_event,
+              ondrag FOR EVENT on_drag OF cl_gui_alv_tree IMPORTING drag_drop_object
+                                                                     fieldname
+                                                                     node_key,
+
+              ondrop FOR EVENT on_drop OF cl_gui_alv_tree IMPORTING drag_drop_object
+                                                                    node_key.
+ENDCLASS.                    "gcl_tree DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS lcl_dragdrop DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS lcl_dragdrop DEFINITION.
+  PUBLIC SECTION.
+    TYPES : BEGIN OF gty_table,
+            sno TYPE i,
+            wa_tab LIKE gwa,
+      END OF gty_table.
+    DATA : wa TYPE gty_table.
+ENDCLASS.                    "lcl_dragdrop DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS gcl_tree IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS gcl_tree IMPLEMENTATION.
+  ":
+  METHOD : fetch_data.
+    SELECT * FROM z02_table INTO TABLE gt_table.
+    IF sy-subrc EQ 0.
+    ENDIF.
+  ENDMETHOD.                   ":
+
+  METHOD : display_tree.
+    DATA : lwa_header TYPE treev_hhdr.
+
+    lwa_header-width = 75.
+    lwa_header-heading = 'Centro'(010).
+    lwa_header-tooltip =  'Centro'(010).
+
+    CALL METHOD me->set_table_for_first_display
+      EXPORTING
+        is_hierarchy_header = lwa_header
+      CHANGING
+        it_outtab           = gt_table_dummy
+        it_fieldcatalog     = gt_fcat.
+
+    wa_layo-isfolder = 'X'.
+    wa_layo-dragdropid = g_handle_drop.
+    CALL METHOD me->add_node
+      EXPORTING
+        i_relat_node_key = ''
+        i_relationship   = cl_gui_column_tree=>relat_last_child
+        is_node_layout   = wa_layo
+        i_node_text      = wa_text
+      IMPORTING
+        e_new_node_key   = wa_key2.
+
+    wa_layo1-dragdropid = g_handle_drag.
+    LOOP AT gt_table INTO gwa_table.
+      wa_text = gwa_table-kunnr && '-' && gwa_table-name.
+      CALL METHOD me->add_node
+        EXPORTING
+          i_relat_node_key = ''
+          i_relationship   = cl_gui_column_tree=>relat_last_child
+          is_outtab_line   = gwa_table
+          is_node_layout   = wa_layo1
+          i_node_text      = wa_text.
+*        IMPORTING
+*          e_new_node_key   = wa_key2.
+    ENDLOOP.
+
+    CALL METHOD me->frontend_update.
+
+  ENDMETHOD.                    ":
+
+  METHOD : create_fieldcat.
+
+    CALL METHOD me->set_first_fieldcatalog
+      EXPORTING
+        i_structure_name = 'Z02_TABLE'
+      CHANGING
+        it_fieldcatalog  = gt_fcat.
+  ENDMETHOD.                    ":
+
+  METHOD : create_layout.
+  ENDMETHOD.                    ":
+
+  METHOD : ondrag.
+
+    DATA : dataobj TYPE REF TO lcl_dragdrop.
+    CREATE OBJECT dataobj.
+    dataobj->wa-sno = 1.
+*    fieldname
+*    node_key,
+    IF dataobj->wa-wa_tab IS INITIAL.
+      READ TABLE gt_table_dummy INTO dataobj->wa-wa_tab INDEX node_key.
+    ENDIF.
+    drag_drop_object->object = dataobj.
+  ENDMETHOD.   
+
+  ":
+  METHOD ondrop.
+    DATA : dobj TYPE REF TO lcl_dragdrop.
+    dobj ?= drag_drop_object->object.
+*    drag_drop_object ?= drag_drop_object->object.
+    wa_text = dobj->wa-wa_tab.
+    CALL METHOD me->add_node
+      EXPORTING
+        i_relat_node_key = node_key
+        i_relationship   = cl_gui_column_tree=>relat_last_child
+        is_node_layout   = wa_layo
+        i_node_text      = wa_text.
+    CALL METHOD me->expand_node
+      EXPORTING
+        i_node_key = node_key.
+  ENDMETHOD.                    "on_drop
+  METHOD dnd_behaviour.
+    DATA:   effect  TYPE i,
+           l_flavor TYPE c VALUE 'f'.
+
+* For drag
+
+    CREATE OBJECT gobj_drag.
+    effect = cl_dragdrop=>copy.
+
+    CALL METHOD gobj_drag->add
+      EXPORTING
+        flavor         = l_flavor
+        dragsrc        = 'X'
+        droptarget     = ' '
+        effect         = effect
+        effect_in_ctrl = effect.
+
+    CALL METHOD gobj_drag->get_handle
+      IMPORTING
+        handle = g_handle_drag.
+
+* For Drop
+
+    CREATE OBJECT gobj_drop.
+
+    effect = cl_dragdrop=>copy.
+
+    CALL METHOD gobj_drop->add
+      EXPORTING
+        flavor         = l_flavor
+        dragsrc        = ' '
+        droptarget     = 'X'
+        effect         = effect
+        effect_in_ctrl = effect.
+
+    CALL METHOD gobj_drop->get_handle
+      IMPORTING
+        handle = g_handle_drop.
+  ENDMETHOD.                    "dnd_behaviour
+
+  METHOD register_event.
+    DATA: lt_events TYPE cntl_simple_events.
+* Tree events registers ALV Tree
+    CALL METHOD me->get_registered_events
+      IMPORTING
+        events = lt_events.
+
+* Register events on frontend
+
+    CALL METHOD me->set_registered_events
+      EXPORTING
+        events                    = lt_events
+      EXCEPTIONS
+        cntl_error                = 1
+        cntl_system_error         = 2
+        illegal_event_combination = 3.
+
+    IF sy-subrc NE 0.
+      CLEAR sy-subrc.
+    ENDIF.                                       " IF sy-subrc NE 0.
+  ENDMETHOD.                    "register_event
+ENDCLASS.                    "gcl_tree IMPLEMENTATION

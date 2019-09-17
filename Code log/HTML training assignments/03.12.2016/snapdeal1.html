@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body{padding:0;margin:0;width:100%;background:#FFF8DC;font-size:12px;font-family:sans-serif}
+.gradient {
+    background: -webkit-gradient(linear,left top,right bottom, from(lightgrey), to(white))fixed;
+}
+
+<!----header declaration------>
+.fixed-layout{padding:0;margin:0;width:100%;background:#e40046;height:auto}
+.header{position:fixed;height:21px;padding-left:80px;padding-top:8px;margin-top:0px;width:100%;font-size:14px;color:white;background:firebrick;font-family:sans-serif}
+.header-left{width:40%}
+.header-right{width:32%;margin-right:1px;margin-top:-1px}
+
+.header1{position:fixed;background:crimson;height:66px;padding-top:8px;margin-top:-5px;width:100%;font-size:20px;height:auto}
+.header1-middle{width:50%;margin-top:5px}
+.header1-left{width:25%;margin-top:-5px;border-radius:20px}
+.header1-right{vertical-align:middle;width:15%;margin-top:-75px;margin-right:-32px}
+
+
+.float-left{float:left;}
+.float-right{float:right;}
+.clear-fix{clear:both;}
+<!-----------------------------------maincontent--------------------------->
+.maincontent{margin-top:-50px;width:100%;height:auto;font-size:12px}
+.maincontent-left{height:auto;margin-top:100px;background:white;border-radius:20px;margin-left:15px;text-align:center;width:210px}
+.maincontent-left a:hover{background-color:grey;width:50px;border-radius:5px;}
+.maincontent-middle{height:200px;margin-left:40x;margin-right:25px;margin-top:100px;width:auto;background:transparent}
+.maincontent-middle a img:hover{border:1px solid black;}
+.maincontent-middle_desc{padding: 15px;text-align: center;}
+<!--------------------------------bottom content--------------------------->
+.maincontent1{font-size:14px;width:100%;height:200px;background:transparent}
+.maincontent1-left{border-radius:0px 67px 31px 0px;margin-right:190px}
+.maincontent1-middle{width:25%;background:transparent;border-radius:0px 15px 10px 10px}
+.maincontent1-right{background:transparent;width:25%;border-radius:0px 15px 10px 10px;}
+.maincontent1-right1{background:transparent;border-radius:0px 15px 10px 10px;width:105px;}
+.image_border a img:hover{border:1px solid black;}
+ul {
+     list-style-type: none;
+     margin: -7px;
+     padding: -1px;
+     overflow: hidden;
+	 height :28px;   }
+    
+li { float: left;
+}
+
+li a {
+    color: white;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}	
+
+li a:hover {
+    background-color:black;
+	border-radius:20px;
+}
+a:hover {
+background-color:transparent;
+width:auto;
+border-radius:5px;
+}
+a{
+    color:black;
+    background-color: transparent;
+    text-decoration:none;
+}
+a:active {
+    color: red;
+    background-color: white;
+    text-decoration: none;
+}
+
+
+
+.dropbutton {
+    color: white;
+    background-color: transparent;
+    font-size: 16px;
+    vertical-align: middle;
+    display: table;
+    cursor: object;
+    padding: 15px;
+    border-radius: 18px;
+    margin-top: 10px;
+	 margin-right: 60px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+	margin-left:-50px;
+    font-size: 14px;
+	cursor: pointer;
+	}
+
+.dropdown-content {
+      display: none;
+    position: absolute;
+    background-color: lemonchiffon;
+    min-width: 110px;
+    border-radius: 10px;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {background-color: white}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+input[type=text]:focus {
+    background-color:lemonchiffon ;
+}
+
+input[type=submit] {
+   width: 11%;
+    padding: 10px 16px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border-radius: 13%;
+    border: 2px solid #ccc;
+    background: black;
+    color: white;
+    cursor: pointer;
+
+	div.images{
+    margin: 5px;
+    float: left;
+    width: 180px;
+	transition: transfrom .25s ease-in;
+}
+
+
+div.images:hover{
+    border: 1px solid #777;
+	transfrom : scale(1.5);
+}
+
+
+
+div.desc{
+    padding:30px;
+    text-align:center;}
+
+</style>
+</head>
+
+<!---------------------------------------------- fixed layout-->
+<div class="fixed-layout">
+<!--------------------------------------------header(india's fastest online shopping)------------------------->
+<div class="header">
+<div class="header-left float-left">INDIA'S FASTEST ONLINE SHOPPING</div>
+<div class="header-right float-right">
+<ul>
+<li><a href="https://www.snapdeal.com/offers/aids-awareness">help</a></li>
+<li><a href="https://sellers.snapdeal.com/">sell on</a></li>
+<li><a href="https://www.snapdeal.com/offers/offers/getsnapdealapp">download</a></li>
+<li><a href="http://partners.snapdeal.com/seller/partners#/requestQuote">contact</a></li>
+<a href="http://www.snapdeal.com/login"><img src="avatar.png" width="20px" height="30px"></a></ul>
+</div>
+</div>
+<br><br>
+<!----------------------------------- second header(snapdeal logo part)--------------------------->
+<div class="header1">
+<div class="header1-left float-left"><a href="http://www.snapdeal.com"><img src="logo.png" height="70" width="250"></a></div>
+<div class="header1-middle float-left"><input type="text" name="text" size="80" placeholder="search products & brands" height="30px" style="focus:background-color:white;height:30px;border-radius:10px 10px 10px 10px">
+<input type="submit" value="search" value="search" style="height:40px"></div>
+<div class="clear-fix"></div>
+
+
+
+<div class="header1-right float-right">
+<div class="dropdown">
+<button class="dropbutton">cart</button>
+ <div class="dropdown-content">
+    <a href="http://www.snapdeal.com/login">go to cart</a>
+    <a href="http://www.snapdeal.com/login">remove cart</a>
+	</div>
+</div>
+ <div class="dropdown">
+ <button class="dropbutton">sign in</button>
+ <div class="dropdown-content">
+ <a href="http://www.snapdeal.com/login">user login</a>
+ <a href="http://www.snapdeal.com/login">forgot password</a>
+  <a href="http://www.snapdeal.com/login">logout</a>
+  <input type="button" value="logout" style="width:130px;height:30px;border-radius:5px;cursor:pointer">
+ </div>
+</div>
+<div class="clear-fix"></div>
+</div>
+
+</div>
+
+<!--- ------------------maincontent-left(product list)------------------------>
+<body>
+<body class="gradient">
+<div class="maincontent">
+
+<div class="maincontent-left float-left">
+<p style="color:grey"><b>TOP CATEGORIES</b></p>
+<b><a href="">All Offers</a><br>
+<a href="">Mobile & Tablets</a><br>
+<a href="">Electronics</a><br>
+<a href="">Computers & Gaming</a><br>
+<a href="">Home & Kitchen</a><br>
+
+<p style="color:grey">MORE CATEGORIES</p>
+<a href="">Men's Fashion</a><br>
+<a href="">Women's Fashion</a><br>
+<a href="">Kids' Toys & Fashion</a><br>
+<a href="">Daily Needs</a><br>
+<a href="">Sports & Fitness</a><br>
+<a href="">Motors & Accessories</a><br>
+<a href="">Real Estat</a><br>
+<a href="">Books,Media</a><br>
+<a href="">See All Categories</a><br>
+
+<p style="color:grey"><b>TRENDINGS</b></p>
+<a href="">Pen</a><br>
+<a href="">Puma</a><br>
+<a href="">Man Shoes</a><br>
+<a href="">Dresses</a><br>
+<a href="">Dresses</a><br>
+<a href="">Redmi Mobile</a></b>
+<br>
+
+<p style="color:grey"><b>LUGGAGES</b></p>
+<b><a href="">AMERICAN TOURISTER</a><br>
+<a href="">V.I.P.</a><br>
+<a href="">WILDCRAFT</a><br>
+<a href="">PUMA</a><br>
+<a href="">FAST TRACK</a><br>
+
+<p style="color:grey">GAMES</p>
+<a href="">PLAY STATION 1</a><br>
+<a href="">PLAY STATION 2</a><br>
+<a href="">PLAY STATION 3</a><br>
+<a href="">X BOX 360</a><br>
+
+<p style="color:grey"><b>FOOD</b></p>
+<a href="">BISCUIT</a><br>
+<a href="">CROESINS</a><br>
+<a href="">DRY FRUIT</a><br>
+<a href="">WEFFERS</a><br><br><br>
+</div>
+<!-----------------------maincontent-middle(product images)------------------>
+<div class="maincontent-middle float-right">
+
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/computers-laptops">
+    <img src="laptop.png" height="170" width="155" alt="laptop" style="border-radius:10px">
+  </a>
+  <div class="desc" style="text-align:center"><a href="http://www.snapdeal.com/products/computers-laptops">laptop</a></div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/mobiles-mobile-phones">
+    <img src="mobile.png" height="170" width="155" alt="mobile" style="border-radius:10px">
+  </a>
+  <br>
+  <div class="desc" style="text-align:center">mobiles</div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/watches-men">
+    <img src="watch.png" height="170" width="155" alt="watch" style="border-radius:10px">
+  </a>
+  <div class="desc" style="text-align:center">watches</div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/electronic">
+    <img src="trimmer.png" height="170" width="155" alt="trimmer" style="border-radius:10px">
+  </a>
+  <br>
+  <div class="desc" style="text-align:center">electronics</div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/electronic">
+    <img src="sofa.png" height="170" width="155" alt="sofa" style="border-radius:10px">
+  </a>
+  <div class="desc" style="text-align:center">furnitures</div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/perfumes-beauty-cosmetics?sort=plrty">
+    <img src="nivia.png" height="170" width="155" alt="nivia" style="border-radius:10px">
+  </a>
+  <br>
+  <div class="desc" style="text-align:center">cosmetics</div>
+</div>
+
+<div class="images float-left">
+  <a target="_blank" href="http://www.snapdeal.com/products/household-essentials-detergents-fabric-care?sort=plrty">
+    <img src="harpic.png" height="170" width="155" alt="harpic" style="border-radius:10px">
+  </a>
+  <div class="desc" style="text-align:center">cleansers</div>
+  
+</div>
+
+
+</div>
+
+<!-- <div class="clear-fix"></div -->
+
+<a href="https://www.snapdeal.com/offers/unbox-cashfree-sale"><img src="off.png" height="100" width="1000" style="margin-left:55px"></pre>
+
+
+<!----------------------------------------tag(70% off)----------------------------->
+<a href="https://www.snapdeal.com/products/food?sort=dhtl&q=Brand%3AMaggi%5ENescafe%5ENestle%5ENestle%20Alpino%5ENestle%20Baby%20%26%20Me%5ENestle%20EveryDay%5ENestle%20Milkmaid%5ENestle%20Pro-Grow%7C"><img src="ssss.png" height="150" width="1000" style="margin-left:55px;margin-top:20px"></a>
+<br>
+</div>
+<br><br><br>
+<!--------------------------------------------------------------------------------->
+<div class="image_border float-right">
+<div class="images float-left">
+  <a target="_blank" href="">
+    <img src="11.png" height="170" width="155" alt="laptop" style="border-radius:10px">
+  </a>
+  <div class="desc"><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer;"></div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="">
+    <img src="22.PNG" height="170" width="155" alt="mobile" style="border-radius:10px">
+  </a>
+  <div class="desc"><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer"></div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="">
+    <img src="33.png" height="170" width="155" alt="watch" style="border-radius:10px">
+  </a>
+  <div class="desc"><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer"></div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="">
+    <img src="44.png" height="170" width="155" alt="trimmer" style="border-radius:10px">
+  </a>
+  <div class="desc"><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer"></div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href="">
+    <img src="55.png" height="170" width="155" alt="sofa" style="border-radius:10px">
+  </a>
+  <div class="desc"><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer"></div>
+</div>
+
+
+<div class="images float-left">
+  <a target="_blank" href=""><img src="66.png" height="170" width="155" alt="nivia" style="border-radius:10px"></a>
+  <div class="desc"><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer"></div>
+</div>
+
+<div class="images float-left">
+  <a target="_blank" href="">
+    <img src="77.png" height="170" width="155" alt="harpic" style="border-radius:10px">
+  </a>
+  <div class="desc"><a><input type="button" value="view" style="width:150px;height:35px;background:black;color:white;border-radius:5px;cursor: pointer"></a></div>
+</div>
+<div class="clear-fix"></div>
+<br><br>
+<input type="button" value="view all" style="width:150px;height:50px;background:red;color:white;border-radius:5px;cursor: pointer;float:right;margin-right:20px">
+<div class="clear-fix"></div>
+<BR><br><br><br><br><br><br><br>
+<a href="https://www.snapdeal.com/offers/hdfc-5xoffer"><img src="hdfc.png" height="150" width="210"></a>
+<a href="https://www.snapdeal.com/page/terms"><img src="1.png" height="150" width="210"></a>
+<a href="https://www.snapdeal.com/page/TrustPay"><img src="2.png" height="150" width="210"></a>
+<a href="https://www.snapdeal.com/helpcenter?redirectFrom=footerstrip"><img src="3.png" height="150" width="210"></a>
+<a href="https://www.snapdeal.com/offers/getsnapdealapp"><img src="4.png" height="150" width="210" style="margin-right:40px"></a>
+
+<br>
+
+<a href="https://web.whatsapp.com/Snapdeal" style="float:right;"><img src="whatsapp.png" height="30" width="30" style="margin-right:40px"></a>
+<a href="https://twitter.com/snapdeal" style="float:right;"><img src="tw.png" height="30" width="30" style="margin-right:40px"></a>
+<a href="https://www.facebook.com/snapdeal" style="float:right;"><img src="fb.png" height="30" width="30"  style="border-radius:30px;margin-right:40px"></a>
+</div>
+
+</div>
+<div class="clear-fix"></div>
+</div>
+
+<!------------------------------ bottom content------------------------------------------->
+<div class="maincontent1 float-right">
+<div class="maincontent1-left float-left">
+<p style="color:black"><b>POLICY INFO</b></p><br>
+<a href="https://www.snapdeal.com/page/terms-of-sale">Privacy Policy</a><br>
+<a href="">Terms of Sale</a><br>
+<a href="">Terms of Use</a><br>
+<a href="">Report Abuse</a><br>
+<a href="">CSR Policy</a><br>
+</div>
+
+<div class="maincontent1-middle float-left">
+<p style="color:black"><b>COMPANY</b></p><br>
+<a href="">About Us</a><br>
+<a href="">Core Values</a><br>
+<a href="">Careers</a><br>
+<a href="">Blog</a><br>
+<a href="">Engineering</a><br>
+<a href="">Sitemap</a><br>
+</div>
+
+<div class="maincontent1-right float-left">
+<p style="color:black"><b>SNAPDEAL BUSINESS</b></p><br>
+<a href="">Sell on Snapdeal</a><br>
+<a href="">Advertise on Snapdeal</a><br>
+<a href="">Media Enquiries</a><br>
+<a href="">Be an Affiliate</a><br>
+<a href="">Deal of the Day</a><br>
+<a href="">Diwali Offers</a><br>
+<a href="">Snapdeal Gol</a><br>
+</div>
+
+<div class="maincontent1-right1 float-left">
+<p style="color:black"><b>NEED HELP ?</b></p><br>
+<a href="">FAQ</a><br>
+<a href="">Contact Us</a><br>
+</div>
+<input type="text" size="50"  placeholder="emailid@example.com" height="10px"  style="width:60%;background-color:cornsilk;border-color:white;height:30px;border-radius:10px 10px 10px 10px;">
+ <input type="submit" value="subscribe" style="height:40px"></div>
+<br>
+<!--------------------------------------footer(copyright)---------------------------------------------------->
+<img src="footer.png" height="30" width="100%"></a>
+<div class="clear-fix"></div>
+</div>
+<br>
+<!--------------------------------------footer(subscribe email id)---------------------------------------------------->
+
+
+
+</body>
+</body>
+</html>

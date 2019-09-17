@@ -1,0 +1,43 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_DYNAMIC_INT_16_12_2016
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_DYNAMIC_INT_16_12_2016.
+TYPE-POOLS : SLIS.
+PARAMETERS : P_TAB TYPE DD03L-TABNAME.
+
+  DATA : IT_FS TYPE REF TO DATA.
+  DATA : IT_FCAT TYPE SLIS_T_FIELDCAT_ALV,
+         WA_LAYOUT TYPE SLIS_LAYOUT_ALV.
+
+  WA_LAYOUT-COLWIDTH_OPTIMIZE = 'X'.
+
+FIELD-SYMBOLS : <FS> TYPE STANDARD TABLE.
+
+CREATE DATA : IT_FS TYPE TABLE OF (P_TAB).
+ASSIGN IT_FS->* TO <FS>.
+CALL FUNCTION 'Z02_FM1'
+  EXPORTING
+    TAB_NAME       = P_TAB
+ IMPORTING
+   TAB_DATA       = <FS>.
+
+
+CALL FUNCTION 'REUSE_ALV_FIELDCATALOG_MERGE'
+ EXPORTING
+   I_PROGRAM_NAME               = SY-REPID
+   I_STRUCTURE_NAME             = P_TAB
+  CHANGING
+    CT_FIELDCAT                  = IT_FCAT.
+
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+ EXPORTING
+   I_CALLBACK_PROGRAM                = 'SY-REPID'
+   IT_FIELDCAT                       = IT_FCAT
+   IS_LAYOUT                         = WA_LAYOUT
+  TABLES
+    T_OUTTAB                          = <FS>.

@@ -1,0 +1,23 @@
+*&---------------------------------------------------------------------*
+*& Report  Y02_CHECK_TABLE_UPERS
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y02_CHECK_TABLE_UPERS.
+
+TABLES : DD03L.
+TYPES : BEGIN OF TY_TAB,
+        TABNAME TYPE DD03L-TABNAME,
+        CHECKTABLE TYPE DD03L-CHECKTABLE,
+        END OF TY_TAB.
+
+DATA : WA_TAB TYPE TY_TAB,
+       IT_TAB TYPE TABLE OF TY_TAB.
+SELECT TABNAME CHECKTABLE FROM DD03L INTO TABLE IT_TAB WHERE CHECKTABLE = 'UPERS'.
+LOOP AT IT_TAB INTO WA_TAB.
+  WRITE :/ SY-TABIX, WA_TAB-TABNAME,
+   30 WA_TAB-CHECKTABLE.
+ENDLOOP.

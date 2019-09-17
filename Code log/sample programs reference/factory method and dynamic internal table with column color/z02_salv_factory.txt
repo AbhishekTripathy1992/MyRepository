@@ -1,0 +1,39 @@
+REPORT z02_salv_factory.
+PARAMETERS : p_tab TYPE dd02l-tabname.
+DATA : dref         TYPE REF TO data,
+       lo_salv      TYPE REF TO cl_salv_table,
+       lo_r_columns TYPE REF TO cl_salv_columns_table,
+       gr_column    TYPE REF TO cl_salv_column_table,
+       lr_functions TYPE REF TO cl_salv_functions_list.
+DATA: color TYPE lvc_s_colo.
+FIELD-SYMBOLS : <dyn_table>  TYPE STANDARD TABLE.
+
+CREATE DATA dref TYPE TABLE OF (p_tab).
+
+ASSIGN dref->* TO <dyn_table>.
+
+SELECT * FROM (p_tab) INTO TABLE <dyn_table> UP TO 20 ROWS.
+IF sy-subrc EQ 0.
+  TRY.
+      CALL METHOD cl_salv_table=>factory
+        EXPORTING
+          list_display = if_salv_c_bool_sap=>false
+        IMPORTING
+          r_salv_table = lo_salv
+        CHANGING
+          t_table      = <dyn_table>.
+    CATCH cx_salv_msg.
+  ENDTRY.
+
+  lr_functions = lo_salv->get_functions( ).
+  lr_functions->set_all( 'X' ).
+  lo_r_columns = lo_salv->get_columns( ).
+  lo_r_columns->set_optimize( value = abap_true ).
+
+  color-col = '4'.
+  color-int = '1'.
+  color-inv = '0'.
+  gr_column ?= lo_r_columns->get_column( 'BUPLA' ).
+  gr_column->set_color( color ).
+  lo_salv->display( ).
+ENDIF.

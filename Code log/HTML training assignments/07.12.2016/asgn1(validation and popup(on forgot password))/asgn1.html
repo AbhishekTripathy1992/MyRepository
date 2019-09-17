@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+ <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <title>Document</title>
+  <script>
+ function popup(){
+document.getElementById('popup').style.display="block";
+document.getElementById('black-overlay').style.display="block";
+}
+
+function popupClose(){
+document.getElementById('popup').style.display = "none";
+document.getElementById('black-overlay').style.display="none";
+
+}
+ function showMe (it, box) { 
+   var vis = (box.checked) ? "block" : "none";
+   if(box.checked){   
+   if(it == 'div1'|| it == 'div2'||it == 'div3'|| it == 'div4'){
+     popup();
+	 
+   }
+   }
+  else{
+    popupClose();
+  }
+ } 
+ 
+function Validate(){
+var username=document.getElementById('user-name').value;
+var password=document.getElementById('password').value;
+if(username=='abhishek' && password=='abhishek@123')
+	{
+    window.document.location.href = 'https://www.snapdeal.com/';
+	}
+	else
+	{   
+		var x='Please enter user name and password'
+		document.getElementById('login-message').innerHTML=x;
+	}
+}
+</script>
+
+<head>
+<style>
+
+.gradient {
+    background: -webkit-gradient(linear,left top,right bottom, from(firebrick), to(white))fixed;
+}
+.header1{background:crimson;height:66px;padding-top:8px;width:100%;font-size:20px;height:auto}
+.header1-left{width:25%;margin-top:-5px;border-radius:20px}
+
+.popup-block {
+       background: cornsilk;
+    border: 1px solid #ccc;
+    position: fixed;
+    border-radius: 10px;
+    width: 300px;
+    height: 250px;
+    margin-left: 270px;
+    margin-top: -215px;
+    z-index: 999;
+    
+
+	.close {color:red; float:right; font-size:20px; padding:10px;}
+  #black-overlay{background:#000; opacity:.3; width:100%; height:100%; position:absolute; z-index:99;}
+  .tab1 {background:red; border:1px solid #ccc; border-radius:5px; font-size:20px; padding:10px 20px; color:#fff; display:block}
+
+</style>
+<link rel="stylesheet" type="text/css" href="css/mystyle.css">
+</head>
+
+
+<body>
+<div id="black-overlay" style="display:none;"></div>
+ <div id="login-message"></div>
+<body class="gradient">
+<div class="header1">
+<div class="header1-left float-left"><a href="http://www.snapdeal.com"><img src="logo.png" height="70" width="250"></a></div></div>
+
+<div class="main-block"><br><br>
+<pre>    user name <input type="text" id="user-name" name="text" size="40" placeholder="username" height="30px" style="height:20px;border-radius:10px 10px 10px 10px"> </pre><br>
+<pre>    password  <input type="password" id="password" name="text" size="40" placeholder="password" height="30px" style="height:20px;border-radius:10px 10px 10px 10px"> </pre><br><br>
+ 
+ <div class="tab1" onClick="popup()"><a style="margin-left:20px;cursor:pointer">Forgot password ?</div>
+<div id="popup" class="popup-block" style="display:none;">
+<div onClick="popupClose()" class="close"><a style="cursor: pointer;"><pre><b>  X<br>
+phone number     <input type="text" id="user-name" name="text"><br>
+new password     <input type="password" id="password" name="text"><br>
+confirm password <input type="password" id="password" name="text">
+<input type="button" name="save" text="save" value="save">
+</b></a></pre></div>
+</div>
+<div class="tab">
+<input onclick="Validate()" type ="submit" value="submit" >
+</div>
+<div class="clear-fix"></div>
+<input type="checkbox" value="value1" onclick="showMe('div1', this)" />user1
+<input type="checkbox" value="value2" onclick="showMe('div2', this)" />user2
+<input type="checkbox" value="value3" onclick="showMe('div3', this)" />user3
+<input type="checkbox" value="value4" onclick="showMe('div4', this)" />user4
+
+<div id="div1" style="display:none;"></div>
+<div id="div2" style="display:none;"></div>
+<div id="div3" style="display:none;"></div>
+<div id="div4" style="display:none;"></div>
+<div class="clear-fix"></div>
+</div>
+
+</body>
+<img src="footer.png" height="30" width="100%" style="margin-bottom:-85px">
+</body>
+</html>

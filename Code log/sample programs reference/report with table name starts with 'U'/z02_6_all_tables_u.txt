@@ -1,0 +1,44 @@
+*&---------------------------------------------------------------------*
+*& Report  Z02_6_ALL_TABLES_U
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Z02_6_ALL_TABLES_U.
+
+TABLES : DD02L,DD03M.
+
+DATA : BEGIN OF WA_TAB,
+       TABNAME TYPE DD02L-TABNAME,
+       CONTFLAG TYPE DD02L-CONTFLAG,
+       FIELDNAME TYPE DD03M-FIELDNAME,
+       DOMNAME TYPE DD03M-DOMNAME ,
+       ROLLNAME TYPE DD03M-ROLLNAME,
+      END OF WA_TAB.
+
+
+DATA : IT_TAB LIKE TABLE OF WA_TAB.
+
+
+SELECT  DD02L~TABNAME
+        DD02L~CONTFLAG
+        DD03M~FIELDNAME
+        DD03M~DOMNAME
+        DD03M~ROLLNAME
+        INTO TABLE IT_TAB
+        FROM DD02L INNER JOIN DD03M ON DD02L~TABNAME = DD03M~TABNAME
+        WHERE DD02L~TABNAME LIKE 'U%' AND DD02L~CONTFLAG = 'A'.
+
+DELETE ADJACENT DUPLICATES FROM IT_TAB COMPARING TABNAME.
+
+
+LOOP AT IT_TAB INTO WA_TAB.
+  WRITE :/ WA_TAB-TABNAME,
+         30  WA_TAB-CONTFLAG,
+         40 WA_TAB-FIELDNAME,
+         60 WA_TAB-DOMNAME,
+         80 WA_TAB-ROLLNAME.
+
+ENDLOOP.

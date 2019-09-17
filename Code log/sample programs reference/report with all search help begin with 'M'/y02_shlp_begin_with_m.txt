@@ -1,0 +1,20 @@
+*&---------------------------------------------------------------------*
+*& Report  Y02_SHLP_BEGIN_WITH_M
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y02_SHLP_BEGIN_WITH_M.
+TABLES : DD30L.
+TYPES : BEGIN OF TY_TAB,
+        SHLPNAME TYPE DD30L-SHLPNAME,
+        END OF TY_TAB.
+
+DATA : WA_TAB TYPE TY_TAB,
+       IT_TAB TYPE TABLE OF TY_TAB.
+SELECT SHLPNAME  FROM DD30L INTO TABLE IT_TAB WHERE SHLPNAME LIKE 'M%'.
+LOOP AT IT_TAB INTO WA_TAB.
+  WRITE :/ SY-TABIX,WA_TAB-SHLPNAME.
+ENDLOOP.

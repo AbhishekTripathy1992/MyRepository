@@ -1,0 +1,18 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z02_TEST_2_TOP
+*&---------------------------------------------------------------------*
+DATA :     gobj_tree      TYPE REF TO cl_gui_alv_tree,
+           gobj_container TYPE REF TO cl_gui_custom_container,
+           gobj_drag      TYPE REF TO cl_dragdrop,
+           gobj_drop      TYPE REF TO cl_dragdrop,
+           gwa TYPE z02_table.
+
+DATA : g_handle_drag TYPE i,
+       g_handle_drop TYPE i
+.
+DATA : wa_layo TYPE lvc_s_layn.
+DATA : wa_layo1 TYPE lvc_s_layn.
+
+DATA : wa_text TYPE lvc_value.
+DATA : wa_key1 TYPE lvc_nkey.
+DATA : wa_key2 TYPE lvc_nkey.

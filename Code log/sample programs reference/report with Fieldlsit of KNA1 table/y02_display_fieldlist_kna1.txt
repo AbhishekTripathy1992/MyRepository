@@ -1,0 +1,20 @@
+*&---------------------------------------------------------------------*
+*& Report  Y02_DISPLAY_FIELDLIST_KNA1
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y02_DISPLAY_FIELDLIST_KNA1.
+
+TYPES : BEGIN OF TY_TAB,
+        FIELDNAME TYPE DD03L-FIELDNAME,
+        END OF TY_TAB.
+
+        DATA : WA_TAB TYPE TY_TAB,
+               IT_TAB TYPE TABLE OF TY_TAB.
+SELECT FIELDNAME FROM DD03L INTO TABLE IT_TAB WHERE TABNAME = 'KNA1'.
+  LOOP AT IT_TAB INTO WA_TAB.
+    WRITE :/ SY-TABIX, WA_TAB-FIELDNAME.
+    ENDLOOP.

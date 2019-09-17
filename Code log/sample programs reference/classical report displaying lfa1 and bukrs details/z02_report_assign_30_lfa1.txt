@@ -1,0 +1,97 @@
+*&---------------------------------------------------------------------*
+*&  Include           Z03_LFA1_TOP
+*&---------------------------------------------------------------------*
+INCLUDE Z02_LFA1_TOP.
+
+AT SELECTION-SCREEN.
+
+  SELECT SINGLE LIFNR FROM LFA1 INTO WA_LFA1-LIFNR WHERE LIFNR IN S_LIFNR. "#EC WARNOK
+  IF SY-SUBRC NE 0.
+    MESSAGE E002(Z02).
+  ENDIF.
+  SELECT SINGLE BUKRS FROM LFB1 INTO WA_LFB1-BUKRS WHERE LIFNR IN S_LIFNR. "#EC WARNOK
+  IF SY-SUBRC NE 0.
+    MESSAGE E002(Z02).
+  ENDIF.
+
+START-OF-SELECTION.
+  PERFORM FETCH_LFA1.
+  PERFORM FETCH_LFB1.
+  PERFORM DISPLAY_DATA.
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_LFA1
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM FETCH_LFA1 .
+
+  SELECT LIFNR
+         NAME1 FROM LFA1 INTO TABLE IT_LFA1 WHERE LIFNR IN S_LIFNR.
+  IF SY-SUBRC NE 0.
+    MESSAGE E002(Z02).
+  ENDIF.
+
+ENDFORM.                    " FETCH_LFA1
+*&---------------------------------------------------------------------*
+*&      Form  FETCH_LFB1
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM FETCH_LFB1 .
+
+  IF IT_LFA1 IS NOT INITIAL.
+    SORT IT_LFA1 BY LIFNR.
+    SELECT LIFNR
+           BUKRS FROM LFB1 INTO TABLE IT_LFB1 FOR ALL ENTRIES IN IT_LFA1 WHERE LIFNR = IT_LFA1-LIFNR AND BUKRS IN S_BUKRS.
+    IF SY-SUBRC NE 0.
+      MESSAGE E002(Z02).
+    ENDIF.
+  ENDIF.
+ENDFORM.                    " FETCH_LFB1
+
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM DISPLAY_DATA .
+  IT_LFB1_1 = IT_LFB1.
+  DELETE ADJACENT DUPLICATES FROM IT_LFB1_1 COMPARING LIFNR.
+  LOOP AT IT_LFB1 INTO WA_LFB1.
+
+    AT  FIRST.
+      WRITE :'VENDOR INFORMATION'(001),
+              / SY-ULINE.
+    ENDAT.
+
+    READ TABLE IT_LFA1 INTO WA_LFA1 WITH KEY LIFNR = WA_LFB1-LIFNR BINARY SEARCH.   " IT_LFA1 IS ALREADY SORTED
+
+    AT NEW LIFNR.
+      WRITE :/10 'VENDOR CODE:'(002),WA_LFA1-LIFNR,
+              50 'VENDOR NAME:'(003),WA_LFA1-NAME1.
+    ENDAT.
+
+    WRITE :/12 'COMPANY CODE:'(004),WA_LFB1-BUKRS.
+
+    AT END OF LIFNR.
+      WRITE :/ SY-ULINE.
+    ENDAT.
+
+    AT LAST.
+      DESCRIBE TABLE IT_LFB1_1 LINES N.
+      WRITE : 'TOTAL VENDORS PROCESSED :'(005),N.
+    ENDAT.
+
+    CLEAR : WA_LFA1,WA_LFB1.
+  ENDLOOP.
+
+ENDFORM.                    " DISPLAY_DATA

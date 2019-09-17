@@ -1,0 +1,13 @@
+REPORT z02_make_zip_file.
+data oref_zip        TYPE REF TO cl_abap_zip.
+INCLUDE z02_make_zip_file_class.
+START-OF-SELECTION.
+
+CREATE OBJECT oref_zip.
+call METHOD : gcl_zip=>select_file,
+              gcl_zip=>populate_data,
+              gcl_zip=>convert_data,
+              gcl_zip=>get_binary,
+              gcl_zip=>conv_xst_to_binary,
+              gcl_zip=>open_dialog,
+              gcl_zip=>download_zip.

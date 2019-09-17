@@ -1,0 +1,33 @@
+*&---------------------------------------------------------------------*
+*& Report  Y02_CHAR_DATA_TYPES
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  Y02_CHAR_DATA_TYPES.
+TABLES : DD03M.
+
+TYPES : BEGIN OF TY_TAB,
+        FIELDNAME TYPE DD03M-FIELDNAME,
+        TABNAME TYPE DD03M-TABNAME,
+        DDTEXT TYPE DD03M-DDTEXT,
+        DATATYPE TYPE DD03M-DATATYPE,
+        LENG TYPE DD03M-LENG,
+        END OF TY_TAB.
+
+DATA : WA_TAB TYPE TY_TAB,
+       IT_TAB TYPE TABLE OF TY_TAB.
+SELECT FIELDNAME TABNAME DDTEXT DATATYPE LENG FROM DD03M INTO TABLE IT_TAB
+ WHERE DDTEXT LIKE '%Customer%' AND
+       DATATYPE EQ 'CHAR' AND
+       LENG LT 20 AND
+       TABNAME LIKE 'KNA%'.
+LOOP AT IT_TAB INTO WA_TAB.
+  WRITE :/ SY-TABIX, WA_TAB-TABNAME,
+         30  WA_TAB-FIELDNAME,
+         60  WA_TAB-DDTEXT,
+         120 WA_TAB-DATATYPE,
+         130 WA_TAB-LENG.
+ENDLOOP.

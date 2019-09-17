@@ -1,0 +1,49 @@
+In the following example we have three different kinds of parameters – importing, exporting & changing of the public method m_exp_chn. We mention the import parameter is the selection screen input parameter. We have declared two variables – v_exp & v_chn with values. Now we are calling the method with mentioning of exporting parameter – v_exp (0) & changing parameter – v_chn (1).
+
+Inside the method m_exp_chn we have a DO – ENDDO loop for 10 times. It means the operation will continue for 10 times. Here we are multiplying the input with 1,2,3… 10 to have a table.
+****************************************************************************
+REPORT  zsr_test NO STANDARD PAGE HEADING.
+
+DATA: v_exp TYPE i VALUE 0,
+      v_chn TYPE i VALUE 1.
+PARAMETER p_inp TYPE i.
+
+*----------------------------------------------------------------------*
+*       CLASS cl_exp_chn DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_exp_chn DEFINITION.
+  PUBLIC SECTION.
+    METHODS m_exp_chn IMPORTING i_inp TYPE i
+                      EXPORTING e_exp TYPE i
+                      CHANGING  c_chn TYPE i.
+ENDCLASS.                    "cl_exp_chn DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS cl_exp_chn IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS cl_exp_chn IMPLEMENTATION.
+  METHOD m_exp_chn.
+    DO 10 TIMES.
+      e_exp = i_inp * c_chn.
+      WRITE: / i_inp, '*', c_chn, '=', e_exp.
+      c_chn = c_chn + 1.
+    ENDDO.
+  ENDMETHOD.                    "m_exp_chn
+ENDCLASS.                    "cl_exp_chn IMPLEMENTATION
+
+START-OF-SELECTION.
+  DATA obj TYPE REF TO cl_exp_chn.
+  CREATE OBJECT obj.
+  CALL METHOD obj->m_exp_chn
+    EXPORTING
+      i_inp = p_inp
+    IMPORTING
+      e_exp = v_exp
+    CHANGING
+      c_chn = v_chn.
+
+
