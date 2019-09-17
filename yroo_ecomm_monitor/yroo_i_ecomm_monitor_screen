@@ -1,0 +1,375 @@
+************************************************************************
+* Administration:                                                      *
+*----------------------------------------------------------------------*
+* Created by  : Incresol Software Services Pvt. Ltd.
+* Created on  :
+* Description :
+************************************************************************
+* Change History:                                                      *
+* ---------------------------------------------------------------------*
+* Date       | Change ID     |  Short Description                      *
+* ---------------------------------------------------------------------*
+* DD-MM-YYYY | USERID.DDMMYY |                                         *
+* ---------------------------------------------------------------------*
+*----------------------------------------------------------------------*
+***INCLUDE YROO_R_ECOMM_MONITOR_SCREEN.
+*----------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'STATUS_0100'.
+  SET TITLEBAR 'TITLE_100'.
+
+  GET PARAMETER ID : 'ZECOMID'    FIELD gs_ecomm_h-ecomid,
+                     'PURCH_NO_C' FIELD gs_ecomm_h-oordid,
+                     'ZTRANSID'   FIELD gs_ecomm_h-trstyp.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  gv_okcode = sy-ucomm.
+  CASE gv_okcode.
+    WHEN 'ENTER'.
+      CALL METHOD lcl_process=>fetch_header_data( IMPORTING ex_check = DATA(lv_check) ).
+      IF lv_check EQ abap_false.
+        CALL SCREEN 200.
+      ENDIF.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+  CLEAR gv_okcode.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  EXIT_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit_command_0100 INPUT.
+  LEAVE TO SCREEN 0.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  FILL_ECOMID_ON_F4  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE fill_ecomid_on_f4 INPUT.
+  CLEAR gt_ecomid.
+*Get ECOMID And OORDID from Ecomm header table
+  CALL METHOD lcl_process=>get_ecomm_head_f4(
+    IMPORTING
+      ex_value_tab = gt_ecomid ).
+  IF gt_ecomid IS NOT INITIAL.
+    SORT gt_ecomid BY ecomid.
+    DELETE ADJACENT DUPLICATES FROM gt_ecomid COMPARING ecomid.
+*F4if Int Table Value Request
+    CALL METHOD lcl_process=>f4if_request_ecomid(
+      EXPORTING
+        retfield    = 'ECOMID'
+        dynprofield = 'GS_ECOMM_H-ECOMID' ).
+  ENDIF.
+ENDMODULE.
+MODULE fill_oordid_on_f4 INPUT.
+  CLEAR gt_ordid.
+*Get ECOMID And OORDID from Ecomm header table
+  CALL METHOD lcl_process=>get_ordid_head_f4(
+    IMPORTING
+      ex_value_tab = gt_ordid ).
+  IF gt_ordid IS NOT INITIAL.
+    SORT gt_ordid BY oordid.
+    DELETE ADJACENT DUPLICATES FROM gt_ordid COMPARING oordid.
+    sort gt_ordid by ecomid oordid.
+*F4if Int Table Value Request
+    CALL METHOD lcl_process=>f4if_request_ordid(
+      EXPORTING
+        retfield    = 'OORDID'
+        dynprofield = 'GS_ECOMM_H-OORDID' ).
+  ENDIF.
+ENDMODULE.
+MODULE fill_trstyp_on_f4 INPUT.
+  CLEAR gt_trstyp.
+*Get ECOMID And OORDID from Ecomm header table
+  CALL METHOD lcl_process=>get_trstyp_head_f4(
+    IMPORTING
+      ex_value_tab = gt_trstyp ).
+  IF gt_trstyp IS NOT INITIAL.
+    SORT gt_trstyp BY trstyp.
+    DELETE ADJACENT DUPLICATES FROM gt_trstyp COMPARING trstyp.
+    sort gt_trstyp by ecomid trstyp.
+*F4if Int Table Value Request
+    CALL METHOD lcl_process=>f4if_request_trstyp(
+      EXPORTING
+        retfield    = 'TRSTYP'
+        dynprofield = 'GS_ECOMM_H-TRSTYP' ).
+  ENDIF.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0110  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0110 OUTPUT.
+  SET PF-STATUS 'STATUS_0110'.
+  SET TITLEBAR 'TITLE_110'.
+  CALL METHOD lcl_process=>fetch_item_data( ).
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0110  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0110 INPUT.
+  gv_okcode = sy-ucomm.
+  CASE gv_okcode.
+    WHEN 'CANCEL' OR 'EXIT' OR 'BACK'.
+      gv_subscreen = '120'.
+      tabstrip_110-activetab = 'TAB1'.
+      LEAVE TO SCREEN 0.
+    WHEN 'TAB1'.
+      gv_subscreen = '120'.
+      tabstrip_110-activetab = 'TAB1'.
+    WHEN 'TAB2'.
+      gv_subscreen = '130'.
+      tabstrip_110-activetab = 'TAB2'.
+    WHEN 'TAB3'.
+      gv_subscreen = '150'.
+      tabstrip_110-activetab = 'TAB3'.
+    WHEN 'TAB4'.
+      gv_subscreen = '160'.
+      tabstrip_110-activetab = 'TAB4'.
+    WHEN 'TAB5'.
+      gv_subscreen = '170'.
+      tabstrip_110-activetab = 'TAB5'.
+  ENDCASE.
+  CLEAR gv_okcode.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0130  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0130 OUTPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0130  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0130 INPUT.
+
+ENDMODULE.
+*----------------------------------------------------------------------*
+*&      Module  FILL_TRSTYP_ON_F4  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*MODULE fill_trstyp_on_f4 INPUT.
+*  CLEAR gt_value_tab_h.
+**Get ECOMID And OORDID from Ecomm header table
+*  CALL METHOD lcl_process=>get_ecomm_head_f4(
+*    IMPORTING
+*      ex_value_tab = gt_value_tab_h ).
+*  IF gt_value_tab_h IS NOT INITIAL.
+*    SORT gt_value_tab_h BY trstyp.
+*    DELETE ADJACENT DUPLICATES FROM gt_value_tab_h COMPARING trstyp.
+**F4if Int Table Value Request
+*    CALL METHOD lcl_process=>f4if_int_table_value_request(
+*      EXPORTING
+*        retfield    = 'TRSTYP'
+*        dynprofield = 'GS_ECOMM_H-TRSTYP' ).
+*  ENDIF.
+*ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0140  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0210 OUTPUT.
+  LOOP AT SCREEN.
+    IF gv_edit_flag EQ abap_true.
+      IF screen-name NE 'GS_ECOMM_H-ECOMID'   AND
+         screen-name NE 'GS_ECOMM_H-OORDID'   AND
+         screen-name NE 'GS_ECOMM_H-BEZEI_SP' AND
+         screen-name NE 'GS_ECOMM_H-BEZEI_PA' AND
+         screen-name NE 'GS_ECOMM_H-BEZEI_BILLFR' AND
+         screen-name NE 'GS_ECOMM_H-BATCID' AND
+         screen-name NE 'GS_ECOMM_H-SOSTAT' AND
+         screen-name NE 'GS_ECOMM_H-OOSTAT' AND
+         screen-name NE 'GS_ECOMM_H-PAYSTA' AND
+         screen-name NE 'GS_ECOMM_H-TRSTYP'.
+        screen-input = 1.
+      ENDIF.
+    ELSE.
+      screen-input = 0.
+    ENDIF.
+    MODIFY SCREEN.
+  ENDLOOP.
+
+  CALL METHOD lcl_process=>fetch_header_data( ).
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0140  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0210 INPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0150  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0150 OUTPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0160  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0160 OUTPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0170  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0170 OUTPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0150  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0150 INPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0160  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0160 INPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0170  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0170 INPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'STATUS_200'.
+  SET TITLEBAR 'TITLE_200'.
+  IF gv_ref_screen EQ ' '.
+    gv_sub_screen = gv_subscreen_210.
+  ELSE.
+    gv_sub_screen = '220'.
+    CLEAR:gv_ref_screen.
+  ENDIF.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+
+  CASE gv_ucomm200.
+    WHEN 'BACK'.
+      LEAVE PROGRAM.
+    WHEN  'EXIT' OR 'CANCEL'.
+      LEAVE TO SCREEN 0.
+    WHEN 'TAB1'.
+      tabstrip_200-activetab = 'TAB1'.
+      gv_subscreen_210 = '210'.
+    WHEN 'TAB2'.
+      tabstrip_200-activetab = 'TAB2'.
+      gv_subscreen_210 = '220'.
+    WHEN 'ITM_EDIT'.
+      IF gv_edit_flag EQ abap_true.
+        gv_edit_flag = abap_false.
+      ELSE.
+        gv_edit_flag = abap_true.
+      ENDIF.
+    WHEN 'SAVE'.
+      IF gv_edit_flag EQ abap_true.
+        CALL METHOD lcl_process=>modify_header( ).
+      ELSE.
+        MESSAGE s011 DISPLAY LIKE 'W'.
+      ENDIF.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0220  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0220 OUTPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0220  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0220 INPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0230  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0230 OUTPUT.
+  lcl_process=>fetch_item_data( ).
+  lcl_process=>display_itm( ).
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0230  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0230 INPUT.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0240  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE status_0240 OUTPUT.
+  SET PF-STATUS 'STATUS_240'.
+  SET TITLEBAR 'TITLE_240'.
+
+  CALL METHOD lcl_process=>display_240.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0240  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0240 INPUT.
+  CASE sy-ucomm.
+    WHEN 'SELECT'.
+      CALL METHOD lcl_process=>update_stock( ).
+    WHEN 'BACK' OR 'CANCEL'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0250  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0250 INPUT.
+  CASE sy-ucomm.
+    WHEN 'BACK' OR 'CANCEL' OR 'EXIT'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.

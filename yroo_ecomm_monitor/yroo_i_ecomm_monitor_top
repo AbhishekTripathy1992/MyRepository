@@ -1,0 +1,86 @@
+************************************************************************
+* Administration:                                                      *
+*----------------------------------------------------------------------*
+* Created by  : Incresol Software Services Pvt. Ltd.
+* Created on  :
+* Description :
+************************************************************************
+* Change History:                                                      *
+* ---------------------------------------------------------------------*
+* Date       | Change ID     |  Short Description                      *
+* ---------------------------------------------------------------------*
+* DD-MM-YYYY | USERID.DDMMYY |                                         *
+* ---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&  Include           YROO_I_ECOMM_MONITOR_TOP
+*&---------------------------------------------------------------------*
+TYPES : BEGIN OF gty_ecommid,
+          ecomid TYPE yss_de_online_id,
+        END OF gty_ecommid,
+        gt_t_ecomid TYPE TABLE OF gty_ecommid.
+TYPES : BEGIN OF gty_ordid,
+          ecomid TYPE yss_de_online_id,
+          oordid TYPE bstkd,
+        END OF gty_ordid,
+        gt_t_ordid TYPE TABLE OF gty_ordid.
+TYPES : BEGIN OF gty_trstyp,
+          ecomid TYPE yss_de_online_id,
+          trstyp TYPE yss_de_transaction,
+        END OF gty_trstyp,
+        gt_t_trstyp TYPE TABLE OF gty_trstyp.
+
+TYPES : BEGIN OF gty_screen_140.
+        INCLUDE TYPE yroo_t_ecomm_h.
+TYPES : bezei_sp     TYPE bezei,
+        bezei_pa     TYPE bezei,
+        bezei_billto TYPE bezei,
+        bezei_billfr TYPE bezei,
+        END OF gty_screen_140.
+
+CONTROLS tabstrip_110 TYPE TABSTRIP.
+CONTROLS tabstrip_200 TYPE TABSTRIP.
+
+DATA : gt_ecomid        TYPE gt_t_ecomid,
+       gt_ordid         TYPE gt_t_ordid,
+       gt_trstyp        TYPE gt_t_trstyp,
+       gt_ret_tab       TYPE TABLE OF ddshretval,
+       gt_ecomm_i       TYPE  TABLE OF yroo_t_ecomm_i,
+       gv_subscreen     TYPE sy-dynnr VALUE '120',
+       gv_subscreen_210 TYPE sy-dynnr VALUE '210',
+       gv_ref_screen    TYPE flag,
+       gv_sub_screen    TYPE sy-dynnr,
+       gv_subscreen_220 TYPE sy-dynnr VALUE '220',
+       gv_subscreen_230 TYPE sy-dynnr VALUE '230',
+       gs_ecomm_h       TYPE gty_screen_140,
+       gs_ecomm_i       TYPE yroo_t_ecomm_i,
+       yroo_t_ecomm_i   TYPE yroo_t_ecomm_i,
+       gv_edit_flag     TYPE xfeld,
+       gv_disp_flag     TYPE xfeld,
+       gv_okcode        TYPE sy-ucomm,
+       gv_itmdes        TYPE yroo_t_ecomm_i-itmdes,
+       gv_itmqty        TYPE yroo_t_ecomm_i-itmqty,
+       gv_itmval        TYPE yroo_t_ecomm_i-gwpnet,
+       gv_itmnet        TYPE yroo_t_ecomm_i-itmnet,
+       gv_itmtax        TYPE yroo_t_ecomm_i-itmtax,
+       gv_itmsur        TYPE yroo_t_ecomm_i-itmsgr,
+       gv_itmicr        TYPE yroo_t_ecomm_i-itmcgr,
+       gv_prdmrp        TYPE yroo_t_ecomm_i-prdmrp,
+       gv_prdnet        TYPE  yroo_t_ecomm_i-prdnet,
+       gv_sdiamt        TYPE yroo_t_ecomm_i-sdiamt,
+       gv_gdiamt        TYPE yroo_t_ecomm_i-gdiamt,
+       gv_itmsutr       TYPE  yroo_t_ecomm_i-psgamt,
+       gv_itmitr        TYPE  yroo_t_ecomm_i-pigamt,
+       gv_itmctr        TYPE  yroo_t_ecomm_i-pcgamt,
+       gv_shpamt        TYPE yroo_t_ecomm_i-shpamt,
+       gv_shpnet        TYPE yroo_t_ecomm_i-shpnet,
+       gv_itmssut       TYPE  yroo_t_ecomm_i-ssgamt,
+       gv_itmsit        TYPE  yroo_t_ecomm_i-sigamt,
+       gv_itmcut        TYPE yroo_t_ecomm_i-scgamt,
+       gv_gwpamt        TYPE yroo_t_ecomm_i-gwpamt,
+       gv_gwpnet        TYPE yroo_t_ecomm_i-gwpnet,
+       gv_itmgsut       TYPE yroo_t_ecomm_i-gsgamt,
+       gv_itmgit        TYPE yroo_t_ecomm_i-gigamt,
+       gv_itmgct        TYPE yroo_t_ecomm_i-gcgamt,
+       gv_itmtcsiur     TYPE  yroo_t_ecomm_i-tcscga,
+       gv_itmtcsiut     TYPE  yroo_t_ecomm_i-tcsiga,
+       gv_ucomm200      TYPE sy-ucomm.

@@ -1,0 +1,1553 @@
+************************************************************************
+* Administration:                                                      *
+*----------------------------------------------------------------------*
+* Created by  : Incresol Software Services Pvt. Ltd.
+* Created on  :
+* Description :
+* Change History:                                                      *
+* ---------------------------------------------------------------------*
+* Date       | Change ID     |  Short Description                      *
+* ---------------------------------------------------------------------*
+* DD-MM-YYYY | USERID.DDMMYY |                                         *
+* ---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&  Include           YROO_I_ECOMM_MONITOR_CLASS
+*&---------------------------------------------------------------------*
+CLASS lcl_process DEFINITION.
+  PUBLIC SECTION.
+    TYPES : BEGIN OF gty_output_stock,
+              ecomid        TYPE yroo_de_ecomid,
+              oordid        TYPE bstkd,
+              trstyp        TYPE yss_de_transaction,
+              oitmid        TYPE yroo_de_order_item_id,
+              swhslc        TYPE lgort_d,
+              swhsid        TYPE yroo_de_wid2,
+              onlsku        TYPE yroo_de_sku,
+              matnr	        TYPE matnr,
+              maktx	        TYPE maktx,
+              uom           TYPE meins,
+              available_qty TYPE labst,
+            END OF gty_output_stock.
+    CLASS-DATA: gt_op_stock   TYPE TABLE OF gty_output_stock,
+                gt_grid_240   TYPE REF TO cl_gui_alv_grid,
+                gt_cont_240   TYPE REF TO cl_gui_custom_container,
+                gt_fcat_240   TYPE lvc_t_fcat,
+                gs_layout_240 TYPE lvc_s_layo,
+                gs_variant    TYPE disvariant.
+
+    CLASS-DATA :
+      go_cust_230   TYPE REF TO cl_gui_custom_container,
+      gobj_grid_230 TYPE REF TO cl_gui_alv_grid,
+      gt_fcat_230   TYPE lvc_t_fcat,
+      gs_layout     TYPE lvc_s_layo.
+    CLASS-METHODS :
+*Double click event
+      double_click230 FOR EVENT double_click OF cl_gui_alv_grid
+        IMPORTING es_row_no e_column e_row,
+*Hotspot event
+      hotspot230
+                    FOR EVENT hotspot_click OF cl_gui_alv_grid
+        IMPORTING es_row_no e_column_id,
+*Read selected item from gird
+      read_sel_itm IMPORTING im_row TYPE lvc_s_row,
+*Fetch ecommerce header data for F4
+*      get_ecomm_head_f4
+*        EXPORTING ex_value_tab TYPE gt_t_value_tab_h,
+      get_ecomm_head_f4  EXPORTING ex_value_tab TYPE gt_t_ecomid,
+
+      get_ordid_head_f4  EXPORTING ex_value_tab TYPE gt_t_ordid,
+
+      get_trstyp_head_f4 EXPORTING ex_value_tab TYPE gt_t_trstyp,
+*f4if int table value request
+      f4if_request_ecomid
+        IMPORTING retfield    TYPE dfies-fieldname
+                  dynprofield TYPE help_info-dynprofld,
+
+      f4if_request_ordid
+        IMPORTING retfield    TYPE dfies-fieldname
+                  dynprofield TYPE help_info-dynprofld,
+      f4if_request_trstyp
+        IMPORTING retfield    TYPE dfies-fieldname
+                  dynprofield TYPE help_info-dynprofld,
+*Display item data
+      display_itm,
+*View PDF file
+      pdf_viewer FOR EVENT button_click OF cl_gui_alv_grid
+        IMPORTING es_col_id es_row_no,
+*Build item fieldcatalog
+      build_itm_fcat,
+*Create field catalog for 130 screen
+      create_fieldcat_130,
+*Dislay 130 screen
+      display_130,
+*Fetch header Data
+      fetch_header_data EXPORTING ex_check TYPE char1,
+*Fetch Item Data
+      fetch_item_data,
+*Modify YROO_T_ECOMM_HEADER table
+      modify_header,
+*Handle tool bar in Item level
+      print_button FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object,
+*Menu Buttons
+      handle_menu_button
+                    FOR EVENT menu_button OF cl_gui_alv_grid
+        IMPORTING e_object e_ucomm,
+*File Check in Application server
+      app_file_check,
+*Print Smartform Sales Order
+      print_smartform_so,
+*Print smartform Delivary order
+      print_smartform_do,
+*Print Smartform Invoice
+      print_smartform_iv,
+*Cancel Item Sales Order
+      cancel_itemso,
+*Cancel delivery
+      cancel_delivery,
+*Cancel PGI
+      cancel_pgi,
+*Cancel billing
+      cancel_billing,
+*Cancel all process
+      cancel_all,
+*Show stock availabiliy
+      show_stock,
+*Display 240 screen
+      display_240,
+*Pop up to confirm screen
+      popup_to_confirm IMPORTING im_text_question TYPE string
+                       EXPORTING ev_action        TYPE c,
+* User commend event to handle user intraction
+      user_command FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm,
+*Update stock value
+      update_stock,
+*Check plant authorization
+      check_plant_auth
+        IMPORTING im_itm   TYPE yroo_t_ecomm_i
+        EXPORTING ex_subrc TYPE sy-subrc,
+*Check company authorization
+      check_bukrs_auth
+        IMPORTING im_bukrs TYPE bukrs
+        EXPORTING ex_subrc TYPE sy-subrc.
+ENDCLASS.
+
+CLASS lcl_process IMPLEMENTATION.
+
+  METHOD hotspot230.
+
+    READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_itm>)
+      INDEX es_row_no-row_id.
+    IF sy-subrc EQ 0.
+      CASE e_column_id-fieldname.
+        WHEN 'SSONUM'.
+          IF <lfs_itm>-ssonum IS NOT INITIAL.
+            SET PARAMETER ID 'AUN' FIELD <lfs_itm>-ssonum.
+            CALL TRANSACTION 'VA03' AND SKIP FIRST SCREEN.
+          ENDIF.
+        WHEN 'SDONUM'.
+          IF <lfs_itm>-sdonum IS NOT INITIAL.
+
+            SET PARAMETER ID 'VL' FIELD <lfs_itm>-sdonum.
+            CALL TRANSACTION 'VL03N' AND SKIP FIRST SCREEN.
+          ENDIF.
+        WHEN 'SINVNU'.
+          IF <lfs_itm>-sinvnu IS NOT INITIAL.
+            SET PARAMETER ID 'VF' FIELD <lfs_itm>-sinvnu.
+            CALL TRANSACTION 'VF03' AND SKIP FIRST SCREEN.
+          ENDIF.
+      ENDCASE.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD double_click230.
+    lcl_process=>read_sel_itm( im_row = e_row  ).
+    LEAVE TO SCREEN '200'.
+  ENDMETHOD.
+
+  METHOD read_sel_itm.
+    DATA: lt_row     TYPE lvc_t_row,
+          ls_row     TYPE lvc_s_row,
+          ls_ecomm_i TYPE yroo_t_ecomm_i.
+    CHECK gobj_grid_230 IS BOUND.
+    ls_row = im_row.
+    READ TABLE gt_ecomm_i INTO gs_ecomm_i
+       INDEX ls_row-index.
+    IF sy-subrc EQ 0.
+
+      MOVE: gs_ecomm_i-itmval TO gv_itmval,
+            gs_ecomm_i-itmnet TO gv_itmnet,
+            gs_ecomm_i-itmtax TO gv_itmtax.
+      IF gs_ecomm_i-itmsgr IS NOT INITIAL .
+        gv_itmsur =  gs_ecomm_i-itmsgr.
+      ENDIF.
+
+      IF gs_ecomm_i-itmugr IS NOT INITIAL .
+        gv_itmsur =  gs_ecomm_i-itmugr.
+      ENDIF.
+
+      IF gs_ecomm_i-itmcgr IS NOT INITIAL .
+        gv_itmicr =  gs_ecomm_i-itmcgr.
+      ENDIF.
+
+      IF gs_ecomm_i-itmigr IS NOT INITIAL .
+        gv_itmicr =  gs_ecomm_i-itmigr.
+      ENDIF.
+
+      gv_prdmrp  = gs_ecomm_i-prdmrp.
+      gv_prdnet  = gs_ecomm_i-prdnet.
+
+      IF gs_ecomm_i-psgamt IS NOT INITIAL.
+        gv_itmsutr =  gs_ecomm_i-psgamt.
+      ENDIF.
+
+      IF gs_ecomm_i-pugamt IS NOT INITIAL .
+        gv_itmsutr =  gs_ecomm_i-pugamt.
+      ENDIF.
+
+      gv_itmitr  =  gs_ecomm_i-pigamt.
+      gv_itmctr  =  gs_ecomm_i-pcgamt.
+      gv_shpamt  = gs_ecomm_i-shpamt.
+      gv_shpnet  = gs_ecomm_i-shpnet.
+      IF gs_ecomm_i-ssgamt IS NOT INITIAL.
+
+        gv_itmssut =  gs_ecomm_i-ssgamt.
+      ENDIF.
+
+      IF gs_ecomm_i-sugamt IS NOT INITIAL .
+        gv_itmssut =  gs_ecomm_i-sugamt.
+      ENDIF.
+
+      gv_itmsit =  gs_ecomm_i-sigamt.
+      gv_itmcut =  gs_ecomm_i-scgamt.
+*
+      gv_gwpamt = gs_ecomm_i-gwpamt.
+      gv_gwpnet = gs_ecomm_i-gwpnet.
+
+      IF gs_ecomm_i-gsgamt IS   NOT INITIAL.
+        gv_itmgsut = gs_ecomm_i-gsgamt.
+      ENDIF.
+      IF gs_ecomm_i-gugamt IS  NOT INITIAL.
+        gv_itmgsut = gs_ecomm_i-gugamt.
+      ENDIF.
+      gv_itmgit = gs_ecomm_i-gigamt.
+      gv_itmgct = gs_ecomm_i-gcgamt.
+      IF gs_ecomm_i-tcscga IS NOT INITIAL.
+        gv_itmtcsiur =  gs_ecomm_i-tcscga.
+      ENDIF.
+      IF gs_ecomm_i-tcssgr IS NOT INITIAL.
+        gv_itmtcsiur = gs_ecomm_i-tcssgr.
+      ENDIF.
+      IF gs_ecomm_i-tcsugr IS NOT INITIAL.
+        gv_itmtcsiur = gs_ecomm_i-tcsugr.
+      ENDIF.
+      IF gs_ecomm_i-tcsigr IS NOT INITIAL.
+        gv_itmtcsiur = gs_ecomm_i-tcsigr.
+      ENDIF.
+      IF gs_ecomm_i-tcsiga IS NOT INITIAL.
+        gv_itmtcsiut = gs_ecomm_i-tcsiga.
+      ENDIF.
+      IF gs_ecomm_i-tcscga IS NOT INITIAL.
+        gv_itmtcsiut = gs_ecomm_i-tcscga.
+      ENDIF.
+      IF gs_ecomm_i-tcsuga IS NOT INITIAL.
+        gv_itmtcsiut = gs_ecomm_i-tcsuga.
+      ENDIF.
+      IF gs_ecomm_i-tcssga IS NOT INITIAL.
+        gv_itmtcsiut = gs_ecomm_i-tcssga.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD :get_ecomm_head_f4.
+
+    SELECT ecomid
+    FROM yroo_t_ecomm_h
+    INTO TABLE ex_value_tab.
+    IF sy-subrc EQ 0.
+    ENDIF.
+
+  ENDMETHOD.
+  METHOD :get_ordid_head_f4.
+
+    SELECT ecomid
+           oordid "Ecommerce id
+    FROM yroo_t_ecomm_h
+    INTO TABLE ex_value_tab.
+    IF sy-subrc EQ 0.
+    ENDIF.
+
+  ENDMETHOD.
+  METHOD :get_trstyp_head_f4.
+
+    SELECT ecomid trstyp "Ecommerce id
+    FROM yroo_t_ecomm_h
+    INTO TABLE ex_value_tab.
+    IF sy-subrc EQ 0.
+    ENDIF.
+
+  ENDMETHOD.
+  METHOD f4if_request_ecomid.
+    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+      EXPORTING
+        retfield    = retfield
+        dynpprog    = sy-cprog
+        dynpnr      = sy-dynnr
+        dynprofield = dynprofield
+        value_org   = 'S'
+      TABLES
+        value_tab   = gt_ecomid
+        return_tab  = gt_ret_tab.
+  ENDMETHOD.
+  METHOD f4if_request_ordid.
+    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+      EXPORTING
+        retfield    = retfield
+        dynpprog    = sy-cprog
+        dynpnr      = sy-dynnr
+        dynprofield = dynprofield
+        value_org   = 'S'
+      TABLES
+        value_tab   = gt_ordid
+        return_tab  = gt_ret_tab.
+  ENDMETHOD.
+  METHOD f4if_request_trstyp.
+    CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+      EXPORTING
+        retfield    = retfield
+        dynpprog    = sy-cprog
+        dynpnr      = sy-dynnr
+        dynprofield = dynprofield
+        value_org   = 'S'
+      TABLES
+        value_tab   = gt_trstyp
+        return_tab  = gt_ret_tab.
+  ENDMETHOD.
+  METHOD display_itm.
+
+    build_itm_fcat( ).
+    IF go_cust_230 IS NOT BOUND.
+      CREATE OBJECT go_cust_230
+        EXPORTING
+          container_name = 'CUSTOM_230'.
+
+      IF gobj_grid_230 IS NOT BOUND.
+        CREATE OBJECT gobj_grid_230
+          EXPORTING
+            i_parent = go_cust_230.
+      ENDIF.
+    ENDIF.
+*Layout 230 screen
+    gs_layout-cwidth_opt = abap_true.
+    gs_layout-sel_mode = 'A'.
+
+*Add Print button in Item level grid  +++Shiva kumar
+    SET HANDLER : lcl_process=>print_button FOR gobj_grid_230,
+                  lcl_process=>user_command FOR gobj_grid_230,
+                  lcl_process=>handle_menu_button FOR gobj_grid_230,
+                  lcl_process=>double_click230 FOR gobj_grid_230,
+                  lcl_process=>hotspot230 FOR gobj_grid_230,
+                  lcl_process=>pdf_viewer FOR gobj_grid_230.
+*To Check file exists in APP server.
+    CALL METHOD lcl_process=>app_file_check.
+
+*For Save layout button
+    gs_variant-report = sy-repid.
+    gs_variant-username = sy-uname.
+    SORT gt_ecomm_i BY oitmid.
+    CALL METHOD gobj_grid_230->set_table_for_first_display
+      EXPORTING
+        is_layout       = gs_layout
+        is_variant      = gs_variant
+        i_save          = 'A'
+      CHANGING
+        it_outtab       = gt_ecomm_i
+        it_fieldcatalog = gt_fcat_230.
+    CALL METHOD gobj_grid_230->register_edit_event
+      EXPORTING
+        i_event_id = cl_gui_alv_grid=>mc_evt_enter.
+
+  ENDMETHOD.
+  METHOD build_itm_fcat.
+
+    DATA : ls_fcat  TYPE lvc_s_fcat,
+           lv_struc TYPE dd02l-tabname.
+
+    IF gt_fcat_230[] IS INITIAL.
+      lv_struc  = 'GT_ECOMM_I'.
+      CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
+        EXPORTING
+          i_structure_name       = 'YROO_T_ECOMM_I'
+          i_client_never_display = 'X'
+        CHANGING
+          ct_fieldcat            = gt_fcat_230.
+
+
+
+      LOOP AT gt_fcat_230 ASSIGNING FIELD-SYMBOL(<lfs_fcat_230>).
+        <lfs_fcat_230>-key = abap_false.
+        CASE <lfs_fcat_230>-fieldname.
+          WHEN 'ORDER_ITEM_ID'.
+            <lfs_fcat_230>-reptext = 'Item ID'.
+          WHEN 'SSONUM'.
+            <lfs_fcat_230>-hotspot = abap_true.
+          WHEN 'SDONUM'.
+            <lfs_fcat_230>-hotspot = abap_true.
+          WHEN 'SINVNU'.
+            <lfs_fcat_230>-hotspot = abap_true.
+          WHEN 'PDF_VIEWER'.
+            <lfs_fcat_230>-style   = cl_gui_alv_grid=>mc_style_button.
+            <lfs_fcat_230>-icon    = abap_true.
+            <lfs_fcat_230>-style2  = cl_gui_alv_grid=>mc_style_disabled.
+            <lfs_fcat_230>-tooltip = 'PDF VIEWER'.
+        ENDCASE.
+
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD pdf_viewer.
+    DATA: lobj_pdf_cont    TYPE REF TO cl_gui_custom_container,
+          lobj_pdf_viewer  TYPE REF TO cl_gui_html_viewer,
+          lt_data          TYPE STANDARD TABLE OF x255,
+          lt_list          TYPE STANDARD TABLE OF eps2fili,
+          ls_list          TYPE eps2fili,
+          lv_resp          TYPE string,
+          lv_url           TYPE char255,
+          lv_count         TYPE epsf-epsfilsiz,  "count
+          lv_error         TYPE epsf-epsfilsiz,  "error
+          lv_file_path     TYPE rlgrap-filename, "to store file path
+          lv_dirname       TYPE epsf-epsdirnam,  "to store dir name
+          lv_filemask      TYPE epsf-epsfilnam,  "to store filename
+          lv_filename2(50) TYPE c,
+          lt_vbeln         TYPE  yss_tt_bill_cancel,
+          lv_path          TYPE eps2filnam.
+
+    READ TABLE gt_ecomm_i
+    ASSIGNING FIELD-SYMBOL(<lfs_display1>)
+    INDEX  es_row_no-row_id.
+
+    IF sy-subrc EQ 0.
+      IF <lfs_display1>-sinvnu IS INITIAL.
+        RETURN.
+      ENDIF.
+      lv_filemask  = <lfs_display1>-sinvnu. "+++Changed 18.03.2019
+    ENDIF.
+    lv_filemask = '*'.
+
+    CASE sy-sysid.
+      WHEN 'RSD'.
+        lv_path = '/usr/sap/RSD/SYS/src'.
+      WHEN 'RSQ'.
+        lv_path = '/usr/sap/RSQ/SYS/src'.
+      WHEN 'PRD'.
+        lv_path = '/usr/sap/PRD/SYS/src'.
+    ENDCASE.
+
+*         Send files to Application Server
+    CALL FUNCTION 'EPS2_GET_DIRECTORY_LISTING'
+      EXPORTING
+        iv_dir_name            = lv_path "'/usr/sap/SND/SYS/src'
+        file_mask              = lv_filemask
+      IMPORTING
+        dir_name               = lv_dirname
+        file_counter           = lv_count
+        error_counter          = lv_error
+      TABLES
+        dir_list               = lt_list
+      EXCEPTIONS
+        invalid_eps_subdir     = 1
+        sapgparam_failed       = 2
+        build_directory_failed = 3
+        no_authorization       = 4
+        read_directory_failed  = 5
+        too_many_read_errors   = 6
+        empty_directory_list   = 7
+        OTHERS                 = 8.
+
+    CONCATENATE:
+     <lfs_display1>-sinvnu '.pdf'
+     INTO lv_filename2.
+
+    READ TABLE lt_list INTO ls_list WITH KEY name = lv_filename2.
+
+    IF sy-subrc = 0 AND ls_list-name IS NOT INITIAL.
+      CONCATENATE:
+       lv_path '/' ls_list-name "'/usr/sap/SND/SYS/src/'(051)
+        INTO lv_file_path.
+    ELSE.
+      MESSAGE 'File Does not Exist. Please Download File'(068)
+      TYPE 'I'
+      DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
+    IF lobj_pdf_cont IS INITIAL.
+*          Create Custom Container
+      CREATE OBJECT lobj_pdf_cont
+        EXPORTING
+          container_name              = 'CUSTOM_MODAL'
+        EXCEPTIONS
+          cntl_error                  = 1
+          cntl_system_error           = 2
+          create_error                = 3
+          lifetime_error              = 4
+          lifetime_dynpro_dynpro_link = 5
+          OTHERS                      = 6.
+      IF sy-subrc EQ 0.
+*             Create PDF Viewer object
+        CREATE OBJECT lobj_pdf_viewer
+          EXPORTING
+            parent             = lobj_pdf_cont
+          EXCEPTIONS
+            cntl_error         = 1
+            cntl_install_error = 2
+            dp_install_error   = 3
+            dp_error           = 4
+            OTHERS             = 5.
+        IF sy-subrc <> 0.
+          IF sy-msgty IS NOT INITIAL.
+            MESSAGE ID sy-msgid
+                    TYPE sy-msgty
+                    NUMBER sy-msgno
+                    WITH sy-msgv1
+                         sy-msgv2
+                         sy-msgv3
+                         sy-msgv4.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+*         Read Files From Application Server
+    CALL METHOD yss_cl_amazon_process=>read_file_from_appln_server
+      EXPORTING
+        im_file_path = lv_file_path
+      IMPORTING
+        ex_data      = lt_data
+        ex_response  = lv_resp.
+*         Load PDF data to URL
+    CALL METHOD lobj_pdf_viewer->load_data(
+      EXPORTING
+        url                  = lv_file_path
+        type                 = 'application'
+        subtype              = 'pdf'
+      IMPORTING
+        assigned_url         = lv_url
+      CHANGING
+        data_table           = lt_data
+      EXCEPTIONS
+        dp_invalid_parameter = 1
+        dp_error_general     = 2
+        cntl_error           = 3
+        OTHERS               = 4 ).
+*         Display the PDF
+    CALL METHOD lobj_pdf_viewer->show_data(
+        url      = lv_url
+        in_place = abap_true ).
+
+
+    CALL SCREEN 0250.
+
+  ENDMETHOD.
+  METHOD create_fieldcat_130.
+  ENDMETHOD.
+  METHOD display_130.
+  ENDMETHOD.
+  METHOD fetch_header_data.
+    DATA : lv_bland   TYPE regio,
+           lt_ecomm_i TYPE TABLE OF yroo_t_ecomm_i.
+    CLEAR ex_check.
+    SELECT SINGLE *
+      FROM yroo_t_ecomm_h
+      INTO CORRESPONDING FIELDS OF gs_ecomm_h
+      WHERE ecomid = gs_ecomm_h-ecomid AND
+            oordid = gs_ecomm_h-oordid AND
+            trstyp = gs_ecomm_h-trstyp.
+    IF sy-subrc EQ 0.
+      check_bukrs_auth( EXPORTING im_bukrs = gs_ecomm_h-bukrs
+                        IMPORTING ex_subrc = DATA(lv_subrc) ).
+      IF lv_subrc NE 0.
+        DATA(lv_message) = 'No authorization for Company code &comp_code&'.
+        REPLACE '&comp_code&' IN lv_message WITH gs_ecomm_h-bukrs.
+        MESSAGE lv_message TYPE 'S' DISPLAY LIKE 'W'.
+        ex_check = abap_true.
+        RETURN.
+      ENDIF.
+      SELECT *
+        FROM yroo_t_ecomm_i
+        INTO TABLE lt_ecomm_i
+         WHERE ecomid = gs_ecomm_h-ecomid AND
+                  oordid = gs_ecomm_h-oordid AND
+                  trstyp = gs_ecomm_h-trstyp.
+      LOOP AT lt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_i>).
+        AUTHORITY-CHECK OBJECT 'M_MSEG_WWA'
+        FOR USER sy-uname
+        ID 'WERKS' FIELD <lfs_i>-swhsid.
+        IF sy-subrc NE 0.
+          CLEAR gs_ecomm_h.
+          MESSAGE  s008 DISPLAY LIKE 'W'.
+          ex_check = abap_true.
+        ENDIF.
+      ENDLOOP.
+    ELSE.
+      MESSAGE  s008 DISPLAY LIKE 'W'.
+      ex_check = abap_true.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD fetch_item_data.
+
+    SELECT *
+      FROM yroo_t_ecomm_i
+      INTO TABLE gt_ecomm_i
+      WHERE ecomid = gs_ecomm_h-ecomid AND
+            oordid = gs_ecomm_h-oordid AND
+            trstyp = gs_ecomm_h-trstyp.
+    IF sy-subrc EQ 0.
+      LOOP AT gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_itm_i>).
+        check_plant_auth( EXPORTING im_itm = <lfs_itm_i>
+                          IMPORTING ex_subrc = DATA(lv_subrc) ).
+        IF lv_subrc NE 0.
+          CLEAR <lfs_itm_i>.
+        ENDIF.
+      ENDLOOP.
+      DELETE gt_ecomm_i WHERE ecomid IS INITIAL.
+    ENDIF.
+  ENDMETHOD.
+  METHOD modify_header.
+    DATA : ls_ecomm_h TYPE yroo_t_ecomm_h.
+    MOVE-CORRESPONDING gs_ecomm_h TO ls_ecomm_h.
+    MODIFY yroo_t_ecomm_h FROM ls_ecomm_h.
+    IF sy-subrc  EQ 0.
+      COMMIT WORK.
+      MESSAGE s006.
+      CLEAR gv_edit_flag.
+    ENDIF.
+  ENDMETHOD.
+  METHOD print_button.
+
+    DATA : lv_cid TYPE yroo_de_cid.
+
+***separator
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING FIELD-SYMBOL(<lfs_button>).
+    <lfs_button>-butn_type = 3.
+
+*   Add check stock in ALV Grid
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING <lfs_button>.
+    <lfs_button>-function = 'CHKSTOCK'.
+    <lfs_button>-icon = '@FF@'.
+    lv_cid = gs_ecomm_h-ecomid.
+    CALL METHOD yroo_cl_api_utilities=>get_config_values
+      EXPORTING
+        im_configid      = 'PORTAL'
+        im_cid           = lv_cid
+        im_skip_inactive = 'X'
+      IMPORTING
+        ex_config_val    = DATA(lt_portal).
+    READ TABLE lt_portal ASSIGNING FIELD-SYMBOL(<lfs_portal_conf>) INDEX 1.
+    IF sy-subrc EQ 0 AND <lfs_portal_conf>-val01 = abap_true.
+      <lfs_button>-disabled = abap_false.
+    ELSE.
+      <lfs_button>-disabled = abap_true.
+    ENDIF.
+    <lfs_button>-quickinfo = 'Display availability'.
+    <lfs_button>-butn_type = 0.
+    <lfs_button>-text = 'Display availability'.
+
+***separator
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING <lfs_button>.
+    <lfs_button>-butn_type = 3.
+****   Add Menu button DO in ALV Grid
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING <lfs_button>.
+    MOVE 'PRINT' TO <lfs_button>-function.
+    MOVE icon_print    TO <lfs_button>-icon.
+    MOVE 'Print' TO <lfs_button>-text.
+    MOVE 'Print Operations' TO <lfs_button>-quickinfo.
+    MOVE 2              TO <lfs_button>-butn_type.
+    MOVE space          TO <lfs_button>-disabled.
+
+***separator
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING <lfs_button>.
+    <lfs_button>-butn_type = 3.
+
+*   Add Menu button DO in ALV Grid
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING <lfs_button>.
+    MOVE 'CANCELORDERS' TO <lfs_button>-function.
+    MOVE icon_cancel    TO <lfs_button>-icon.
+    MOVE 'Cancel' TO <lfs_button>-text.
+    MOVE 'Cancellation Operations' TO <lfs_button>-quickinfo.
+    MOVE 2              TO <lfs_button>-butn_type.
+    MOVE space          TO <lfs_button>-disabled.
+
+
+*   Add Menu button DO in ALV Grid
+    APPEND INITIAL LINE TO e_object->mt_toolbar ASSIGNING <lfs_button>.
+    MOVE 'DOWN' TO <lfs_button>-function.
+    MOVE '@49@'    TO <lfs_button>-icon.
+    MOVE 'Download' TO <lfs_button>-text.
+*    MOVE 'Cancellation Operations' TO <lfs_button>-quickinfo.
+    MOVE 1              TO <lfs_button>-butn_type.
+    MOVE space          TO <lfs_button>-disabled.
+
+  ENDMETHOD.
+
+*Menu Buttons
+  METHOD  handle_menu_button.
+    CASE e_ucomm.
+      WHEN 'CANCELORDERS'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'CANCELItemSO'
+            text  = 'Cancel Sales Order'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'CANCELItemDO'
+            text  = 'Cancel Delivery'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'CANCELItemPGI'
+            text  = 'Cancel PGI'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'CANCELInvoice'
+            text  = 'Cancel Invoice'.
+      WHEN 'PRINT'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'PRINTItemSO'
+            text  = 'Print Sales Order'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'PRINTItemDO'
+            text  = 'Print Delivary Order'.
+        CALL METHOD e_object->add_function
+          EXPORTING
+            fcode = 'PRINTItemIV'
+            text  = 'Print Billing Order'.
+
+    ENDCASE.
+  ENDMETHOD.
+  METHOD print_smartform_so.
+    DATA:lt_row              TYPE lvc_t_row,
+         ls_yss_s_req_params TYPE yss_s_req_params,
+         lt_conf             TYPE yroo_cl_pool=>gtt_conf_val,
+         lv_kunnr            TYPE kunnr,
+         lv_form             TYPE tdsfname.
+*   Get selected rows
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = lt_row.
+    DATA(lv_no) = lines( lt_row ).
+    IF lv_no IS  INITIAL.
+      MESSAGE 'Please Select at least one record' TYPE 'I'.
+    ELSEIF lv_no = 1.
+      READ TABLE lt_row ASSIGNING FIELD-SYMBOL(<lfs_row>) INDEX 1.
+      IF sy-subrc EQ 0.
+        READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_ecomm>) INDEX <lfs_row>-index.
+        IF sy-subrc EQ 0 AND <lfs_ecomm>-ssonum IS NOT INITIAL.
+          SELECT SINGLE kunnr
+            FROM vbak
+            INTO lv_kunnr
+            WHERE vbeln = <lfs_ecomm>-ssonum.
+          IF sy-subrc EQ 0..
+*         Do Nothing
+          ENDIF.
+          ls_yss_s_req_params-werks = <lfs_ecomm>-swhsid.
+          lt_conf = yroo_cl_config=>fetch_config_itm_data(
+                                  EXPORTING im_confid = yroo_cl_pool=>gc_conf_print ).
+          READ TABLE lt_conf ASSIGNING FIELD-SYMBOL(<lfs_con>)
+                                            WITH KEY pcid = <lfs_ecomm>-ecomid.
+          IF sy-subrc EQ 0.
+            lv_form = <lfs_con>-val01.
+            CALL FUNCTION 'YROO_FM_SD_GET_SO_OP_BINARY'
+              EXPORTING
+                im_req_params = ls_yss_s_req_params
+                im_v_vbeln    = <lfs_ecomm>-ssonum
+                im_v_kunnr    = lv_kunnr
+                im_form       = lv_form.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ELSE.
+      MESSAGE 'Please Select only one record' TYPE 'I'.
+    ENDIF.
+  ENDMETHOD.
+  METHOD print_smartform_do.
+    DATA:lt_row           TYPE lvc_t_row,
+         lt_conf          TYPE yroo_cl_pool=>gtt_conf_val,
+         ls_im_req_params TYPE yss_s_req_params,
+         lv_form          TYPE tdsfname.
+*   Get selected rows
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = lt_row.
+    DATA(lv_no) = lines( lt_row ).
+    IF lv_no IS  INITIAL.
+      MESSAGE 'Please Select at least one record' TYPE 'I'.
+    ELSEIF lv_no = 1.
+      READ TABLE lt_row ASSIGNING FIELD-SYMBOL(<lfs_row>) INDEX 1.
+      IF sy-subrc EQ 0.
+        READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_ecomm>) INDEX <lfs_row>-index.
+        IF sy-subrc EQ 0.
+          SELECT SINGLE werks
+               FROM lips
+             INTO ls_im_req_params-werks
+            WHERE vbeln = <lfs_ecomm>-sdonum.
+          IF sy-subrc EQ 0.
+*         Get configaration values
+            lt_conf = yroo_cl_config=>fetch_config_itm_data(
+                        EXPORTING im_confid = yroo_cl_pool=>gc_conf_print ).
+            READ TABLE lt_conf ASSIGNING FIELD-SYMBOL(<lfs_con>)
+                                              WITH KEY pcid = <lfs_ecomm>-ecomid.
+            IF sy-subrc EQ 0.
+              lv_form = <lfs_con>-val02.
+              CALL FUNCTION 'YROO_FM_SD_GET_DEL_OP_BINARY1'
+                EXPORTING
+                  im_req_params = ls_im_req_params
+                  im_v_vbeln    = <lfs_ecomm>-sdonum
+                  im_form       = lv_form.
+            ENDIF.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ELSE.
+      MESSAGE 'Please Select only one record' TYPE 'I'.
+    ENDIF.
+  ENDMETHOD.
+  METHOD  print_smartform_iv.
+    DATA:lt_row              TYPE lvc_t_row,
+         lt_vbeln            TYPE RANGE OF vbeln,
+         ls_yss_s_req_params TYPE yss_s_req_params,
+         lt_conf             TYPE yroo_cl_pool=>gtt_conf_val,
+         lv_form             TYPE tdsfname.
+*   Get selected rows
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = lt_row.
+    DATA(lv_no) = lines( lt_row ).
+    IF lv_no IS  INITIAL.
+      MESSAGE 'Please Select at least one record' TYPE 'I'.
+    ELSEIF lv_no = 1.
+      READ TABLE lt_row ASSIGNING FIELD-SYMBOL(<lfs_row>) INDEX 1.
+      IF sy-subrc EQ 0.
+        READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_ecomm>) INDEX <lfs_row>-index.
+        IF sy-subrc EQ 0.
+          ls_yss_s_req_params-werks = <lfs_ecomm>-swhsid.
+          APPEND INITIAL LINE TO lt_vbeln ASSIGNING FIELD-SYMBOL(<lfs_vbeln>).
+          <lfs_vbeln>-sign = 'I'.
+          <lfs_vbeln>-option = 'EQ'.
+          <lfs_vbeln>-low = <lfs_ecomm>-sinvnu.
+          <lfs_vbeln>-high = ' '.
+*         Get configaration values
+          lt_conf = yroo_cl_config=>fetch_config_itm_data(
+                      EXPORTING im_confid = yroo_cl_pool=>gc_conf_print ).
+          READ TABLE lt_conf ASSIGNING FIELD-SYMBOL(<lfs_con>)
+                                            WITH KEY pcid = <lfs_ecomm>-ecomid.
+          IF sy-subrc EQ 0.
+            lv_form = <lfs_con>-val03.
+*     To print Billing order details
+            CALL FUNCTION 'YROO_FM_GET_TAXINV_OP_BINARY'
+              EXPORTING
+                im_req_params = ls_yss_s_req_params
+                im_rng_vbeln  = lt_vbeln
+                im_action     = 'S'
+                im_form       = lv_form.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ELSE.
+      MESSAGE 'Please Select only one record' TYPE 'I'.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD cancel_itemso.
+    DATA:
+      lt_vbeln  TYPE yss_tt_so,
+      lv_flag   TYPE flag,
+      lv_answer TYPE c,
+      lt_item   TYPE STANDARD TABLE OF yroo_t_ecomm_i.
+
+*   Get selected rows
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+
+    IF lt_rows IS  INITIAL.
+      MESSAGE 'Please select the records to process' TYPE 'I'.
+      RETURN.
+    ENDIF.
+    LOOP AT lt_rows ASSIGNING FIELD-SYMBOL(<lfs_row>).
+      READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_item>) INDEX <lfs_row>-index.
+      IF sy-subrc EQ 0 AND <lfs_item>-sdonum IS INITIAL AND <lfs_item>-ssonum IS NOT INITIAL.
+        APPEND <lfs_item>-ssonum TO lt_vbeln.
+      ENDIF.
+    ENDLOOP.
+    IF lt_vbeln IS INITIAL.
+      MESSAGE 'Sales order cannot be cancelled as the Delivery document exist' TYPE 'I'.
+      RETURN.
+    ENDIF.
+*Cancel SalesOrder
+    popup_to_confirm(
+       EXPORTING
+         im_text_question = 'Do you want to cancel sales order?'
+       IMPORTING
+         ev_action        = lv_answer ).
+    IF lv_answer NE '1'.
+      MESSAGE 'Action cancelled' TYPE 'S'.
+      RETURN.
+    ENDIF.
+
+    CALL METHOD yroo_cl_order_process=>cancel_sales_order
+      EXPORTING
+        im_salesorder = lt_vbeln    " Sales Order No
+      IMPORTING
+        ex_return     = DATA(lt_return).     " Error Messages
+
+*Display BAPI Return Messages
+    DELETE lt_return WHERE type = 'S'.
+    IF lt_return IS INITIAL.
+      LOOP AT gt_ecomm_i ASSIGNING <lfs_item>.
+        READ TABLE lt_vbeln ASSIGNING FIELD-SYMBOL(<lfs_doc>) WITH KEY vbeln = <lfs_item>-ssonum .
+        IF sy-subrc EQ 0.
+          CLEAR:<lfs_item>-ssonum,<lfs_item>-sdonum,<lfs_item>-sinvnu,
+          <lfs_item>-ssoitm,<lfs_item>-sdoitm,<lfs_item>-sinvit.
+          <lfs_item>-changed_by   = sy-uname.
+          <lfs_item>-changed_date = sy-datum.
+          <lfs_item>-changed_time = sy-uzeit.
+          APPEND <lfs_item> TO lt_item.
+          IF lv_flag IS INITIAL.
+            lv_flag = abap_true.
+            UPDATE yroo_t_ecomm_h SET sostat =  '1A'
+                                      changed_by    = sy-uname
+                                      changed_date  = sy-datum
+                                      changed_time  = sy-uzeit
+                                  WHERE ecomid = <lfs_item>-ecomid
+                                    AND oordid = <lfs_item>-oordid
+                                    AND trstyp = <lfs_item>-trstyp. "#EC CI_IMUD_NESTED
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+      IF lt_item IS NOT INITIAL.
+        UPDATE yroo_t_ecomm_i FROM TABLE lt_item.
+        IF sy-subrc EQ 0.
+          COMMIT WORK.
+        ENDIF.
+      ENDIF.
+      CALL METHOD gobj_grid_230->refresh_table_display( ).
+      MESSAGE 'Sales order cancelled successfully' TYPE 'S'.
+    ELSE.
+      TRY.
+          CALL METHOD /incasp/cl_asp_gst_utility=>data_in_alv_popup( CHANGING ch_table = lt_return ).
+        CATCH /incasp/cx_asp_tax INTO DATA(lo_exception).
+          DATA(lv_message_text) = lo_exception->get_text( ).
+          MESSAGE lv_message_text TYPE 'I'.
+      ENDTRY.
+      RETURN.
+    ENDIF.
+    CALL METHOD gobj_grid_230->refresh_table_display( ).
+  ENDMETHOD.
+  METHOD user_command.
+    CASE e_ucomm.
+      WHEN 'PRINTItemSO'.
+        lcl_process=>print_smartform_so( ).
+      WHEN 'PRINTItemDO'.
+        lcl_process=>print_smartform_do( ).
+      WHEN 'PRINTItemIV'.
+        lcl_process=>print_smartform_iv( ).
+      WHEN 'CANCELItemSO'.
+        lcl_process=>cancel_itemso( ).
+      WHEN 'CANCELItemDO'.
+        lcl_process=>cancel_delivery( ).
+      WHEN 'CANCELItemPGI'.
+        lcl_process=>cancel_pgi( ).
+      WHEN 'CANCELInvoice'.
+        lcl_process=>cancel_billing( ).
+      WHEN 'CANCELAll'.
+        lcl_process=>cancel_all( ).
+      WHEN 'CHKSTOCK'.
+        lcl_process=>show_stock( ).
+      WHEN 'DOWN'.
+        CALL TRANSACTION 'YROO_DOWNAPP'.
+      WHEN OTHERS.
+    ENDCASE.
+  ENDMETHOD.
+  METHOD cancel_delivery.
+    DATA:
+      lt_del_doc TYPE yss_tt_so,
+      lv_answer  TYPE c,
+      lv_flag    TYPE flag,
+      lt_item    TYPE STANDARD TABLE OF yroo_t_ecomm_i.
+
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+
+    IF lt_rows IS INITIAL.
+      MESSAGE 'Please select the records to process' TYPE 'I'.
+      RETURN.
+    ENDIF."SDONUM
+    LOOP AT lt_rows ASSIGNING FIELD-SYMBOL(<lfs_row>).
+      READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_item>) INDEX <lfs_row>-index.
+      IF sy-subrc EQ 0 AND <lfs_item>-sdonum IS NOT INITIAL AND <lfs_item>-sinvnu IS INITIAL.
+        APPEND <lfs_item>-sdonum TO lt_del_doc.
+      ENDIF.
+    ENDLOOP.
+    SORT lt_del_doc.
+    DELETE ADJACENT DUPLICATES FROM lt_del_doc.
+
+    IF lt_del_doc IS INITIAL.
+      MESSAGE 'Delivery order cannot be cancelled as the PGI/Invoice document exist' TYPE 'I'.
+      RETURN.
+    ELSE.
+      popup_to_confirm(
+       EXPORTING
+         im_text_question = 'Do you want to cancel delivery?'
+       IMPORTING
+         ev_action        = lv_answer ).
+      IF lv_answer NE '1'.
+        MESSAGE 'Action cancelled' TYPE 'S'.
+        RETURN.
+      ENDIF.
+      CALL METHOD yroo_cl_order_process=>cancel_delivery
+        EXPORTING
+          im_delivery_no = lt_del_doc    " Delivery
+        IMPORTING
+          ex_return      = DATA(lt_return).    " Error Messages
+    ENDIF.
+
+    DELETE lt_return WHERE type = 'S'.
+    IF lt_return IS INITIAL.
+      LOOP AT gt_ecomm_i ASSIGNING <lfs_item>.
+        READ TABLE lt_del_doc ASSIGNING FIELD-SYMBOL(<lfs_doc>)
+        WITH TABLE KEY vbeln = <lfs_item>-sdonum.
+        IF sy-subrc EQ 0.
+          CLEAR:<lfs_item>-sdonum,<lfs_item>-sinvnu,<lfs_item>-spgnum,
+          <lfs_item>-sdoitm,<lfs_item>-sinvit.
+          <lfs_item>-changed_by   = sy-uname.
+          <lfs_item>-changed_date = sy-datum.
+          <lfs_item>-changed_time = sy-uzeit.
+          APPEND <lfs_item> TO lt_item.
+          IF lv_flag IS INITIAL.
+            lv_flag = abap_true.
+            UPDATE yroo_t_ecomm_h SET sostat =  '2A'
+                                      changed_by    = sy-uname
+                                      changed_date  = sy-datum
+                                      changed_time  = sy-uzeit
+                                  WHERE ecomid = <lfs_item>-ecomid
+                                    AND oordid = <lfs_item>-oordid
+                                    AND trstyp = <lfs_item>-trstyp. "#EC CI_IMUD_NESTED
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+      UPDATE yroo_t_ecomm_i FROM TABLE lt_item.
+      IF sy-subrc EQ 0.
+        COMMIT WORK.
+      ENDIF.
+      CALL METHOD gobj_grid_230->refresh_table_display( ).
+      MESSAGE 'Delivery order cancelled successfully' TYPE 'S'.
+    ELSE.
+      TRY.
+          CALL METHOD /incasp/cl_asp_gst_utility=>data_in_alv_popup(
+            CHANGING
+              ch_table = lt_return ).
+        CATCH /incasp/cx_asp_tax INTO DATA(lo_exception).
+          DATA(lv_message_text) = lo_exception->get_text( ).
+          MESSAGE lv_message_text TYPE 'I'.
+      ENDTRY.
+      RETURN.
+    ENDIF.
+    CALL METHOD gobj_grid_230->refresh_table_display( ).
+  ENDMETHOD.
+  METHOD cancel_pgi.
+    DATA:
+      lr_vbeln  TYPE RANGE OF vbeln_vl,
+      lv_answer TYPE c,
+      lt_item   TYPE STANDARD TABLE OF yroo_t_ecomm_i.
+
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+
+    IF lt_rows IS INITIAL.
+      MESSAGE 'Please select the records to process' TYPE 'I'.
+      RETURN.
+    ENDIF.
+    LOOP AT lt_rows ASSIGNING FIELD-SYMBOL(<lfs_row>).
+      READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_item>) INDEX <lfs_row>-index.
+      IF sy-subrc EQ 0 AND
+         <lfs_item>-sdonum IS NOT INITIAL AND
+         <lfs_item>-sinvnu IS INITIAL.
+        APPEND INITIAL LINE TO lr_vbeln ASSIGNING FIELD-SYMBOL(<lfs_vbeln>).
+        <lfs_vbeln>-sign   = 'I'.
+        <lfs_vbeln>-option = 'EQ'.
+        <lfs_vbeln>-low    = <lfs_item>-sdonum.
+      ENDIF.
+    ENDLOOP.
+    SORT lr_vbeln.
+    DELETE ADJACENT DUPLICATES FROM lr_vbeln.
+
+    IF lr_vbeln IS INITIAL.
+      MESSAGE 'PGI Cannot be cancelled as the Invoice document exist' TYPE 'I'.
+      RETURN.
+    ELSE.
+      popup_to_confirm(
+       EXPORTING
+         im_text_question = 'Do you want to cancel PGI?'
+       IMPORTING
+         ev_action        = lv_answer ).
+      IF lv_answer NE '1'.
+        MESSAGE 'Action cancelled' TYPE 'S'.
+        RETURN.
+      ENDIF.
+      CALL METHOD yroo_cl_order_process=>cancel_pgi
+        EXPORTING
+          im_delivery_no = lr_vbeln    " Delivery
+        IMPORTING
+          ex_return      = DATA(lt_return).    " Message Collector
+    ENDIF.
+    DELETE lt_return WHERE msgty = 'S'.
+    IF lt_return IS INITIAL.
+      LOOP AT gt_ecomm_i ASSIGNING <lfs_item> WHERE sdonum IN lr_vbeln.
+        CLEAR:<lfs_item>-spgnum,<lfs_item>-sinvnu,<lfs_item>-sinvit.
+        <lfs_item>-changed_by   = sy-uname.
+        <lfs_item>-changed_date = sy-datum.
+        <lfs_item>-changed_time = sy-uzeit.
+        APPEND <lfs_item> TO lt_item.
+        AT LAST.
+          UPDATE yroo_t_ecomm_h SET sostat =  '3A'
+                                    changed_by    = sy-uname
+                                    changed_date  = sy-datum
+                                    changed_time  = sy-uzeit
+                          WHERE ecomid = <lfs_item>-ecomid
+                            AND oordid = <lfs_item>-oordid
+                            AND trstyp = <lfs_item>-trstyp. "#EC CI_IMUD_NESTED
+        ENDAT.
+      ENDLOOP.
+      UPDATE yroo_t_ecomm_i FROM TABLE lt_item.
+      IF sy-subrc EQ 0.
+        COMMIT WORK.
+      ENDIF.
+      CALL METHOD gobj_grid_230->refresh_table_display( ).
+      MESSAGE 'PGI Cancelled successfully' TYPE 'S'.
+    ELSE.
+      TRY.
+          CALL METHOD /incasp/cl_asp_gst_utility=>data_in_alv_popup(
+            CHANGING
+              ch_table = lt_return ).
+        CATCH /incasp/cx_asp_tax INTO DATA(lo_exception).
+          DATA(lv_message_text) = lo_exception->get_text( ).
+          MESSAGE lv_message_text TYPE 'I'.
+      ENDTRY.
+      RETURN.
+    ENDIF.
+    CALL METHOD gobj_grid_230->refresh_table_display( ).
+  ENDMETHOD.
+  METHOD cancel_billing.
+    DATA:
+      lr_vbeln  TYPE RANGE OF vbeln_vf,
+      lv_answer TYPE c,
+      lt_item   TYPE STANDARD TABLE OF yroo_t_ecomm_i.
+
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+
+    IF lt_rows IS INITIAL.
+      MESSAGE 'Please select the records to process' TYPE 'I'.
+      RETURN.
+    ENDIF.
+    LOOP AT lt_rows ASSIGNING FIELD-SYMBOL(<lfs_row>).
+      READ TABLE gt_ecomm_i ASSIGNING
+      FIELD-SYMBOL(<lfs_item>) INDEX <lfs_row>-index.
+      IF sy-subrc EQ 0 AND <lfs_item>-sinvnu IS NOT INITIAL.
+        APPEND INITIAL LINE TO lr_vbeln ASSIGNING FIELD-SYMBOL(<lfs_vbeln>).
+        <lfs_vbeln>-sign = 'I'.
+        <lfs_vbeln>-option = 'EQ'.
+        <lfs_vbeln>-low = <lfs_item>-sinvnu.
+      ENDIF.
+    ENDLOOP.
+    SORT lr_vbeln.
+    DELETE ADJACENT DUPLICATES FROM lr_vbeln.
+
+    IF lr_vbeln IS INITIAL.
+      MESSAGE 'No billing documents found to cancel' TYPE 'I'.
+      RETURN.
+    ELSE.
+      popup_to_confirm(
+        EXPORTING
+          im_text_question = 'Do you want to cancel invoice?'
+        IMPORTING
+          ev_action        = lv_answer ).
+      IF lv_answer NE '1'.
+        MESSAGE 'Action cancelled' TYPE 'S'.
+        RETURN.
+      ENDIF.
+
+      CALL METHOD yroo_cl_order_process=>cancel_billing
+        EXPORTING
+          im_billing_doc = lr_vbeln    " Billing Document
+        IMPORTING
+          ex_return      = DATA(lt_return)    " Table for Structure BAPIRET1
+          ex_success     = DATA(lt_success).  " Success Message after Billing Creation w.r.t Delivery No's
+    ENDIF.
+    DELETE lt_return WHERE type = 'S'.
+    IF lt_return IS NOT INITIAL.
+      TRY.
+          CALL METHOD /incasp/cl_asp_gst_utility=>data_in_alv_popup( CHANGING ch_table = lt_return ).
+        CATCH /incasp/cx_asp_tax INTO DATA(lo_exception).
+          DATA(lv_message_text) = lo_exception->get_text( ).
+          MESSAGE lv_message_text TYPE 'I'.
+      ENDTRY.
+      RETURN.
+    ENDIF.
+    IF lt_success IS NOT INITIAL.
+      LOOP AT lt_success ASSIGNING FIELD-SYMBOL(<lfs_success>).
+        LOOP AT gt_ecomm_i ASSIGNING <lfs_item> WHERE sinvnu = <lfs_success>-ref_doc.
+          CLEAR:<lfs_item>-sinvnu,<lfs_item>-sinvit.
+          <lfs_item>-changed_by   = sy-uname.
+          <lfs_item>-changed_date = sy-datum.
+          <lfs_item>-changed_time = sy-uzeit.
+          APPEND <lfs_item> TO lt_item.
+        ENDLOOP.
+        AT LAST.
+          UPDATE yroo_t_ecomm_h SET sostat =  '4A'
+                                    changed_by    = sy-uname
+                                    changed_date  = sy-datum
+                                    changed_time  = sy-uzeit
+                          WHERE ecomid = <lfs_item>-ecomid
+                            AND oordid = <lfs_item>-oordid
+                            AND trstyp = <lfs_item>-trstyp. "#EC CI_IMUD_NESTED
+        ENDAT.
+      ENDLOOP.
+      UPDATE yroo_t_ecomm_i FROM TABLE lt_item.
+      IF sy-subrc EQ 0.
+        COMMIT WORK.
+      ENDIF.
+      CALL METHOD gobj_grid_230->refresh_table_display( ).
+      MESSAGE 'Invoice/s Cancelled successfully' TYPE 'S'.
+    ENDIF.
+    CALL METHOD gobj_grid_230->refresh_table_display( ).
+  ENDMETHOD.
+  METHOD cancel_all.
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+
+    IF lt_rows IS INITIAL.
+      MESSAGE 'Please select the records to process' TYPE 'I'.
+      RETURN.
+    ENDIF.
+
+  ENDMETHOD.
+  METHOD popup_to_confirm.
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+        titlebar              = 'Delete'
+        text_question         = im_text_question
+        text_button_1         = 'Yes'
+        icon_button_1         = '@7M@'
+        text_button_2         = 'No'
+        icon_button_2         = '@43@'
+        default_button        = '2'
+        display_cancel_button = abap_true
+      IMPORTING
+        answer                = ev_action
+      EXCEPTIONS
+        text_not_found        = 1
+        OTHERS                = 2.
+    IF sy-subrc <> 0.
+    ENDIF.
+  ENDMETHOD.
+  METHOD show_stock.
+
+    DATA : lt_op_stock    TYPE TABLE OF gty_output_stock,
+           lr_matnr       TYPE RANGE OF matnr,
+           lr_werks       TYPE RANGE OF werks_d,
+           lr_lgort       TYPE RANGE OF lgort_d,
+           lv_conf_val_id TYPE yroo_de_cid,
+           lt_all_stock   TYPE yroo_cl_order_process=>tt_stock.
+
+    CLEAR  :gt_op_stock .
+    CALL METHOD gobj_grid_230->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+    IF lt_rows IS INITIAL.
+      MESSAGE s013 DISPLAY LIKE 'W' .
+      RETURN.
+    ENDIF.
+
+    DESCRIBE TABLE lt_rows LINES DATA(lv_lines).
+    IF lv_lines NE 1.
+      MESSAGE s010 DISPLAY LIKE 'W' .
+      RETURN.
+    ENDIF.
+    READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_final>) INDEX 1.
+    IF sy-subrc EQ 0.
+      SELECT SINGLE * FROM yroo_t_ecomm_h INTO @DATA(ls_ecomm_h)
+        WHERE ecomid EQ @<lfs_final>-ecomid
+          AND oordid EQ @<lfs_final>-oordid
+          AND trstyp EQ @<lfs_final>-trstyp.
+
+      lv_conf_val_id = <lfs_final>-ecomid.
+      CALL METHOD yroo_cl_api_utilities=>get_config_values
+        EXPORTING
+          im_configid      = 'MAP_SKU_PORTAL_SAP'
+          im_pcid          = lv_conf_val_id
+          im_skip_inactive = 'X'
+        IMPORTING
+          ex_config_val    = DATA(lt_sku_portal).
+    ENDIF.
+
+    LOOP AT lt_rows ASSIGNING FIELD-SYMBOL(<lfs_row>).
+      DATA lv_index TYPE sy-tabix.
+      lv_index = <lfs_row>-index.
+      READ TABLE gt_ecomm_i ASSIGNING <lfs_final> INDEX <lfs_row>-index.
+      IF sy-subrc NE 0.
+        CONTINUE.
+      ENDIF.
+      READ TABLE lt_sku_portal ASSIGNING
+      FIELD-SYMBOL(<lfs_sku>) WITH KEY cid = <lfs_final>-onlsku.
+      IF sy-subrc EQ 0.
+        IF <lfs_sku>-val01 IS NOT INITIAL.
+          APPEND INITIAL LINE TO lr_matnr ASSIGNING FIELD-SYMBOL(<lfs_matnr>).
+          <lfs_matnr>-sign   = 'I'.
+          <lfs_matnr>-option = 'EQ'.
+          <lfs_matnr>-low    = <lfs_sku>-val01.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+
+    CALL METHOD yroo_cl_order_process=>get_stock_availability
+      EXPORTING
+        im_matnr = lr_matnr    " Material Number
+        im_bukrs = ls_ecomm_h-bukrs    " Company Code
+        im_werks = lr_werks    " Plant
+        im_lgort = lr_lgort
+      IMPORTING
+        ex_stock = DATA(lt_stock).    " Tabletype for YSS_S_STOCK_DETS
+
+    READ TABLE  gt_ecomm_i ASSIGNING <lfs_final> INDEX lv_index.
+    IF sy-subrc EQ 0.
+      READ TABLE lt_sku_portal ASSIGNING <lfs_sku> WITH KEY cid = <lfs_final>-onlsku.
+      IF sy-subrc EQ 0.
+        LOOP AT lt_stock ASSIGNING FIELD-SYMBOL(<lfs_stock>) WHERE mat_no = <lfs_sku>-val01.
+          AUTHORITY-CHECK OBJECT 'M_MSEG_WWA'
+          FOR USER sy-uname
+          ID 'WERKS' FIELD <lfs_stock>-plant_id.
+          IF sy-subrc EQ 0.
+            APPEND INITIAL LINE TO lt_op_stock ASSIGNING FIELD-SYMBOL(<lfs_opstock>).
+            <lfs_opstock>-oordid = <lfs_final>-oordid.
+            <lfs_opstock>-ecomid = <lfs_final>-ecomid.
+            <lfs_opstock>-trstyp = <lfs_final>-trstyp.
+            <lfs_opstock>-oitmid = <lfs_final>-oitmid.
+            <lfs_opstock>-swhslc = <lfs_stock>-lgort.
+            <lfs_opstock>-swhsid = <lfs_stock>-plant_id.
+            <lfs_opstock>-onlsku = <lfs_final>-onlsku.
+            <lfs_opstock>-matnr  = <lfs_stock>-mat_no.
+            <lfs_opstock>-maktx  = <lfs_stock>-mat_desc.
+            <lfs_opstock>-uom    = <lfs_stock>-uom.
+            <lfs_opstock>-available_qty = <lfs_stock>-available_qty.
+          ENDIF.
+        ENDLOOP.
+      ENDIF.
+    ENDIF.
+
+    gt_op_stock = lt_op_stock.
+    IF gt_op_stock IS NOT INITIAL.
+      CALL SCREEN 240 STARTING AT 1 10 ENDING AT 113 20.
+    ELSE.
+      MESSAGE s017 DISPLAY LIKE 'W'.
+    ENDIF.
+
+
+  ENDMETHOD.
+  METHOD display_240.
+    CLEAR: gt_fcat_240,gs_layout_240.
+    IF gt_cont_240 IS INITIAL.
+      CREATE OBJECT gt_cont_240
+        EXPORTING
+          container_name = 'STOCK_POPUP'.
+    ENDIF.
+    IF gt_grid_240 IS INITIAL.
+      CREATE OBJECT gt_grid_240
+        EXPORTING
+          i_parent = gt_cont_240.
+    ENDIF.
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING FIELD-SYMBOL(<lfs_fcat>).
+    <lfs_fcat>-fieldname = 'OORDID'.
+    <lfs_fcat>-coltext = 'Ecoomerce ID'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'OITMID'.
+    <lfs_fcat>-coltext = 'Item ID'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'SWHSID'.
+    <lfs_fcat>-coltext = 'Plant'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'SWHSLC'.
+    <lfs_fcat>-coltext = 'Stor. Location'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'ONLSKU'.
+    <lfs_fcat>-coltext = 'Portal SKU'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'MATNR'.
+    <lfs_fcat>-coltext = 'SAP Material Id'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'MAKTX'.
+    <lfs_fcat>-coltext = 'Material Description'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'UOM'.
+    <lfs_fcat>-coltext = 'UoM'.
+
+    APPEND INITIAL LINE TO gt_fcat_240 ASSIGNING <lfs_fcat>.
+    <lfs_fcat>-fieldname = 'AVAILABLE_QTY'.
+    <lfs_fcat>-coltext = 'Stock Quantity'.
+
+    gs_layout_240-cwidth_opt = abap_true.
+    gs_layout_240-zebra = abap_true.
+    gs_layout_240-sel_mode = 'B'.
+
+    CALL METHOD gt_grid_240->set_table_for_first_display
+      EXPORTING
+        i_save                        = abap_true
+        is_layout                     = gs_layout_240
+      CHANGING
+        it_outtab                     = gt_op_stock
+        it_fieldcatalog               = gt_fcat_240
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc <> 0.
+    ENDIF.
+  ENDMETHOD.
+  METHOD update_stock.
+    DATA : lv_cid TYPE yroo_de_cid.
+
+    READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_final>) INDEX 1.
+    IF sy-subrc EQ 0.
+      IF <lfs_final>-ssonum IS NOT INITIAL.
+        MESSAGE s015 DISPLAY LIKE 'E'.
+        RETURN.
+      ENDIF.
+    ENDIF.
+
+    CALL METHOD gt_grid_240->get_selected_rows
+      IMPORTING
+        et_index_rows = DATA(lt_rows).
+    IF lt_rows IS INITIAL.
+      MESSAGE 'Please select the record' TYPE 'I'.
+    ENDIF.
+
+    READ TABLE lt_rows ASSIGNING FIELD-SYMBOL(<lfs_rows>) INDEX 1.
+    IF sy-subrc EQ 0.
+      READ TABLE gt_op_stock ASSIGNING FIELD-SYMBOL(<lfs_op_stock>) INDEX <lfs_rows>.
+      IF sy-subrc EQ 0.
+        READ TABLE gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_ecomm_i>)
+         WITH KEY ecomid = <lfs_op_stock>-ecomid
+                  oordid = <lfs_op_stock>-oordid
+                  trstyp = <lfs_op_stock>-trstyp
+                  oitmid = <lfs_op_stock>-oitmid.
+        IF sy-subrc EQ 0.
+          <lfs_ecomm_i>-swhsid = <lfs_op_stock>-swhsid.
+          <lfs_ecomm_i>-swhslc = <lfs_op_stock>-swhslc.
+          lv_cid = gs_ecomm_h-ecomid.
+          CALL METHOD yroo_cl_api_utilities=>get_config_values
+            EXPORTING
+              im_configid      = 'PORTAL'
+              im_cid           = lv_cid
+              im_skip_inactive = 'X'
+            IMPORTING
+              ex_config_val    = DATA(lt_portal).
+          READ TABLE lt_portal ASSIGNING FIELD-SYMBOL(<lfs_portal_conf>) INDEX 1.
+          IF <lfs_portal_conf>-val02 EQ abap_true.
+            UPDATE yroo_t_ecomm_i FROM <lfs_ecomm_i>.
+            IF sy-subrc EQ 0.
+              MESSAGE s014.
+              SORT gt_ecomm_i.
+              CALL METHOD gobj_grid_230->refresh_table_display( ).
+              LEAVE TO SCREEN 0.
+            ENDIF.
+          ELSE.
+            MESSAGE s018 DISPLAY LIKE 'W'.
+            LEAVE TO SCREEN 0.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+  METHOD app_file_check.
+    DATA : lv_filename TYPE eps2filnam,
+           lv_path     TYPE eps2filnam,
+           lt_list     TYPE STANDARD TABLE OF eps2fili.
+
+    CASE sy-sysid.
+      WHEN 'RSD'.
+        lv_path = '/usr/sap/RSD/SYS/src'.
+      WHEN 'RSQ'.
+        lv_path = '/usr/sap/RSQ/SYS/src'.
+      WHEN 'PRD'.
+        lv_path = '/usr/sap/PRD/SYS/src'.
+    ENDCASE.
+
+*Send files to Application Server
+    CALL FUNCTION 'EPS2_GET_DIRECTORY_LISTING'
+      EXPORTING
+        iv_dir_name            = lv_path
+      TABLES
+        dir_list               = lt_list
+      EXCEPTIONS
+        invalid_eps_subdir     = 1
+        sapgparam_failed       = 2
+        build_directory_failed = 3
+        no_authorization       = 4
+        read_directory_failed  = 5
+        too_many_read_errors   = 6
+        empty_directory_list   = 7
+        OTHERS                 = 8.
+    IF sy-subrc EQ 0.
+      SORT:lt_list BY name.
+    ENDIF.
+
+    IF lt_list IS NOT INITIAL.
+      LOOP AT gt_ecomm_i ASSIGNING FIELD-SYMBOL(<lfs_final>).
+        lv_filename =  <lfs_final>-sinvnu && '.pdf'.
+        READ TABLE lt_list ASSIGNING FIELD-SYMBOL(<lfs_list>) WITH KEY name = lv_filename
+                                                              BINARY SEARCH.
+        IF sy-subrc EQ 0.
+          <lfs_final>-pdf_viewer = '@6X@'.  "green color(File Exists in APP server)
+        ELSE.
+          <lfs_final>-pdf_viewer = '@6Y@'. "white color(File does not Exists in APP server)
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+  METHOD check_plant_auth.
+    AUTHORITY-CHECK OBJECT 'M_MSEG_WWA'
+                    FOR USER sy-uname
+                    ID 'WERKS' FIELD im_itm-swhsid.
+    IF sy-subrc EQ 0.
+      ex_subrc = 0.
+    ELSE.
+      ex_subrc = 4.
+    ENDIF.
+  ENDMETHOD.
+  METHOD check_bukrs_auth.
+    AUTHORITY-CHECK OBJECT 'J_B_BUKRS'
+FOR USER sy-uname ID 'BUKRS'
+FIELD im_bukrs.
+    IF sy-subrc EQ 0.
+      ex_subrc = 0.
+    ELSE.
+      ex_subrc = 4.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
