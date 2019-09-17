@@ -1,0 +1,3046 @@
+﻿CLASS_ROOT
+CLSNAME YSS_CL_FI_PROCESS
+VERSION 1
+LANGU E
+DESCRIPT SS FI Process
+UUID ABY+CNyVHuiEqSS2K6FMyQ==
+CATEGORY 00
+EXPOSURE 2
+STATE 1
+RELEASE 0
+AUTHOR SAPABAP
+CREATEDON 2018-02-14
+CHANGEDBY SAPABAP
+CHANGEDON 2018-02-14
+CHGDANYON 0000-00-00
+CLSFINAL X
+CLSCCINCL X
+FIXPT X
+UNICODE X
+R3RELEASE 740
+CLSBCCAT 00
+DURATION_TYPE 0
+RISK_LEVEL 0
+METHODS
+item
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CONSTRUCTOR
+VERSION 1
+LANGU E
+DESCRIPT FI Process Constructor
+EXPOSURE 2
+STATE 1
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-02-14
+CHANGEDBY SAPABAP
+CHANGEDON 2018-02-14
+MTDTYPE 2
+MTDDECLTYP 0
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+VERSION 1
+LANGU E
+DESCRIPT Customer Ledger Report
+EXPOSURE 2
+STATE 1
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-05-04
+MTDTYPE 0
+MTDDECLTYP 1
+MTDNEWEXC X
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+VERSION 1
+LANGU E
+DESCRIPT Vendor Ledger report
+EXPOSURE 2
+STATE 1
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDBY SAPABAP
+CHANGEDON 2018-05-07
+MTDTYPE 0
+MTDDECLTYP 1
+MTDNEWEXC X
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_OPEN_DOCS
+VERSION 1
+LANGU E
+DESCRIPT Vendor open documents
+EXPOSURE 2
+STATE 1
+EDITORDER 4
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-09
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-09
+MTDTYPE 0
+MTDDECLTYP 1
+MTDNEWEXC X
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+VERSION 1
+LANGU E
+DESCRIPT Vendor Outgoing Payments
+EXPOSURE 2
+STATE 1
+EDITORDER 5
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+MTDTYPE 0
+MTDDECLTYP 1
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_DYNPRO
+VERSION 1
+LANGU E
+DESCRIPT BDC Dynpro to start new screen
+EXPOSURE 0
+STATE 1
+EDITORDER 6
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+MTDTYPE 0
+MTDDECLTYP 1
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_FIELD
+VERSION 1
+LANGU E
+DESCRIPT BDC to insert field
+EXPOSURE 0
+STATE 1
+EDITORDER 7
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+MTDTYPE 0
+MTDDECLTYP 1
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_OPEN_DOCS
+VERSION 1
+LANGU E
+DESCRIPT Customeropen documents
+EXPOSURE 2
+STATE 1
+EDITORDER 8
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-21
+MTDTYPE 0
+MTDDECLTYP 1
+MTDNEWEXC X
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+VERSION 1
+LANGU E
+DESCRIPT Customer Incoming Payments
+EXPOSURE 2
+STATE 1
+EDITORDER 9
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+MTDTYPE 0
+MTDDECLTYP 1
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME REVERSAL_DOCUMENT
+VERSION 1
+LANGU E
+DESCRIPT Customer Cancel Payment
+EXPOSURE 2
+STATE 1
+EDITORDER 10
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-11-16
+CHANGEDON 0000-00-00
+MTDTYPE 0
+MTDDECLTYP 1
+R3RELEASE 740
+BCMTDCAT 00
+BCMTDSYN 0
+PARAMETERS
+item
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_DYNPRO
+SCONAME IM_PROGRAM
+VERSION 1
+LANGU E
+DESCRIPT BDC module pool
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-10
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BDC_PROG
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_DYNPRO
+SCONAME IM_DYNPRO
+VERSION 1
+LANGU E
+DESCRIPT BDC Screen number
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-10
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BDC_DYNR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_DYNPRO
+SCONAME EX_BDCDATA
+VERSION 1
+LANGU E
+DESCRIPT Table Type for BDCDATA
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BDCDATA_TAB
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_FIELD
+SCONAME IM_FNAM
+VERSION 1
+LANGU E
+DESCRIPT Field name
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE FNAM_____4
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_FIELD
+SCONAME IM_FVAL
+VERSION 1
+LANGU E
+DESCRIPT BDC field value
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BDC_FVAL
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME BDC_FIELD
+SCONAME EX_BDCDATA
+VERSION 1
+LANGU E
+DESCRIPT Table Type for BDCDATA
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-10
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BDCDATA_TAB
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_OPEN_DOCS
+SCONAME IM_REQ_PARAMS
+VERSION 1
+LANGU E
+DESCRIPT SS Portal Webservice Call Request Parameters
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 0
+TYPTYPE 1
+TYPE YSS_S_REQ_PARAMS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_OPEN_DOCS
+SCONAME IM_KUNNR
+VERSION 1
+LANGU E
+DESCRIPT Customer Number
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 0
+TYPTYPE 1
+TYPE KUNNR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_OPEN_DOCS
+SCONAME EX_OPEN_DOCS
+VERSION 1
+LANGU E
+DESCRIPT TT for ledger data
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-21
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_LEDGER_DATA
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_REQ_PARAMS
+VERSION 1
+LANGU E
+DESCRIPT SS Portal Webservice Call Request Parameters
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_REQ_PARAMS
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_DOCUMENT_DATE
+VERSION 1
+LANGU E
+DESCRIPT Document Date in Document
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BLDAT
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_POSTING_DATE
+VERSION 1
+LANGU E
+DESCRIPT Posting Date in the Document
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BUDAT
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_REFERENCE
+VERSION 1
+LANGU E
+DESCRIPT Reference Document Number
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 4
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE XBLNR1
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_AMOUNT
+VERSION 1
+LANGU E
+DESCRIPT Amount in document currency
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 5
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE WRBTR
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_PROFIT_CENTER
+VERSION 1
+LANGU E
+DESCRIPT Profit Center
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 6
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE PRCTR
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_TEXT
+VERSION 1
+LANGU E
+DESCRIPT Item Text
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 7
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE SGTXT
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_CUSTOMER_ACCOUNT
+VERSION 1
+LANGU E
+DESCRIPT Account Number or Key of a Worklist
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 8
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE AGKON
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME IM_LEDGER_DATA
+VERSION 1
+LANGU E
+DESCRIPT TT for ledger data
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 9
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_LEDGER_DATA
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_PAYMENTS
+SCONAME EX_RETURN
+VERSION 1
+LANGU E
+DESCRIPT VELO : Table Type for BAPIret2
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 10
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-17
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BAPIRETURN_T
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME IM_REQ_PARAMS
+VERSION 1
+LANGU E
+DESCRIPT SS Portal Webservice Call Request Parameters
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-07-20
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_REQ_PARAMS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME IM_KUNNR
+VERSION 1
+LANGU E
+DESCRIPT Customer Number
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE KUNNR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME IM_FROM_DATE
+VERSION 1
+LANGU E
+DESCRIPT Field of type DATS
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE DATS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME IM_TO_DATE
+VERSION 1
+LANGU E
+DESCRIPT Field of type DATS
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 4
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE DATS
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME EX_OPENING_BAL
+VERSION 1
+LANGU E
+DESCRIPT Structure for opening balance
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 5
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_OPENING_BAL
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME EX_CUSTOMER_NAME
+VERSION 1
+LANGU E
+DESCRIPT Name 1
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 6
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE NAME1_GP
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME EX_LEDGER_DATA
+VERSION 1
+LANGU E
+DESCRIPT TT for ledger data
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 7
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_LEDGER_DATA
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME EX_CLOSING_BAL
+VERSION 1
+LANGU E
+DESCRIPT Amount in Local Currency
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 8
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE DMBTR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME EX_RETURN
+VERSION 1
+LANGU E
+DESCRIPT Return parameter table
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 9
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-07-19
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-20
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BAPIRET2_T
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME IM_REQ_PARAMS
+VERSION 1
+LANGU E
+DESCRIPT SS Portal Webservice Call Request Parameters
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_REQ_PARAMS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME IM_LIFNR
+VERSION 1
+LANGU E
+DESCRIPT Account Number of Vendor or Creditor
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE LIFNR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME IM_FROM_DATE
+VERSION 1
+LANGU E
+DESCRIPT Field of type DATS
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE DATS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME IM_TO_DATE
+VERSION 1
+LANGU E
+DESCRIPT Field of type DATS
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 4
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE DATS
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME EX_OPENING_BAL
+VERSION 1
+LANGU E
+DESCRIPT Structure for opening balance
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 5
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_OPENING_BAL
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME EX_VENDOR_NAME
+VERSION 1
+LANGU E
+DESCRIPT Name 1
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 6
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE NAME1_GP
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME EX_LEDGER_DATA
+VERSION 1
+LANGU E
+DESCRIPT TT for ledger data
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 7
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_LEDGER_DATA
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME EX_CLOSING_BAL
+VERSION 1
+LANGU E
+DESCRIPT Amount in Local Currency
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 8
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE DMBTR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME EX_RETURN
+VERSION 1
+LANGU E
+DESCRIPT Return Parameter
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 9
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-07-18
+CHANGEDBY SAPABAP
+CHANGEDON 2018-07-18
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BAPIRET2_T
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME REVERSAL_DOCUMENT
+SCONAME IM_DOCUMENTS
+VERSION 1
+LANGU E
+DESCRIPT Cancel Incoming Payments
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-11-16
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_PAYMENTS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME REVERSAL_DOCUMENT
+SCONAME EX_RETURN
+VERSION 1
+LANGU E
+DESCRIPT Error Messages
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-11-16
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BAPIRET2_TAB
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_OPEN_DOCS
+SCONAME IM_REQ_PARAMS
+VERSION 1
+LANGU E
+DESCRIPT SS Portal Webservice Call Request Parameters
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-09
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_REQ_PARAMS
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_OPEN_DOCS
+SCONAME IM_LIFNR
+VERSION 1
+LANGU E
+DESCRIPT Account Number of Vendor or Creditor
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-09
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE LIFNR
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_OPEN_DOCS
+SCONAME EX_LEDGER_DATA
+VERSION 1
+LANGU E
+DESCRIPT TT for ledger data
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-09
+CHANGEDON 0000-00-00
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_LEDGER_DATA
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_REQ_PARAMS
+VERSION 1
+LANGU E
+DESCRIPT SS Portal Webservice Call Request Parameters
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 1
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-10
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_S_REQ_PARAMS
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_DOCUMENT_DATE
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 2
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BLDAT
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_POSTING_DATE
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 3
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BUDAT
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_REFERENCE
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 4
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE XBLNR1
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_AMOUNT
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 5
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE WRBTR
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_PROFIT_CENTER
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 6
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE PRCTR
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_TEXT
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 7
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE SGTXT
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_CUSTOMER_ACCOUNT
+VERSION 1
+LANGU E
+DESCRIPT Account Number or Key of a Worklist
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 8
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-11
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE AGKON
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME IM_LEDGER_DATA
+VERSION 1
+LANGU E
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 9
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDON 0000-00-00
+PARDECLTYP 0
+PARPASSTYP 1
+TYPTYPE 1
+TYPE YSS_TT_LEDGER_DATA
+PAROPTIONL X
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_PAYMENTS
+SCONAME EX_RETURN
+VERSION 1
+LANGU E
+DESCRIPT VELO : Table Type for BAPIret2
+CMPTYPE 1
+MTDTYPE 0
+EDITORDER 10
+DISPID 0
+AUTHOR SAPABAP
+CREATEDON 2018-08-10
+CHANGEDBY SAPABAP
+CHANGEDON 2018-08-10
+PARDECLTYP 1
+PARPASSTYP 1
+TYPTYPE 1
+TYPE BAPIRETURN_T
+EXCEPTIONS
+item
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME CUSTOMER_OPEN_DOCS
+SCONAME YCX_SS_EXCEPTION
+VERSION 1
+LANGU E
+DESCRIPT Custom Exception class for custom developments
+MTDTYPE 0
+EDITORDER 1
+AUTHOR SAPABAP
+CREATEDON 2018-08-21
+CHANGEDON 0000-00-00
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_CUSTOMER
+SCONAME YCX_SS_EXCEPTION
+VERSION 1
+LANGU E
+DESCRIPT Custom Exception class for custom developments
+MTDTYPE 0
+EDITORDER 1
+AUTHOR SAPABAP
+CREATEDON 2018-05-04
+CHANGEDON 0000-00-00
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME LEDGER_VENDOR
+SCONAME YCX_SS_EXCEPTION
+VERSION 1
+LANGU E
+DESCRIPT Custom Exception class for custom developments
+MTDTYPE 0
+EDITORDER 1
+AUTHOR SAPABAP
+CREATEDON 2018-05-07
+CHANGEDON 0000-00-00
+CLSNAME YSS_CL_FI_PROCESS
+CMPNAME VENDOR_OPEN_DOCS
+SCONAME YCX_SS_EXCEPTION
+VERSION 1
+LANGU E
+DESCRIPT Custom Exception class for custom developments
+MTDTYPE 0
+EDITORDER 1
+AUTHOR SAPABAP
+CREATEDON 2018-08-09
+CHANGEDON 0000-00-00
+CLSDEFERRDS
+item
+CLSNAME YSS_CL_FI_PROCESS
+TYPEGROUP YSS_CL_TYPE_POOL
+VERSION 1
+TPUTYPE 1
+EXPLICIT X
+LOCALS_SRC 
+LOCALS_DEF
+item
+*"* use this source file for any type of declarations (class
+*"* definitions, interfaces or type declarations) you need for
+*"* components in the private section
+
+LOCALS_IMP
+item
+*"* use this source file for the definition and implementation of
+*"* local helper classes, interface definitions and type
+*"* declarations
+
+LOCALS_MAC
+item
+*"* use this source file for any macro definitions you need
+*"* in the implementation part of the class
+
+TEXT_POOL
+E
+item
+ID I
+KEY 001
+ENTRY Unable to retrieve ALV data
+LENGTH 54
+ID I
+KEY 002
+ENTRY Insufficient parameters supplied in the method call
+LENGTH 102
+ID I
+KEY 003
+ENTRY Maximum 7 documents can be cleared using this function
+LENGTH 108
+METHOD_SOURCE
+CONSTRUCTOR
+item
+method CONSTRUCTOR.
+endmethod.
+LEDGER_CUSTOMER
+item
+METHOD ledger_customer.
+*----------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*----------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited             *
+* Created by  : Zareena Begum                                          *
+* Created on  : 04-May-2018                                            *
+* Description : Get Customer Ledger Report                             *
+*----------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*----------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*  Narayana Raju P | 03.04.2019 | MOD01
+*  Removing both invoice and Cancelled Invoice,
+*  If Cancelled invoice is generated for Invoice.
+*----------------------------------------------------------------------*
+TYPES: BEGIN OF lty_bsid,
+belnr TYPE belnr_d,
+gjahr TYPE gjahr,
+budat TYPE budat, "+++KRISHNA20180813
+xblnr TYPE xblnr1,
+shkzg TYPE shkzg,
+dmbtr TYPE dmbtr,
+END OF lty_bsid.
+
+TYPES: BEGIN OF lty_bkpf,
+belnr TYPE belnr_d,
+gjahr TYPE gjahr,
+blart TYPE blart,
+bktxt TYPE bktxt,
+budat TYPE budat,
+xblnr TYPE xblnr1,
+awkey TYPE char10,    "awkey
+END OF lty_bkpf.
+
+TYPES: BEGIN OF lty_bseg,
+belnr TYPE belnr_d,
+gjahr TYPE gjahr,
+sgtxt TYPE sgtxt,
+END OF lty_bseg.
+
+TYPES: BEGIN OF lty_vbrk,
+vbeln TYPE vbeln_vf,
+vbtyp TYPE vbtyp,
+END OF lty_vbrk.
+
+DATA: lt_r_date            TYPE yss_cl_type_pool=>yss_r_date,
+lv_previous_date     TYPE datum,
+lt_key_balance       TYPE TABLE OF bapi3007_3,
+lt_temp              TYPE TABLE OF lty_bsid,
+lt_bkpf              TYPE TABLE OF lty_bkpf,
+lv_name              TYPE kna1-name1,
+lwa_ledger_data	     TYPE yss_s_ledger_data,
+lt_bsid_bsad         TYPE TABLE OF lty_bsid,
+lt_bseg              TYPE TABLE OF lty_bseg,
+lt_vbrk              TYPE TABLE OF lty_vbrk,
+lwa_bsid_bsad        TYPE lty_bsid,
+lv_sum_debit_amount  TYPE dmbtr,
+lv_balance           TYPE dmbtr,
+*          ls_return            TYPE bapireturn,
+*          ls_return_temp       TYPE bapiret2,
+ls_key_balance       TYPE bapi3007_3,
+lv_sum_credit_amount TYPE dmbtr,
+lobj_data            TYPE REF TO data,
+**        >>SOC +Narayana Raju P 03.04.2019 mod01
+lt_temp1             TYPE yss_tt_ledger_data,
+lt_xblnr             TYPE TABLE OF xblnr1,
+lv_flag              TYPE flag VALUE ' '.
+**        <<EOC Narayana Raju P 03.04.2019 mod01
+* Local field symbols
+FIELD-SYMBOLS  : <lt_data>  TYPE ANY TABLE,
+<lfs_data> TYPE any.
+
+CONSTANTS: lc_s           TYPE flag VALUE 'S',
+lc_h           TYPE flag VALUE 'H',
+lc_bukrs       TYPE char4 VALUE 'RMSS',
+lc_zd          TYPE char2 VALUE 'ZD',
+lc_rv          TYPE char2 VALUE 'RV',
+lc_in_payment  TYPE char20 VALUE 'Incoming Payment', "'IN
+lc_invoice     TYPE char10 VALUE 'Invoice', "'INVOICE',
+lc_cancelled   TYPE char50 VALUE 'Canceled Invoice', "+++
+lc_dr          TYPE char2 VALUE 'Dr', "+++ KRISHNA2018072
+lc_cr          TYPE char2 VALUE 'Cr', "+++ KRISHNA2018072
+lc_credit_memo TYPE char15 VALUE 'Credit Memo', "'CREDIT_
+lc_credit_canc TYPE char50 VALUE 'Cancelled Credit Memo'.
+
+CLEAR:ex_opening_bal,ex_customer_name,ex_ledger_data,ex_closing_bal,
+
+*Fill lt_r_date
+IF im_to_date IS NOT INITIAL.
+APPEND INITIAL LINE TO lt_r_date ASSIGNING FIELD-SYMBOL(<lfs_date>
+<lfs_date>-sign = 'I'.
+<lfs_date>-option = 'BT'.
+<lfs_date>-low = im_from_date.
+<lfs_date>-high = im_to_date.
+ELSE.
+APPEND INITIAL LINE TO lt_r_date ASSIGNING <lfs_date>.
+<lfs_date>-sign = 'I'.
+<lfs_date>-option = 'EQ'.
+<lfs_date>-low = im_from_date.
+ENDIF.
+
+lv_previous_date = im_from_date - 1.
+
+**To get the opening balance
+*    CALL FUNCTION 'BAPI_AR_ACC_GETKEYDATEBALANCE'
+*      EXPORTING
+*        companycode = lc_bukrs
+*        customer    = im_kunnr
+*        keydate     = lv_previous_date
+**       BALANCESPGLI       = ' '
+**       NOTEDITEMS  = ' '
+*      IMPORTING
+*        return      = ls_return
+*      TABLES
+*        keybalance  = lt_key_balance.
+*    IF ls_return IS NOT INITIAL.
+*      ls_return_temp-type = ls_return-type.
+*      ls_return_temp-message = ls_return-message.
+*      APPEND ls_return_temp TO ex_return.
+*    ENDIF.
+**********************************************************************
+**********************************************************************
+cl_salv_bs_runtime_info=>set( EXPORTING display  = abap_false
+metadata = abap_false
+data     = abap_true ).
+SUBMIT yss_r_customer_ledger WITH company EQ lc_bukrs
+WITH branch  = im_req_params-bupla
+WITH customer = im_kunnr
+WITH keydate = lv_previous_date
+AND RETURN.
+
+TRY.
+*   Fetch the output data from program zhr_ocorrencias
+cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lobj_d
+ASSIGN lobj_data->* TO <lt_data>.
+
+CATCH cx_salv_bs_sc_runtime_info.
+MESSAGE 'Unable to retrieve ALV data'(001) TYPE 'I'.
+ENDTRY.
+cl_salv_bs_runtime_info=>clear_all( ).
+
+IF <lt_data> IS ASSIGNED.
+LOOP AT <lt_data> ASSIGNING <lfs_data>.
+MOVE-CORRESPONDING <lfs_data> TO ls_key_balance .
+APPEND ls_key_balance TO lt_key_balance.
+CLEAR ls_key_balance.
+ENDLOOP.
+ENDIF.
+
+**********************************************************************
+**********************************************************************
+READ TABLE lt_key_balance ASSIGNING FIELD-SYMBOL(<lfs_key_balance>)
+IF sy-subrc EQ 0.
+ex_opening_bal-amount = <lfs_key_balance>-lc_bal.
+lv_balance            = <lfs_key_balance>-lc_bal.
+IF <lfs_key_balance>-db_cr_ind = lc_s.
+ex_opening_bal-type = 'Dr'.
+ELSEIF <lfs_key_balance>-db_cr_ind = lc_h.
+ex_opening_bal-type = 'Cr'.
+ENDIF.
+ENDIF.
+
+*To get the customer name
+SELECT SINGLE name1 INTO lv_name
+FROM kna1
+WHERE kunnr = im_kunnr.
+IF sy-subrc EQ 0.
+ex_customer_name = lv_name.
+ENDIF.
+
+* Fetch data from BSID
+SELECT belnr
+gjahr
+budat
+xblnr
+shkzg
+dmbtr INTO TABLE lt_bsid_bsad
+FROM bsid
+WHERE bukrs = lc_bukrs AND
+kunnr = im_kunnr AND
+budat IN lt_r_date.
+*                  AND gsber EQ im_req_params-bupla. ""+++KRISHNA2018072
+IF sy-subrc NE 0.
+"Do nothing
+ENDIF.
+
+*Now, fetch the data from BSAD in the same internal table
+SELECT belnr
+gjahr
+budat
+xblnr
+shkzg
+dmbtr APPENDING TABLE lt_bsid_bsad
+FROM bsad
+WHERE bukrs = lc_bukrs AND
+kunnr = im_kunnr AND
+budat IN lt_r_date.
+*                AND gsber EQ im_req_params-bupla.  ""+++KRISHNA20180720
+IF sy-subrc NE 0.
+"Do nothing
+ENDIF.
+
+*To get the posting date, payment mode, invoice num for lt_bsid_bsad rec
+IF lt_bsid_bsad IS NOT INITIAL.
+SELECT belnr
+gjahr
+blart
+bktxt
+budat
+xblnr
+awkey INTO TABLE lt_bkpf
+FROM bkpf
+FOR ALL ENTRIES IN lt_bsid_bsad
+WHERE belnr EQ lt_bsid_bsad-belnr AND
+gjahr EQ lt_bsid_bsad-gjahr AND
+bukrs EQ lc_bukrs.
+IF sy-subrc EQ 0.
+SORT lt_bkpf BY belnr gjahr.
+ENDIF.
+
+*To get the Document text from BSEG
+SELECT belnr
+gjahr
+sgtxt INTO TABLE lt_bseg
+FROM bseg
+FOR ALL ENTRIES IN lt_bsid_bsad
+WHERE belnr EQ lt_bsid_bsad-belnr AND
+gjahr EQ lt_bsid_bsad-gjahr AND
+bukrs EQ lc_bukrs AND
+buzei EQ '1' ".
+AND gsber = im_req_params-bupla. "+++KRISHNA20180725
+IF sy-subrc EQ 0.
+SORT lt_bseg BY belnr gjahr.
+ENDIF.
+ENDIF.
+
+*Get data from VBRK
+IF lt_bkpf IS NOT INITIAL.
+SELECT vbeln
+vbtyp INTO TABLE lt_vbrk
+FROM vbrk
+FOR ALL ENTRIES IN lt_bkpf
+WHERE vbeln = lt_bkpf-awkey.
+IF sy-subrc EQ 0.
+"Do nothing
+ENDIF.
+ENDIF.
+
+*Collect so that the amount gets addedup for the same belnr records
+SORT lt_bsid_bsad BY budat.
+LOOP AT lt_bsid_bsad INTO lwa_bsid_bsad.
+COLLECT lwa_bsid_bsad INTO lt_temp.
+ENDLOOP.
+
+*Getting the data in ex_ledger_data
+LOOP AT lt_temp INTO lwa_bsid_bsad.
+CLEAR lv_flag.         "+++Narayana Raju P 03.04.2019
+lwa_ledger_data-doc_num = lwa_bsid_bsad-belnr.
+*To get the doc text
+READ TABLE lt_bseg INTO DATA(lwa_bseg) WITH KEY belnr = lwa_bsid_b
+gjahr = lwa_bsid_b
+IF sy-subrc EQ 0.
+lwa_ledger_data-doc_text =  lwa_bseg-sgtxt.
+ELSE.
+CONTINUE.
+ENDIF.
+
+*To get the posting date, payment date, Invoice number
+READ TABLE lt_bkpf INTO DATA(lwa_bkpf) WITH KEY belnr = lwa_bsid_b
+gjahr = lwa_bsid_b
+IF sy-subrc EQ 0.
+*        lwa_ledger_data-doc_text = lwa_bkpf-bktxt.
+lwa_ledger_data-posting_date = lwa_bkpf-budat.
+IF lwa_bkpf-blart = lc_zd.
+lwa_ledger_data-payment_mode = lwa_bkpf-xblnr.
+lwa_ledger_data-doc_type = lc_in_payment.
+ELSEIF lwa_bkpf-blart = lc_rv.
+lwa_ledger_data-invoice_num  = lwa_bkpf-awkey.
+READ TABLE lt_vbrk INTO DATA(lwa_vbrk) WITH KEY vbeln =  lwa_b
+IF lwa_vbrk-vbtyp = 'M'.
+lwa_ledger_data-doc_type = lc_invoice.
+*** START KRISHNA20180720 >>>
+ELSEIF lwa_vbrk-vbtyp = 'N'.
+lwa_ledger_data-doc_type = lc_cancelled.
+*            CONTINUE.
+ELSEIF lwa_vbrk-vbtyp = 'S'.
+lwa_ledger_data-doc_type = lc_credit_canc.
+*** END <<< KRISHNA20180720
+ELSEIF lwa_vbrk-vbtyp = 'O'.
+lwa_ledger_data-doc_type = lc_credit_memo.
+ENDIF.
+ENDIF.
+ENDIF.
+**    >>>SOC Narayana Raju P 03.04.2019 MOD01
+*     Ignoring both invoice and Cancelled Invoice,If Cancelled invoice i
+IF lwa_vbrk-vbtyp = 'N'. "Ignoring Cancelled Invoice
+CONTINUE.
+ELSEIF lwa_vbrk-vbtyp = 'M'. " Ignoring Invoice
+*      Checking if Cancelled Invoice is generated for Invoice
+LOOP AT lt_temp INTO DATA(ls_temp) WHERE xblnr = lwa_bsid_bsad-x
+IF ls_temp-xblnr EQ lwa_bsid_bsad-xblnr AND lwa_vbrk-vbtyp = '
+READ TABLE lt_bkpf INTO DATA(lwa_bkpf1)
+WITH KEY belnr = ls_temp-belnr
+gjahr = ls_temp-gjahr.
+IF sy-subrc EQ 0.
+READ TABLE lt_vbrk INTO DATA(lwa_vbrk1)
+WITH KEY vbeln =  lwa_bkpf1-awkey.
+IF sy-subrc EQ 0 AND lwa_vbrk1-vbtyp = 'N'.
+lv_flag = abap_true.
+ENDIF.
+ENDIF.
+ENDIF.
+ENDLOOP.
+ENDIF.
+IF lv_flag = abap_true.
+CONTINUE.
+ENDIF.
+**    <<<EOC Narayana Raju P 03.04.2019 MOD01
+*If  shkzg=lc_s => debit amount and shkzg=lc_h => credit amount
+IF lwa_bsid_bsad-shkzg = lc_s.
+lwa_ledger_data-debit_amount = lwa_bsid_bsad-dmbtr.
+lv_balance = lv_balance + lwa_bsid_bsad-dmbtr.
+ELSEIF lwa_bsid_bsad-shkzg = lc_h.
+lwa_ledger_data-credit_amount = lwa_bsid_bsad-dmbtr.
+lv_balance = lv_balance - lwa_bsid_bsad-dmbtr.
+ENDIF.
+*To get the totals
+lv_sum_debit_amount = lv_sum_debit_amount + lwa_ledger_data-debit_
+lv_sum_credit_amount = lv_sum_credit_amount + lwa_ledger_data-cred
+
+WRITE lv_balance TO lwa_ledger_data-balance.
+CONDENSE lwa_ledger_data-balance.
+IF lv_balance GT 0.
+CONCATENATE lwa_ledger_data-balance lc_dr INTO lwa_ledger_data-b
+SEPARATED BY space.
+ELSEIF lv_balance LT 0.
+CALL FUNCTION 'CLOI_PUT_SIGN_IN_FRONT'
+CHANGING
+value = lwa_ledger_data-balance.
+CONCATENATE lwa_ledger_data-balance lc_cr INTO lwa_ledger_data-b
+SEPARATED BY space.
+ENDIF.
+
+APPEND lwa_ledger_data TO ex_ledger_data.
+CLEAR: lwa_ledger_data, lwa_bkpf.
+ENDLOOP.
+
+**Calculate closing balance
+*    IF ex_opening_bal-type = 'Dr'.
+ex_closing_bal = ( ex_opening_bal-amount + lv_sum_debit_amount ) - l
+*    ELSEIF ex_opening_bal-type = 'Cr'.
+*      ex_closing_bal = ( - ex_opening_bal-amount + lv_sum_debit_amount
+*    ELSE.
+*      ex_closing_bal = lv_sum_debit_amount - lv_sum_credit_amount .
+*    ENDIF.
+*** >>> START KRISHNA20180812*******************************************
+*    CLEAR:ls_key_balance,lt_key_balance.
+*    cl_salv_bs_runtime_info=>set( EXPORTING display  = abap_false
+*                                              metadata = abap_false
+*                                              data     = abap_true ).
+*    SUBMIT yss_r_customer_ledger WITH company EQ lc_bukrs
+*                                 WITH branch   = im_req_params-bupla
+*                                 WITH customer = im_kunnr
+*                                 WITH keydate  = im_to_date
+*                                 AND RETURN.
+*
+*    TRY.
+**   Fetch the output data from program zhr_ocorrencias
+*        cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lobj_
+*        ASSIGN lobj_data->* TO <lt_data>.
+*
+*      CATCH cx_salv_bs_sc_runtime_info.
+*        MESSAGE 'Unable to retrieve ALV data'(001) TYPE 'I'.
+*    ENDTRY.
+*    cl_salv_bs_runtime_info=>clear_all( ).
+*
+*    IF <lt_data> IS ASSIGNED.
+*      LOOP AT <lt_data> ASSIGNING <lfs_data>.
+*        MOVE-CORRESPONDING <lfs_data> TO ls_key_balance .
+*        APPEND ls_key_balance TO lt_key_balance.
+*        CLEAR ls_key_balance.
+*      ENDLOOP.
+*    ENDIF.
+*
+*    READ TABLE lt_key_balance ASSIGNING <lfs_key_balance> INDEX 1.
+*    IF sy-subrc EQ 0.
+*      ex_closing_bal = <lfs_key_balance>-lc_bal.
+*    ENDIF.
+
+*** <<< END KRISHNA20180812*********************************************
+IF ex_closing_bal IS INITIAL AND
+ex_opening_bal IS INITIAL AND
+ex_ledger_data IS INITIAL.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>ledger_data_not_found
+msgv1  = ycx_ss_exception=>format( im_kunnr ).
+ENDIF.
+ENDMETHOD.
+LEDGER_VENDOR
+item
+METHOD ledger_vendor.
+*----------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*----------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited             *
+* Created by  : Zareena Begum                                          *
+* Created on  : 07-May-2018                                            *
+* Description : Get Vendor Ledger Report                             *
+*----------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*----------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*----------------------------------------------------------------------*
+TYPES: BEGIN OF lty_bsik,
+belnr TYPE belnr_d,
+gjahr TYPE gjahr,
+budat TYPE budat, "+++KRISHNA20180813
+xblnr TYPE xblnr1,
+shkzg TYPE shkzg,
+dmbtr TYPE dmbtr,
+augbl TYPE augbl, "+++KRISHNA20180808
+gsber TYPE gsber, "+++KRISHNA20180809
+END OF lty_bsik.
+
+TYPES: BEGIN OF lty_bkpf,
+belnr TYPE belnr_d,
+gjahr TYPE gjahr,
+bktxt TYPE bktxt,
+blart TYPE blart,
+budat TYPE budat,
+xblnr TYPE xblnr1,
+awkey TYPE char10,    "awkey
+END OF lty_bkpf.
+
+TYPES: BEGIN OF lty_bseg,
+belnr TYPE belnr_d,
+gjahr TYPE gjahr,
+sgtxt TYPE sgtxt,
+augbl TYPE augbl,
+koart TYPE koart,
+END OF lty_bseg.
+
+DATA: lt_r_date            TYPE yss_cl_type_pool=>yss_r_date,
+lv_previous_date     TYPE datum,
+lt_key_balance       TYPE TABLE OF bapi3008_3,
+lt_temp              TYPE TABLE OF lty_bsik,
+lt_bkpf              TYPE TABLE OF lty_bkpf,
+lt_bseg              TYPE TABLE OF lty_bseg,
+lv_name              TYPE lfa1-name1,
+lwa_ledger_data	     TYPE yss_s_ledger_data,
+lt_bsik_bsak         TYPE TABLE OF lty_bsik,
+lwa_bsik_bsak        TYPE lty_bsik,
+lv_sum_debit_amount  TYPE dmbtr,
+lv_balance           TYPE dmbtr,
+*          ls_return            TYPE bapireturn,
+*          ls_return_temp       TYPE bapiret2,
+ls_key_balance       TYPE bapi3008_3,
+lv_sum_credit_amount TYPE dmbtr,
+lobj_data            TYPE REF TO data.
+*Field symbols
+FIELD-SYMBOLS: <lt_data>  TYPE ANY TABLE,
+<lfs_data> TYPE any.
+
+CONSTANTS: lc_s        TYPE flag VALUE 'S',
+lc_h        TYPE flag VALUE 'H',
+lc_zd       TYPE char2 VALUE 'ZK', "'ZD',++++KRISHNA20180
+lc_rv       TYPE char2 VALUE 'RE', "'RV', ++++KRISHNA2018
+lc_ka       TYPE char2 VALUE 'KA', "+++ KRISHNA20180719
+lc_dr       TYPE char2 VALUE 'Dr', "+++ KRISHNA20180727
+lc_cr       TYPE char2 VALUE 'Cr', "+++ KRISHNA20180727
+lc_bukrs    TYPE char4 VALUE 'RMSS',
+lc_pay_ven  TYPE char50 VALUE 'Vendor Payment',
+lc_pay_canc TYPE char50 VALUE 'Cancelled Vendor Payment',
+lc_invoice  TYPE char50 VALUE 'Invoice',
+lc_credit   TYPE char50 VALUE 'Credit Memo',
+lc_inv_canc TYPE char50 VALUE 'Cancelled Invoice'.
+
+CLEAR:ex_opening_bal,ex_vendor_name,ex_ledger_data,ex_closing_bal,ex
+
+*Fill lt_r_date
+IF im_to_date IS NOT INITIAL.
+APPEND INITIAL LINE TO lt_r_date ASSIGNING FIELD-SYMBOL(<lfs_date>
+<lfs_date>-sign = 'I'.
+<lfs_date>-option = 'BT'.
+<lfs_date>-low = im_from_date.
+<lfs_date>-high = im_to_date.
+
+*      lv_previous_date = im_to_date. "+++ KRISHNA20180719
+ELSE.
+APPEND INITIAL LINE TO lt_r_date ASSIGNING <lfs_date>.
+<lfs_date>-sign = 'I'.
+<lfs_date>-option = 'EQ'.
+<lfs_date>-low = im_from_date.
+*      lv_previous_date = im_from_date. "+++ KRISHNA20180719
+ENDIF.
+**********************************************************************
+DATA:lt_branch TYPE RANGE OF gsber.
+APPEND INITIAL LINE TO lt_branch ASSIGNING FIELD-SYMBOL(<lfs_branch>
+<lfs_branch>-low    = im_req_params-bupla.
+<lfs_branch>-option = 'EQ'.
+<lfs_branch>-sign   = 'I'.
+
+APPEND INITIAL LINE TO lt_branch ASSIGNING  <lfs_branch>.
+<lfs_branch>-low    = space.
+<lfs_branch>-option = 'EQ'.
+<lfs_branch>-sign   = 'I'.
+**********************************************************************
+lv_previous_date = im_from_date - 1. ""+++ KRISHNA20180719
+
+**To get the opening balance
+*    CALL FUNCTION 'BAPI_AP_ACC_GETKEYDATEBALANCE'
+*      EXPORTING
+*        companycode = lc_bukrs          "im_req_params-werks
+*        vendor      = im_lifnr
+*        keydate     = lv_previous_date
+**       BALANCESPGLI       = ' '
+**       NOTEDITEMS  = ' '
+*      IMPORTING
+*        return      = ls_return
+*      TABLES
+*        keybalance  = lt_key_balance.
+*
+*    IF ls_return IS NOT INITIAL.
+*      ls_return_temp-type = ls_return-type.
+*      ls_return_temp-message = ls_return-message.
+*      APPEND ls_return_temp TO ex_return.
+*    ENDIF.
+cl_salv_bs_runtime_info=>set( EXPORTING display  = abap_false
+metadata = abap_false
+data     = abap_true ).
+SUBMIT yss_r_vendor_ledger WITH company EQ lc_bukrs
+WITH branch  = im_req_params-bupla
+WITH vendor = im_lifnr
+WITH keydate = lv_previous_date
+AND RETURN.
+
+TRY.
+*   Fetch the output data from program zhr_ocorrencias
+cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lobj_d
+ASSIGN lobj_data->* TO <lt_data>.
+
+IF <lt_data> IS ASSIGNED.
+LOOP AT <lt_data> ASSIGNING <lfs_data>.
+MOVE-CORRESPONDING <lfs_data> TO ls_key_balance .
+APPEND ls_key_balance TO lt_key_balance.
+CLEAR ls_key_balance.
+ENDLOOP.
+ENDIF.
+
+CATCH cx_salv_bs_sc_runtime_info.
+MESSAGE 'Unable to retrieve ALV data'(001) TYPE 'I'.
+ENDTRY.
+
+cl_salv_bs_runtime_info=>clear_all( ).
+
+READ TABLE lt_key_balance ASSIGNING FIELD-SYMBOL(<lfs_key_balance>)
+IF sy-subrc EQ 0.
+ex_opening_bal-amount = <lfs_key_balance>-lc_bal.
+lv_balance = ex_opening_bal-amount.
+IF <lfs_key_balance>-db_cr_ind = lc_s.
+ex_opening_bal-type = 'Dr'.
+ELSEIF <lfs_key_balance>-db_cr_ind = lc_h.
+ex_opening_bal-type = 'Cr'.
+ENDIF.
+ENDIF.
+
+*To get the vendor name
+SELECT SINGLE name1 INTO lv_name
+FROM lfa1
+WHERE lifnr = im_lifnr.
+IF sy-subrc EQ 0.
+ex_vendor_name = lv_name.
+ENDIF.
+
+* Fetch data from BSIK
+SELECT belnr
+gjahr
+budat  "+++KRISHNA20180813
+xblnr
+shkzg
+dmbtr
+augbl
+gsber INTO TABLE lt_bsik_bsak
+FROM bsik
+WHERE bukrs = lc_bukrs AND
+lifnr = im_lifnr AND
+budat IN lt_r_date
+AND gsber IN lt_branch. "+++ KRISHNA20180809
+*                AND gsber = im_req_params-bupla. "+++ KRISHNA20180719
+IF sy-subrc NE 0.
+"Do nothing
+ENDIF.
+
+*Now, fetch the data from BSAK in the same internal table
+SELECT belnr
+gjahr
+budat  "+++KRISHNA20180813
+xblnr
+shkzg
+dmbtr
+augbl
+gsber APPENDING TABLE lt_bsik_bsak
+FROM bsak
+WHERE bukrs = lc_bukrs AND    " im_req_params-werks
+lifnr = im_lifnr AND
+budat IN lt_r_date AND
+augdt GE im_from_date  "+++ KRISHNA20180809
+AND gsber IN lt_branch. "+++ KRISHNA20180809
+*      AND gsber = im_req_params-bupla. "+++ KRISHNA20180719
+IF sy-subrc EQ 0.
+SORT lt_bsik_bsak BY belnr gsber.
+"Do nothing
+ENDIF.
+
+*To get the posting date, payment mode, invoice num for lt_bsik_bsak rec
+IF lt_bsik_bsak IS NOT INITIAL.
+SELECT belnr
+gjahr
+bktxt
+blart   "+++KRISHNA20180719
+budat
+xblnr
+awkey INTO CORRESPONDING FIELDS OF TABLE lt_bkpf
+FROM bkpf
+FOR ALL ENTRIES IN lt_bsik_bsak
+WHERE belnr EQ lt_bsik_bsak-belnr AND
+gjahr EQ lt_bsik_bsak-gjahr AND
+bukrs EQ lc_bukrs.    "im_req_params-werks.
+IF sy-subrc EQ 0.
+SORT lt_bkpf BY belnr gjahr.
+ENDIF.
+
+*To get the Document text from BSEG
+SELECT belnr
+gjahr
+sgtxt
+augbl
+koart INTO TABLE lt_bseg
+FROM bseg
+FOR ALL ENTRIES IN lt_bsik_bsak
+WHERE belnr EQ lt_bsik_bsak-belnr AND
+gjahr EQ lt_bsik_bsak-gjahr AND
+bukrs EQ lc_bukrs AND "im_req_params-werks
+buzei EQ '1'
+AND gsber EQ im_req_params-bupla. "+++KRISHNA20180725
+IF sy-subrc EQ 0.
+SORT lt_bseg BY belnr gjahr.
+ENDIF.
+ENDIF.
+LOOP AT lt_bsik_bsak ASSIGNING FIELD-SYMBOL(<lfs_bsik_bsak>) WHERE g
+READ TABLE lt_bseg INTO DATA(lwa_bseg) WITH KEY belnr = <lfs_bsik_
+gjahr = <lfs_bsik_
+IF sy-subrc NE 0.
+CLEAR:<lfs_bsik_bsak>-belnr.
+ENDIF.
+ENDLOOP.
+DELETE lt_bsik_bsak WHERE belnr IS INITIAL.
+
+*Collect so that the amount gets addedup for the same belnr records
+SORT lt_bsik_bsak BY budat.
+LOOP AT lt_bsik_bsak INTO lwa_bsik_bsak.
+COLLECT lwa_bsik_bsak INTO lt_temp.
+ENDLOOP.
+
+*Getting the data in ex_ledger_data
+LOOP AT lt_temp INTO lwa_bsik_bsak.
+CLEAR:lwa_ledger_data.
+lwa_ledger_data-doc_num = lwa_bsik_bsak-belnr.
+**********************************************************************
+IF lwa_bsik_bsak-augbl(1) = '5' OR lwa_bsik_bsak-augbl(2) = '17'.
+*        OR ( lwa_bsik_bsak-augbl(2) = '01' AND lwa_bsik_bsak-belnr(2) =
+CONTINUE.
+ENDIF.
+**********************************************************************
+*To get the doc text
+READ TABLE lt_bseg INTO lwa_bseg WITH KEY belnr = lwa_bsik_bsak-be
+gjahr = lwa_bsik_b
+IF sy-subrc EQ 0.
+lwa_ledger_data-doc_text =  lwa_bseg-sgtxt.
+IF lwa_bseg-koart EQ 'K'.
+lwa_ledger_data-payment_mode = lwa_bseg-augbl.
+ENDIF.
+*      ELSE. "+++KRISHNA20180725
+*        CONTINUE.
+ENDIF.
+*To get the posting date, payment date, Invoice number
+READ TABLE lt_bkpf INTO DATA(lwa_bkpf) WITH KEY belnr = lwa_bsik_b
+gjahr = lwa_bsik_b
+IF sy-subrc EQ 0.
+*        lwa_ledger_data-doc_text = lwa_bkpf-bktxt.
+lwa_ledger_data-posting_date = lwa_bkpf-budat.
+IF lwa_bkpf-blart = lc_zd.
+lwa_ledger_data-doc_type     = lc_pay_ven. "+++ KRISHNA2018071
+ELSEIF lwa_bkpf-blart = lc_rv.
+lwa_ledger_data-invoice_num  = lwa_bkpf-awkey.
+lwa_ledger_data-doc_type     = lc_invoice."lc_inv_canc.  ""+++
+ELSEIF lwa_bkpf-blart = lc_ka.
+IF lwa_ledger_data-payment_mode IS INITIAL.
+lwa_ledger_data-payment_mode = lwa_bkpf-xblnr.
+ENDIF.
+lwa_ledger_data-doc_type     = lc_pay_canc. "+++ KRISHNA201807
+ENDIF.
+IF lwa_ledger_data-payment_mode IS INITIAL.
+lwa_ledger_data-payment_mode = lwa_bkpf-xblnr.
+ENDIF.
+*        lwa_ledger_data-doc_text =  lwa_bkpf-bktxt.  "+++KRISHNA2018072
+ENDIF.
+**********************************************************************
+*      IF lwa_ledger_data-invoice_num IS INITIAL.
+*        CONTINUE.
+*      ENDIF.
+**********************************************************************
+*If  shkzg=lc_s => debit amount and shkzg=lc_h => credit amount
+IF lwa_bsik_bsak-shkzg = lc_s.
+lwa_ledger_data-debit_amount = lwa_bsik_bsak-dmbtr.
+lv_balance                   = lv_balance + lwa_bsik_bsak-dmbtr.
+**********************************************************************
+IF lwa_bkpf-blart = lc_rv.
+lwa_ledger_data-doc_type     = lc_credit. "+++ KRISHNA20180808
+ENDIF.
+**********************************************************************
+ELSEIF lwa_bsik_bsak-shkzg = lc_h.
+lwa_ledger_data-credit_amount = lwa_bsik_bsak-dmbtr.
+lv_balance                    = lv_balance - lwa_bsik_bsak-dmbtr
+*        IF lwa_bkpf-blart = lc_rv.
+*          lwa_ledger_data-doc_type     = lc_invoice. "+++ KRISHNA201807
+*        ENDIF.
+ENDIF.
+*To get the totals
+lv_sum_debit_amount = lv_sum_debit_amount + lwa_ledger_data-debit_
+lv_sum_credit_amount = lv_sum_credit_amount + lwa_ledger_data-cred
+WRITE lv_balance TO lwa_ledger_data-balance.
+CONDENSE lwa_ledger_data-balance.
+IF lv_balance GT 0.
+CONCATENATE lwa_ledger_data-balance lc_dr INTO lwa_ledger_data-b
+SEPARATED BY space.
+ELSEIF lv_balance LT 0.
+CALL FUNCTION 'CLOI_PUT_SIGN_IN_FRONT'
+CHANGING
+value = lwa_ledger_data-balance.
+CONCATENATE lwa_ledger_data-balance lc_cr INTO lwa_ledger_data-b
+SEPARATED BY space.
+ENDIF.
+
+lwa_ledger_data-payment_mode = lwa_bsik_bsak-augbl.
+IF lwa_bsik_bsak-xblnr IS NOT INITIAL.  "+++KRISHNA20180813
+lwa_ledger_data-payment_mode = lwa_bsik_bsak-xblnr.
+ENDIF.
+APPEND lwa_ledger_data TO ex_ledger_data.
+CLEAR: lwa_ledger_data, lwa_bkpf.
+ENDLOOP.
+
+***Calculate closing balance
+**    IF ex_opening_bal-type = 'Dr'.
+**      ex_closing_bal = ( ex_opening_bal-amount + lv_sum_debit_amount )
+**    ELSEIF ex_opening_bal-type = 'Cr'.
+*    ex_closing_bal = ( ex_opening_bal-amount + lv_sum_debit_amount  ) -
+**    ELSE.
+**      ex_closing_bal = lv_sum_debit_amount - lv_sum_credit_amount .
+**    ENDIF.
+**********************************************************************
+CLEAR:ls_key_balance,lt_key_balance.
+cl_salv_bs_runtime_info=>set( EXPORTING display  = abap_false
+metadata = abap_false
+data     = abap_true ).
+SUBMIT yss_r_vendor_ledger WITH company EQ lc_bukrs
+WITH branch  = im_req_params-bupla
+WITH vendor = im_lifnr
+WITH keydate = im_to_date
+AND RETURN.
+
+TRY.
+*   Fetch the output data from program zhr_ocorrencias
+cl_salv_bs_runtime_info=>get_data_ref( IMPORTING r_data = lobj_d
+ASSIGN lobj_data->* TO <lt_data>.
+
+IF <lt_data> IS ASSIGNED.
+LOOP AT <lt_data> ASSIGNING <lfs_data>.
+MOVE-CORRESPONDING <lfs_data> TO ls_key_balance .
+APPEND ls_key_balance TO lt_key_balance.
+CLEAR ls_key_balance.
+ENDLOOP.
+ENDIF.
+
+CATCH cx_salv_bs_sc_runtime_info.
+MESSAGE 'Unable to retrieve ALV data'(001) TYPE 'I'.
+ENDTRY.
+
+cl_salv_bs_runtime_info=>clear_all( ).
+
+READ TABLE lt_key_balance ASSIGNING <lfs_key_balance> INDEX 1.
+IF sy-subrc EQ 0.
+ex_closing_bal = <lfs_key_balance>-lc_bal.
+ENDIF.
+**********************************************************************
+IF ex_closing_bal IS INITIAL AND
+ex_opening_bal IS INITIAL AND
+ex_ledger_data IS INITIAL.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>ledger_data_not_found
+msgv1  = ycx_ss_exception=>format( im_lifnr ).
+ENDIF.
+ENDMETHOD.
+VENDOR_OPEN_DOCS
+item
+METHOD vendor_open_docs.
+*----------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*----------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited             *
+* Created by  : Krishna K                                              *
+* Created on  : 09-Aug-2018                                            *
+* Description : Get Vendor open documents                              *
+*----------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*----------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*----------------------------------------------------------------------*
+
+TYPES:BEGIN OF lty_bsik,
+gjahr TYPE gjahr,
+belnr TYPE belnr_d,
+budat TYPE budat,
+bldat TYPE bldat,
+shkzg TYPE shkzg,
+dmbtr TYPE dmbtr,
+END OF lty_bsik,
+BEGIN OF lty_bkpf,
+belnr TYPE belnr_d,
+awkey TYPE awkey,
+END OF lty_bkpf.
+*Data declarations
+DATA:lt_bsik         TYPE TABLE OF lty_bsik,
+lt_bkpf         TYPE TABLE OF lty_bkpf,
+lwa_ledger_data TYPE yss_s_ledger_data,
+lv_gsber        TYPE gsber.
+
+CLEAR:ex_ledger_data.
+lv_gsber = im_req_params-bupla.
+
+**Get vendor open documents
+SELECT gjahr
+belnr
+budat
+bldat
+shkzg
+dmbtr
+FROM bsik
+INTO TABLE lt_bsik
+WHERE budat <= sy-datum
+AND bukrs EQ 'RMSS'
+AND lifnr EQ im_lifnr
+AND gsber EQ lv_gsber.
+IF sy-subrc EQ 0.
+SELECT belnr awkey
+FROM bkpf
+INTO TABLE lt_bkpf
+FOR ALL ENTRIES IN lt_bsik
+WHERE bukrs EQ 'RMSS'
+AND belnr EQ lt_bsik-belnr
+AND gjahr EQ lt_bsik-gjahr
+AND blart EQ 'RE'.
+IF sy-subrc EQ 0.
+SORT lt_bkpf BY belnr.
+ENDIF.
+ENDIF.
+
+**Process vendor open documents
+LOOP AT lt_bsik ASSIGNING FIELD-SYMBOL(<lfs_bsik>).
+lwa_ledger_data-fiscal_year = <lfs_bsik>-gjahr.
+lwa_ledger_data-doc_num     = <lfs_bsik>-belnr.
+lwa_ledger_data-posting_date = <lfs_bsik>-budat.
+IF <lfs_bsik>-shkzg = 'S'.
+lwa_ledger_data-debit_amount    = <lfs_bsik>-dmbtr.
+ELSEIF <lfs_bsik>-shkzg = 'H'.
+lwa_ledger_data-credit_amount    = <lfs_bsik>-dmbtr.
+ENDIF.
+READ TABLE lt_bkpf ASSIGNING FIELD-SYMBOL(<lfs_bkpf>)
+WITH KEY belnr = <lfs_bsik>-belnr BINARY SEARC
+IF sy-subrc EQ 0 AND strlen( <lfs_bkpf>-awkey ) GT 10.
+lwa_ledger_data-invoice_num = <lfs_bkpf>-awkey(10).
+ENDIF.
+APPEND lwa_ledger_data TO ex_ledger_data.
+CLEAR:lwa_ledger_data.
+ENDLOOP.
+
+IF ex_ledger_data IS INITIAL.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>ledger_data_not_found.
+*          msgv1  = ycx_ss_exception=>format( im_lifnr ).
+ENDIF.
+ENDMETHOD.
+VENDOR_PAYMENTS
+item
+METHOD vendor_payments.
+*----------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*----------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited             *
+* Created by  : Krishna K                                              *
+* Created on  : 10-Aug-2018                                            *
+* Description : Vendor Outgoing Payments                               *
+*----------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*----------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*----------------------------------------------------------------------*
+DATA: lt_bdcdata       TYPE STANDARD TABLE OF bdcdata,
+lt_errmsgs       TYPE STANDARD TABLE OF bdcmsgcoll,
+lo_exception     TYPE REF TO ycx_ss_exception,
+ls_likp          TYPE likp,
+lwa_return       TYPE bapiret2,
+lv_errmsg        TYPE bapi_msg,
+lv_fval          TYPE bdc_fval,
+lv_date          TYPE bdc_fval,
+lv_psbet         TYPE bdc_fval,
+lv_doc           TYPE bdc_fval,
+lv_value         TYPE bdc_fval,
+lv_vendor        TYPE bdc_fval,
+lv_reference     TYPE bdc_fval,
+lv_bus_area      TYPE bdc_fval,
+lv_period        TYPE bdc_fval,
+lv_posting_date  TYPE bdc_fval,
+lv_clearing_text TYPE bdc_fval,
+lv_text          TYPE bdc_fval,
+lv_lines         TYPE i,
+lv_index         TYPE i VALUE 1,
+lv_diff_val      TYPE dmbtr,
+lv_diff_val1     TYPE bdc_fval,
+ls_ledger_data   TYPE yss_s_ledger_data.
+
+CLEAR:ex_return,lv_diff_val.
+IF im_ledger_data      IS INITIAL OR
+im_amount           IS INITIAL OR
+*       im_reference        IS INITIAL OR
+im_text             IS INITIAL OR
+im_req_params-bupla IS INITIAL OR
+im_customer_account IS INITIAL OR
+im_posting_date     IS INITIAL.
+*       im_document_date    IS INITIAL.
+lwa_return-message = text-002.
+APPEND lwa_return TO ex_return.
+RETURN.
+ENDIF.
+DESCRIBE TABLE im_ledger_data LINES lv_lines.
+IF lv_lines GT 7.
+lwa_return-message = text-003.
+APPEND lwa_return TO ex_return.
+RETURN.
+ENDIF.
+CONCATENATE sy-datum+6(2) sy-datum+4(2) sy-datum(4) INTO lv_date SEP
+*    CONCATENATE im_document_date+6(2) im_document_date+4(2) im_document
+CONCATENATE im_posting_date+6(2) im_posting_date+4(2) im_posting_dat
+*    lv_reference    = im_reference.
+lv_reference    = im_text.
+lv_bus_area     = im_req_params-bupla.
+lv_text         = im_text.
+*    lv_clearing_text = im_text.
+WRITE im_amount TO lv_value. CONDENSE lv_value.
+lv_vendor = im_customer_account.
+CASE sy-datum+4(2).
+WHEN 01.  lv_period = '10'.
+WHEN 02.  lv_period = '11'.
+WHEN 03.  lv_period = '12'.
+WHEN 04.  lv_period = '01'.
+WHEN 05.  lv_period = '02'.
+WHEN 06.  lv_period = '03'.
+WHEN 07.  lv_period = '04'.
+WHEN 08.  lv_period = '05'.
+WHEN 09.  lv_period = '06'.
+WHEN 10.  lv_period = '07'.
+WHEN 11.  lv_period = '08'.
+WHEN 12.  lv_period = '09'.
+WHEN OTHERS.
+ENDCASE.
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpro
+bdc_field EXPORTING im_fnam = 'BDC_CURSOR'     im_fval = 'RF05A-AGK
+bdc_field EXPORTING im_fnam = 'BDC_OKCODE'     im_fval = '/00'
+bdc_field EXPORTING im_fnam = 'BKPF-BLDAT'     im_fval = lv_date
+bdc_field EXPORTING im_fnam = 'BKPF-BLART'     im_fval = 'ZK'
+bdc_field EXPORTING im_fnam = 'BKPF-BUKRS'     im_fval = 'RMSS'
+bdc_field EXPORTING im_fnam = 'BKPF-BUDAT'     im_fval = lv_posting
+bdc_field EXPORTING im_fnam = 'BKPF-MONAT'     im_fval = lv_period
+bdc_field EXPORTING im_fnam = 'BKPF-WAERS'     im_fval = 'INR'
+bdc_field EXPORTING im_fnam = 'BKPF-XBLNR'     im_fval = lv_referen
+bdc_field EXPORTING im_fnam = 'BKPF-BKTXT'     im_fval = lv_text
+bdc_field EXPORTING im_fnam = 'RF05A-AUGTX'    im_fval = lv_clearin
+bdc_field EXPORTING im_fnam = 'RF05A-KONTO'    im_fval = '255020'
+bdc_field EXPORTING im_fnam = 'BSEG-GSBER'     im_fval = lv_bus_are
+bdc_field EXPORTING im_fnam = 'BSEG-WRBTR'     im_fval = lv_value
+bdc_field EXPORTING im_fnam = 'BSEG-VALUT'     im_fval = ''
+bdc_field EXPORTING im_fnam = 'RF05A-AGKON'    im_fval = lv_vendor
+bdc_field EXPORTING im_fnam = 'RF05A-AGKOA'    im_fval = 'K'
+bdc_field EXPORTING im_fnam = 'RF05A-XNOPS'    im_fval = 'X'
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X'     im_dyn
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'      im_fva
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'      im_fva
+bdc_field  EXPORTING im_fnam = 'RF05A-XPOS1(01)' im_fva
+bdc_field  EXPORTING im_fnam = 'RF05A-XPOS1(03)' im_fva
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+
+
+LOOP AT im_ledger_data INTO ls_ledger_data.
+lv_doc = ls_ledger_data-doc_num.
+lv_diff_val = lv_diff_val - ls_ledger_data-debit_amount + ls_ledge
+CASE lv_index.
+WHEN 1.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(01)' im
+
+WHEN 2.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(02)' im
+
+WHEN 3.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(03)' im
+
+WHEN 4.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(04)' im
+
+WHEN 5.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(05)' im
+
+WHEN 6.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(06)' im
+
+WHEN 7.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(07)' im
+
+WHEN OTHERS.
+ENDCASE.
+lv_index = lv_index + 1.
+CLEAR:lv_doc,ls_ledger_data.
+ENDLOOP.
+CLEAR:lv_index.
+
+LOOP AT im_ledger_data INTO ls_ledger_data.
+lv_index = lv_index + 1.
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '
+*      CASE sy-tabix.
+CASE lv_index.
+WHEN 1.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(01)'.
+
+WHEN 2.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(02)'.
+
+WHEN 3.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(03)'.
+
+WHEN 4.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(04)'.
+
+WHEN 5.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(05)'.
+
+WHEN 6.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(06)'.
+
+WHEN 7.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(07)'.
+
+WHEN OTHERS.
+CLEAR:ls_ledger_data.
+ENDCASE.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+ENDLOOP.
+lv_diff_val = lv_diff_val - im_amount.
+IF lv_diff_val IS NOT INITIAL.
+WRITE lv_diff_val TO lv_diff_val1.
+CONDENSE lv_diff_val1.
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpr
+bdc_field EXPORTING  im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field EXPORTING  im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field EXPORTING  im_fnam = 'RF05A-ABPOS' im_fval
+bdc_field EXPORTING  im_fnam = 'RF05A-AKOBT' im_fval
+
+bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval
+bdc_field  EXPORTING im_fnam = 'RF05A-AKOBT' im_fval
+
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BKPF-XBLNR'  im_fval
+
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-BUPLA'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-GSBER'  im_fval
+
+IF lv_diff_val GT 0.
+CALL METHOD: bdc_field EXPORTING im_fnam = 'BSEG-ZTERM' im_fval
+ENDIF.
+
+CALL METHOD: bdc_field  EXPORTING im_fnam = 'BSEG-ZFBDT'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-ZLSPR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BSEG-SGTXT'  im_fval =
+
+ELSE.
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval
+ENDIF.
+
+CALL TRANSACTION 'F-53' USING lt_bdcdata
+MODE   'N' "'E' "ctumode
+UPDATE 'A' "cupdate
+MESSAGES INTO lt_errmsgs.
+
+LOOP AT lt_errmsgs INTO DATA(ls_errmsgs1).
+DATA(ls_errmsgs) = ls_errmsgs1.
+AT LAST.
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_errmsg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-type    = ls_errmsgs-msgtyp.
+lwa_return-id      = ls_errmsgs-msgid.
+lwa_return-number  = ls_errmsgs-msgnr.
+lwa_return-message = lv_errmsg.
+APPEND lwa_return TO ex_return.
+ENDAT.
+ENDLOOP.
+*    DESCRIBE TABLE ex_return LINES lv_lines.
+*    IF lv_lines GT 1.
+*      DELETE ex_return INDEX 1.
+*    ENDIF.
+ENDMETHOD.
+BDC_DYNPRO
+item
+METHOD bdc_dynpro.
+DATA : lwa_bdcdata TYPE bdcdata.
+
+lwa_bdcdata-program  = im_program.
+lwa_bdcdata-dynpro   = im_dynpro.
+lwa_bdcdata-dynbegin = 'X'.
+APPEND lwa_bdcdata TO ex_bdcdata.
+ENDMETHOD.
+BDC_FIELD
+item
+METHOD bdc_field.
+DATA : lwa_bdcdata TYPE bdcdata.
+
+CLEAR lwa_bdcdata.
+lwa_bdcdata-fnam = im_fnam.
+lwa_bdcdata-fval = im_fval.
+APPEND lwa_bdcdata TO ex_bdcdata.
+
+ENDMETHOD.
+CUSTOMER_OPEN_DOCS
+item
+METHOD customer_open_docs.
+*----------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*----------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited             *
+* Created by  : Krishna K                                              *
+* Created on  : 17-Aug-2018                                            *
+* Description : Get Customer open documents                            *
+*----------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*----------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*----------------------------------------------------------------------*
+
+TYPES:BEGIN OF lty_bsid,
+gjahr TYPE gjahr,
+belnr TYPE belnr_d,
+budat TYPE budat,
+bldat TYPE bldat,
+shkzg TYPE shkzg,
+dmbtr TYPE dmbtr,
+END OF lty_bsid,
+BEGIN OF lty_bkpf,
+belnr TYPE belnr_d,
+awkey TYPE awkey,
+END OF lty_bkpf.
+*Data declarations
+DATA:lt_bsid         TYPE TABLE OF lty_bsid,
+lt_bkpf         TYPE TABLE OF lty_bkpf,
+lwa_ledger_data TYPE yss_s_ledger_data,
+lv_gsber        TYPE gsber.
+
+CLEAR:ex_open_docs.
+lv_gsber = im_req_params-bupla.
+
+**Get vendor open documents
+SELECT gjahr
+belnr
+budat
+bldat
+shkzg
+dmbtr
+FROM bsid
+INTO TABLE lt_bsid
+WHERE budat <= sy-datum
+AND bukrs EQ 'RMSS'
+AND kunnr EQ im_kunnr
+AND gsber EQ lv_gsber
+AND blart IN ('RV', 'ZC').
+IF sy-subrc EQ 0.
+SELECT belnr awkey
+FROM bkpf
+INTO TABLE lt_bkpf
+FOR ALL ENTRIES IN lt_bsid
+WHERE bukrs EQ 'RMSS'
+AND belnr EQ lt_bsid-belnr
+AND gjahr EQ lt_bsid-gjahr
+AND blart EQ 'RV'.
+IF sy-subrc EQ 0.
+SORT lt_bkpf BY belnr.
+ENDIF.
+ENDIF.
+
+**Process vendor open documents
+LOOP AT lt_bsid ASSIGNING FIELD-SYMBOL(<lfs_bsid>).
+lwa_ledger_data-fiscal_year  = <lfs_bsid>-gjahr.
+lwa_ledger_data-doc_num      = <lfs_bsid>-belnr.
+lwa_ledger_data-posting_date = <lfs_bsid>-budat.
+IF <lfs_bsid>-shkzg = 'S'.
+lwa_ledger_data-debit_amount  = <lfs_bsid>-dmbtr.
+ELSEIF <lfs_bsid>-shkzg = 'H'.
+lwa_ledger_data-credit_amount = <lfs_bsid>-dmbtr.
+ENDIF.
+READ TABLE lt_bkpf ASSIGNING FIELD-SYMBOL(<lfs_bkpf>)
+WITH KEY belnr = <lfs_bsid>-belnr BINARY SEARCH
+IF sy-subrc EQ 0.
+lwa_ledger_data-invoice_num = <lfs_bkpf>-awkey.
+ENDIF.
+APPEND lwa_ledger_data TO ex_open_docs.
+CLEAR:lwa_ledger_data.
+ENDLOOP.
+
+IF ex_open_docs IS INITIAL.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>ledger_data_not_found.
+*          msgv1  = ycx_ss_exception=>format( im_kunnr ).
+ENDIF.
+ENDMETHOD.
+CUSTOMER_PAYMENTS
+item
+METHOD customer_payments.
+*----------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*----------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited             *
+* Created by  : Krishna K                                              *
+* Created on  : 17-Aug-2018                                            *
+* Description : Customer Incoming Payments                             *
+*----------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*----------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*----------------------------------------------------------------------*
+DATA: lt_bdcdata       TYPE STANDARD TABLE OF bdcdata,
+lt_errmsgs       TYPE STANDARD TABLE OF bdcmsgcoll,
+lo_exception     TYPE REF TO ycx_ss_exception,
+ls_likp          TYPE likp,
+lwa_return       TYPE bapiret2,
+lv_errmsg        TYPE bapi_msg,
+lv_fval          TYPE bdc_fval,
+lv_date          TYPE bdc_fval,
+lv_psbet         TYPE bdc_fval,
+lv_doc           TYPE bdc_fval,
+lv_value         TYPE bdc_fval,
+lv_customer      TYPE bdc_fval,
+lv_reference     TYPE bdc_fval,
+lv_bus_area      TYPE bdc_fval,
+lv_period        TYPE bdc_fval,
+lv_posting_date  TYPE bdc_fval,
+lv_clearing_text TYPE bdc_fval,
+lv_text          TYPE bdc_fval,
+lv_lines         TYPE i,
+lv_index         TYPE i VALUE 1,
+lv_diff_val      TYPE dmbtr,      " +++KRISHNA20180821
+lv_diff_val1     TYPE bdc_fval,   " +++KRISHNA20180821
+ls_ledger_data   TYPE yss_s_ledger_data.
+
+CLEAR:ex_return.
+IF im_ledger_data      IS INITIAL OR
+im_amount           IS INITIAL OR
+im_text             IS INITIAL OR
+im_req_params-bupla IS INITIAL OR
+im_customer_account IS INITIAL OR
+im_posting_date     IS INITIAL.
+lwa_return-message = text-002.
+APPEND lwa_return TO ex_return.
+RETURN.
+ENDIF.
+DESCRIBE TABLE im_ledger_data LINES lv_lines.
+IF lv_lines GT 7.
+lwa_return-message = text-003.
+APPEND lwa_return TO ex_return.
+RETURN.
+ENDIF.
+CONCATENATE sy-datum+6(2) sy-datum+4(2) sy-datum(4) INTO lv_date SEP
+CONCATENATE im_posting_date+6(2) im_posting_date+4(2) im_posting_dat
+lv_reference    = im_reference.
+lv_bus_area     = im_req_params-bupla.
+lv_text         = im_text.
+WRITE im_amount TO lv_value. CONDENSE lv_value.
+lv_customer = im_customer_account.
+CASE sy-datum+4(2).
+WHEN 01.  lv_period = '10'.
+WHEN 02.  lv_period = '11'.
+WHEN 03.  lv_period = '12'.
+WHEN 04.  lv_period = '01'.
+WHEN 05.  lv_period = '02'.
+WHEN 06.  lv_period = '03'.
+WHEN 07.  lv_period = '04'.
+WHEN 08.  lv_period = '05'.
+WHEN 09.  lv_period = '06'.
+WHEN 10.  lv_period = '07'.
+WHEN 11.  lv_period = '08'.
+WHEN 12.  lv_period = '09'.
+WHEN OTHERS.
+ENDCASE.
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpro
+bdc_field EXPORTING im_fnam = 'BDC_CURSOR'     im_fval = 'RF05A-AUG
+bdc_field EXPORTING im_fnam = 'BDC_OKCODE'     im_fval = '/00'
+bdc_field EXPORTING im_fnam = 'BKPF-BLDAT'     im_fval = lv_date
+bdc_field EXPORTING im_fnam = 'BKPF-BLART'     im_fval = 'ZC'
+bdc_field EXPORTING im_fnam = 'BKPF-BUKRS'     im_fval = 'RMSS'
+bdc_field EXPORTING im_fnam = 'BKPF-BUDAT'     im_fval = lv_posting
+bdc_field EXPORTING im_fnam = 'BKPF-MONAT'     im_fval = lv_period
+bdc_field EXPORTING im_fnam = 'BKPF-WAERS'     im_fval = 'INR'
+bdc_field EXPORTING im_fnam = 'BKPF-XBLNR'     im_fval = lv_referen
+bdc_field EXPORTING im_fnam = 'BKPF-BKTXT'     im_fval = lv_text
+bdc_field EXPORTING im_fnam = 'RF05A-AUGTX'    im_fval = lv_text
+bdc_field EXPORTING im_fnam = 'RF05A-KONTO'    im_fval = '255020'
+bdc_field EXPORTING im_fnam = 'BSEG-GSBER'     im_fval = lv_bus_are
+bdc_field EXPORTING im_fnam = 'BSEG-WRBTR'     im_fval = lv_value
+bdc_field EXPORTING im_fnam = 'BSEG-VALUT'     im_fval = ''
+bdc_field EXPORTING im_fnam = 'RF05A-AGKON'    im_fval = lv_custome
+bdc_field EXPORTING im_fnam = 'RF05A-AGKOA'    im_fval = 'D'
+bdc_field EXPORTING im_fnam = 'RF05A-XNOPS'    im_fval = 'X'
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+bdc_field  EXPORTING im_fnam = 'RF05A-XPOS1(01)' im_fva
+bdc_field  EXPORTING im_fnam = 'RF05A-XPOS1(03)' im_fva
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval =
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval =
+
+LOOP AT im_ledger_data INTO ls_ledger_data.
+lv_doc = ls_ledger_data-doc_num.
+lv_diff_val = lv_diff_val - ls_ledger_data-debit_amount + ls_ledge
+CASE lv_index.
+WHEN 1.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(01)' im
+
+WHEN 2.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(02)' im
+
+WHEN 3.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(03)' im
+
+WHEN 4.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(04)' im
+
+WHEN 5.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(05)' im
+
+WHEN 6.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(06)' im
+
+WHEN 7.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-SEL01(07)' im
+
+WHEN OTHERS.
+ENDCASE.
+lv_index = lv_index + 1.
+CLEAR:lv_doc,ls_ledger_data.
+ENDLOOP.
+CLEAR:lv_index.
+
+LOOP AT im_ledger_data INTO ls_ledger_data.
+lv_index = lv_index + 1.
+CALL METHOD bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpro
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval = '
+*      CASE sy-tabix.
+CASE lv_index.
+WHEN 1.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(01)'.
+
+WHEN 2.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(02)'.
+
+WHEN 3.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(03)'.
+
+WHEN 4.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(04)'.
+
+WHEN 5.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(05)'.
+
+WHEN 6.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(06)'.
+
+WHEN 7.
+CALL METHOD bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval
+lv_psbet = 'DF05B-PSBET(07)'.
+
+WHEN OTHERS.
+CLEAR:ls_ledger_data.
+ENDCASE.
+CALL METHOD bdc_field EXPORTING im_fnam = 'RF05A-ABPOS' im_fval =
+ENDLOOP.
+lv_diff_val = im_amount + lv_diff_val.
+IF lv_diff_val IS NOT INITIAL.
+WRITE lv_diff_val TO lv_diff_val1.
+CONDENSE lv_diff_val1.
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval
+bdc_field  EXPORTING im_fnam = 'RF05A-AKOBT' im_fval
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpr
+bdc_field EXPORTING im_fnam = 'BDC_OKCODE'   im_fval
+bdc_field EXPORTING im_fnam = 'BDC_CURSOR'   im_fval
+bdc_field EXPORTING im_fnam = 'RF05A-ABPOS'  im_fval
+bdc_field EXPORTING im_fnam = 'RF05A-AKOBT'  im_fval
+
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpr
+bdc_field EXPORTING im_fnam = 'BDC_CURSOR' im_fval =
+bdc_field EXPORTING im_fnam = 'BDC_OKCODE' im_fval =
+bdc_field EXPORTING im_fnam = 'BKPF-XBLNR' im_fval =
+
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-BUPLA'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-GSBER'  im_fval
+
+IF lv_diff_val < 0.
+CALL METHOD: bdc_field EXPORTING im_fnam = 'BSEG-ZTERM' im_fval
+ENDIF.
+
+CALL METHOD: bdc_field  EXPORTING im_fnam = 'BSEG-ZFBDT'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-ZLSPR'  im_fval
+bdc_field  EXPORTING im_fnam = 'BSEG-SGTXT'  im_fval
+
+ELSE.
+CALL METHOD: bdc_dynpro EXPORTING im_program = 'SAPDF05X' im_dynpr
+bdc_field  EXPORTING im_fnam = 'BDC_OKCODE'  im_fval
+bdc_field  EXPORTING im_fnam = 'BDC_CURSOR'  im_fval
+bdc_field  EXPORTING im_fnam = 'RF05A-ABPOS' im_fval
+ENDIF.
+
+CALL TRANSACTION 'F-28' USING lt_bdcdata
+MODE   'N' "'E' "ctumode
+UPDATE 'A' "cupdate
+MESSAGES INTO lt_errmsgs.
+
+LOOP AT lt_errmsgs INTO DATA(ls_errmsgs1).
+DATA(ls_errmsgs) = ls_errmsgs1.
+AT LAST.
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_errmsg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-type    = ls_errmsgs-msgtyp.
+lwa_return-id      = ls_errmsgs-msgid.
+lwa_return-number  = ls_errmsgs-msgnr.
+lwa_return-message = lv_errmsg.
+APPEND lwa_return TO ex_return.
+ENDAT.
+ENDLOOP.
+
+ENDMETHOD.
+REVERSAL_DOCUMENT
+item
+METHOD reversal_document.
+*   Types Declarations
+TYPES : BEGIN OF lty_bkpf,
+bukrs TYPE bkpf-bukrs,
+belnr TYPE bkpf-belnr,
+gjahr TYPE bkpf-gjahr,
+blart TYPE bkpf-blart,
+budat TYPE bkpf-budat,
+monat TYPE bkpf-monat,
+stgrd TYPE bkpf-stgrd,
+stblg TYPE bkpf-stblg,
+END OF lty_bkpf,
+
+BEGIN OF lty_bsad,
+bukrs TYPE bsad-bukrs,
+gjahr TYPE bsad-bukrs,
+belnr TYPE bsad-belnr,
+budat TYPE bsad-budat,
+END OF lty_bsad,
+
+BEGIN OF lty_bsid,
+bukrs TYPE bsid-bukrs,
+gjahr TYPE bsid-bukrs,
+belnr TYPE bsid-belnr,
+budat TYPE bsid-budat,
+END OF lty_bsid.
+
+*   Data Declarations
+DATA:
+lt_bkpf     TYPE STANDARD TABLE OF lty_bkpf,
+lt_bsad     TYPE STANDARD TABLE OF lty_bsad,
+lt_bsid     TYPE STANDARD TABLE OF lty_bsid,
+lt_bdcdata  TYPE STANDARD TABLE OF bdcdata,
+lt_errmsgs  TYPE STANDARD TABLE OF bdcmsgcoll,
+lwa_return  TYPE bapiret2,
+ls_errmsgs  TYPE bdcmsgcoll,
+ls_errmsgs1 TYPE bdcmsgcoll,
+lv_document TYPE vwpostdoc-sto_docfi,
+lv_year     TYPE vwpostdoc-gjahr,
+lv_belnr    TYPE bdc_fval,
+lv_bukrs    TYPE bdc_fval,
+lv_gjahr    TYPE bdc_fval,
+lv_budat    TYPE bdc_fval,
+lv_monat    TYPE bdc_fval,
+lv_date(2)  TYPE c,
+lv_month(2) TYPE c,
+lv_year1(4) TYPE c,
+lv_msg      TYPE string.
+
+*   Field Symbols
+FIELD-SYMBOLS:
+<lfs_documents> TYPE yss_s_payments,
+<lfs_bsad>      TYPE lty_bsad,
+<lfs_bsid>      TYPE lty_bsid,
+<lfs_bkpf>      TYPE lty_bkpf.
+
+*   Fetch Accouning Document Data
+SELECT bukrs
+belnr
+gjahr
+blart
+budat
+monat
+stgrd
+stblg
+FROM bkpf
+INTO TABLE lt_bkpf
+FOR ALL ENTRIES IN im_documents
+WHERE bukrs = im_documents-bukrs
+AND belnr   = im_documents-belnr
+AND gjahr   = im_documents-gjahr.
+IF sy-subrc NE 0.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>not_found.
+ENDIF.
+
+*   Fetch Accouning Document Clearing Data
+SELECT  bukrs
+gjahr
+belnr
+budat
+FROM bsad
+INTO TABLE lt_bsad
+FOR ALL ENTRIES IN im_documents
+WHERE bukrs = im_documents-bukrs
+AND gjahr   = im_documents-gjahr
+AND belnr   = im_documents-belnr.
+
+SELECT  bukrs
+gjahr
+belnr
+budat
+FROM bsid
+INTO TABLE lt_bsid
+FOR ALL ENTRIES IN im_documents
+WHERE bukrs = im_documents-bukrs
+AND gjahr   = im_documents-gjahr
+AND belnr   = im_documents-belnr.
+
+
+SORT:
+lt_bkpf BY bukrs belnr gjahr,
+lt_bsad BY bukrs belnr gjahr,
+lt_bsid BY bukrs belnr gjahr.
+
+*   Cancel Incoming Payments
+LOOP AT im_documents ASSIGNING <lfs_documents>.
+CLEAR:
+ex_return.
+READ TABLE lt_bkpf ASSIGNING <lfs_bkpf> WITH KEY bukrs = <lfs_docu
+belnr = <lfs_documents
+gjahr = <lfs_documents
+BINARY SEARCH.
+IF sy-subrc EQ 0.
+lv_bukrs = <lfs_bkpf>-bukrs.
+lv_belnr = <lfs_bkpf>-belnr.
+lv_gjahr = <lfs_bkpf>-gjahr.
+lv_budat = <lfs_bkpf>-budat.
+lv_date = lv_budat+6(2).
+lv_month = lv_budat+4(2).
+lv_year1 = lv_budat+0(4).
+CONCATENATE lv_date '.' lv_month '.' lv_year1 INTO lv_budat.
+lv_monat = <lfs_bkpf>-monat.
+ENDIF.
+READ TABLE lt_bsad ASSIGNING <lfs_bsad> WITH KEY bukrs = <lfs_docu
+belnr = <lfs_docu
+gjahr = <lfs_docu
+BINARY SEARCH.
+IF sy-subrc EQ 0.
+CALL METHOD:
+bdc_dynpro EXPORTING im_program = 'SAPMF05R'    im_dynpro =
+bdc_field EXPORTING  im_fnam = 'BDC_CURSOR'     im_fval = '
+bdc_field EXPORTING  im_fnam = 'BDC_OKCODE'     im_fval = '
+bdc_field EXPORTING  im_fnam = 'RF05R-AUGBL'    im_fval = l
+bdc_field EXPORTING  im_fnam = 'RF05R-BUKRS'    im_fval = l
+bdc_field EXPORTING  im_fnam = 'RF05R-GJAHR'    im_fval = l
+
+CALL METHOD:
+bdc_dynpro EXPORTING im_program = 'SAPLSPO2'  im_dynpro = '
+bdc_field EXPORTING  im_fnam = 'BDC_CURSOR'   im_fval = 'SP
+
+CALL TRANSACTION 'FBRA' USING lt_bdcdata MODE 'N' UPDATE 'S' MES
+
+
+LOOP AT lt_errmsgs INTO ls_errmsgs1.
+ls_errmsgs = ls_errmsgs1.
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_msg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-message_v1 = <lfs_documents>-belnr.
+lwa_return-type       = ls_errmsgs-msgtyp.
+lwa_return-id         = ls_errmsgs-msgid.
+lwa_return-number     = ls_errmsgs-msgnr.
+lwa_return-message    = lv_msg.
+APPEND lwa_return TO ex_return.
+ENDLOOP.
+
+CLEAR:
+lt_bdcdata.
+IF lwa_return-number EQ '604'.
+CONTINUE.
+ELSE.
+CLEAR:
+lwa_return.
+
+CALL METHOD:
+bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpro = '0
+bdc_field EXPORTING  im_fnam = 'RF05A-BELNS' im_fval = lv_b
+bdc_field EXPORTING  im_fnam = 'BKPF-BUKRS'  im_fval = lv_b
+bdc_field EXPORTING  im_fnam = 'RF05A-GJAHS' im_fval = lv_g
+bdc_field EXPORTING  im_fnam = 'UF05A-STGRD' im_fval = '03'
+bdc_field EXPORTING  im_fnam = 'BSIS-BUDAT'  im_fval = lv_b
+bdc_field EXPORTING  im_fnam = 'BSIS-MONAT'  im_fval = lv_m
+bdc_field EXPORTING  im_fnam = 'BDC_OKCODE'  im_fval = '/11
+
+CALL TRANSACTION 'FB08' USING lt_bdcdata MODE 'N' UPDATE 'S' M
+
+LOOP AT lt_errmsgs INTO ls_errmsgs1.
+ls_errmsgs = ls_errmsgs1.
+AT LAST.
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_msg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-type    = ls_errmsgs-msgtyp.
+lwa_return-id      = ls_errmsgs-msgid.
+lwa_return-number  = ls_errmsgs-msgnr.
+lwa_return-message = lv_msg.
+APPEND lwa_return TO ex_return.
+CLEAR:
+lwa_return.
+ENDAT.
+ENDLOOP.
+ENDIF.
+CLEAR:
+lv_bukrs,
+lv_belnr,
+lv_gjahr.
+ELSE.
+READ TABLE lt_bsid ASSIGNING <lfs_bsid> WITH KEY bukrs = <lfs_do
+belnr = <lfs_doc
+gjahr = <lfs_doc
+BINARY SEARCH.
+IF sy-subrc EQ 0.
+CALL METHOD:
+bdc_dynpro EXPORTING im_program = 'SAPMF05A' im_dynpro = '01
+bdc_field EXPORTING  im_fnam = 'RF05A-BELNS' im_fval = lv_be
+bdc_field EXPORTING  im_fnam = 'BKPF-BUKRS'  im_fval = lv_bu
+bdc_field EXPORTING  im_fnam = 'RF05A-GJAHS' im_fval = lv_gj
+bdc_field EXPORTING  im_fnam = 'UF05A-STGRD' im_fval = '03'
+bdc_field EXPORTING  im_fnam = 'BSIS-BUDAT'  im_fval = lv_bu
+bdc_field EXPORTING  im_fnam = 'BSIS-MONAT'  im_fval = lv_mo
+bdc_field EXPORTING  im_fnam = 'BDC_OKCODE'  im_fval = '/11'
+
+CALL TRANSACTION 'FB08' USING lt_bdcdata MODE 'N' UPDATE 'S' M
+
+LOOP AT lt_errmsgs INTO ls_errmsgs1.
+ls_errmsgs = ls_errmsgs1.
+AT LAST.
+CALL FUNCTION 'FORMAT_MESSAGE'
+EXPORTING
+id        = ls_errmsgs-msgid
+lang      = sy-langu
+no        = ls_errmsgs-msgnr
+v1        = ls_errmsgs-msgv1
+v2        = ls_errmsgs-msgv2
+v3        = ls_errmsgs-msgv3
+v4        = ls_errmsgs-msgv4
+IMPORTING
+msg       = lv_msg
+EXCEPTIONS
+not_found = 1
+OTHERS    = 2.
+lwa_return-message_v1 = <lfs_documents>-belnr.
+lwa_return-type    = ls_errmsgs-msgtyp.
+lwa_return-id      = ls_errmsgs-msgid.
+lwa_return-number  = ls_errmsgs-msgnr.
+lwa_return-message = lv_msg.
+APPEND lwa_return TO ex_return.
+CLEAR:
+lwa_return.
+ENDAT.
+ENDLOOP.
+ENDIF.
+ENDIF.
+ENDLOOP.
+
+ENDMETHOD.
