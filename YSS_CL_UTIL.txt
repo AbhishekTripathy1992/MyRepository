@@ -1,0 +1,387 @@
+﻿
+METHOD_SOURCE
+UPDATE_EXCEPTION_LOG
+item
+METHOD update_exception_log.
+"*----------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  :
+* Created on  :
+* Description : Generic method to log exception
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+DATA: ls_log       TYPE yss_t_log,
+lv_timestamp TYPE timestamp.
+
+GET TIME STAMP FIELD lv_timestamp.
+
+* Generat Log UUID
+CALL METHOD cl_fdt_uuid=>get_uuid
+RECEIVING
+rv_uuid = ls_log-guid.
+
+* Set Log Details
+ls_log-type  = yss_cl_type_pool=>yss_c_log_exe.
+ls_log-logms = im_exc_text.
+ls_log-lprog = im_program.
+ls_log-lmeth = im_method .
+ls_log-lusr  = sy-uname.
+ls_log-ldat  = sy-datum.
+ls_log-ltim  = sy-uzeit.
+ls_log-from_ts = lv_timestamp.
+ls_log-to_ts = lv_timestamp.
+* Insert Log Entry
+INSERT yss_t_log FROM ls_log.
+IF sy-subrc NE 0.
+
+ENDIF.
+ENDMETHOD.
+UPDATE_API_LOG
+item
+METHOD update_api_log.
+"*------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  :
+* Created on  :
+* Description : Generic method to log API exception
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+* Data Declarations
+DATA: ls_log        TYPE yss_t_log,
+lt_call_stack TYPE sys_callst,
+ls_call_stack TYPE sys_calls.
+DATA : lv_from_ts TYPE tzntimestp,
+lv_to_ts   TYPE tzntimestp.
+
+* Generat Log UUID
+CALL METHOD cl_fdt_uuid=>get_uuid
+RECEIVING
+rv_uuid = ls_log-guid.
+ex_guid = ls_log-guid.
+* Get the Program and Method Name from Call Stack
+CALL FUNCTION 'SYSTEM_CALLSTACK'
+EXPORTING
+max_level    = 2
+IMPORTING
+et_callstack = lt_call_stack.
+
+READ TABLE lt_call_stack INTO ls_call_stack INDEX 2.
+IF sy-subrc EQ 0.
+* Do Nothing
+ENDIF.
+
+* Set Log Details
+ls_log-type  = yss_cl_type_pool=>yss_c_log_api. "apilog
+ls_log-logms = im_api_res.
+ls_log-apiur = im_req_params-url."im_apiur.
+ls_log-apirc = im_apirc.
+ls_log-apime = im_apifm.
+ls_log-lprog = ls_call_stack-progname.
+ls_log-lmeth = ls_call_stack-eventname.
+ls_log-lusr  = sy-uname.
+ls_log-ldat  = sy-datum.
+ls_log-ltim  = sy-uzeit.
+ls_log-werks = im_req_params-werks.
+ls_log-pusrid = im_req_params-pusrid.
+ls_log-ip = im_req_params-ip.
+ls_log-mac = im_req_params-mac.
+ls_log-from_ts = im_from_ts.
+ls_log-to_ts   = im_to_ts.
+
+lv_from_ts = im_from_ts.
+lv_to_ts   = im_to_ts.
+CALL FUNCTION 'CCU_TIMESTAMP_DIFFERENCE'
+EXPORTING
+timestamp1 = lv_to_ts
+timestamp2 = lv_from_ts
+IMPORTING
+difference = ls_log-response_time.
+
+
+
+* Insert Log Entry
+INSERT yss_t_log FROM ls_log.
+IF sy-subrc NE 0.
+*      Do Nothing
+ENDIF.
+ENDMETHOD.
+UPDATE_USER_ACTIVITY_LOG
+item
+METHOD update_user_activity_log.
+"*----------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  :
+* Created on  :
+* Description : Generic method to
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+DATA: ls_log        TYPE yss_t_log,
+lt_call_stack TYPE sys_callst,
+ls_call_stack TYPE sys_calls.
+
+* Get the Program and Method Name from Call Stack
+CALL FUNCTION 'SYSTEM_CALLSTACK'
+EXPORTING
+max_level    = 2
+IMPORTING
+et_callstack = lt_call_stack.
+
+READ TABLE lt_call_stack INTO ls_call_stack INDEX 2.
+IF sy-subrc EQ 0.
+* Do Nothing
+ENDIF.
+
+* Generat Log UUID
+CALL METHOD cl_fdt_uuid=>get_uuid
+RECEIVING
+rv_uuid = ls_log-guid.
+
+* Set Log Details
+ls_log-type  = yss_cl_type_pool=>yss_c_log_usr. "User Activity
+ls_log-logms = im_msg.
+ls_log-actyp = im_actyp.
+ls_log-lprog = ls_call_stack-progname.
+ls_log-tcode = sy-tcode.
+ls_log-lusr  = sy-uname.
+ls_log-ldat  = sy-datum.
+ls_log-ltim  = sy-uzeit.
+* Insert Log Entry
+INSERT yss_t_log FROM ls_log.
+IF sy-subrc NE 0.
+*      Do Nothing
+ENDIF.
+ENDMETHOD.
+LOG_DELETE
+item
+METHOD log_delete.
+"*----------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  :
+* Created on  :
+* Description : Generic method to
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+*Data Declarations
+DATA: lv_date  TYPE sy-datum,
+lwa_type TYPE selopt,
+lt_type  TYPE STANDARD TABLE OF selopt.
+
+CLEAR:lv_date, lwa_type.
+
+lv_date = sy-datum - im_days.
+
+IF im_apilog IS NOT INITIAL.
+lwa_type-sign = 'I'.
+lwa_type-option = 'EQ'.
+lwa_type-low = yss_cl_type_pool=>yss_c_log_api.
+APPEND lwa_type TO lt_type.
+CLEAR lwa_type.
+ENDIF.
+
+IF im_exclog IS NOT INITIAL.
+lwa_type-sign = 'I'.
+lwa_type-option = 'EQ'.
+lwa_type-low = yss_cl_type_pool=>yss_c_log_exe.
+APPEND lwa_type TO lt_type.
+CLEAR lwa_type.
+ENDIF.
+
+IF im_usract IS NOT INITIAL.
+lwa_type-sign = 'I'.
+lwa_type-option = 'EQ'.
+lwa_type-low = yss_cl_type_pool=>yss_c_log_usr.
+APPEND lwa_type TO lt_type.
+CLEAR lwa_type.
+ENDIF.
+
+* Delete Log Entries
+DELETE FROM yss_t_log WHERE ldat LE lv_date AND type IN lt_type.
+IF sy-subrc NE 0.
+* Raise excption No records found
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>delete_fail.
+ENDIF.
+ENDMETHOD.
+READ_LOG_DATA
+item
+METHOD read_log_data.
+"*----------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  :
+* Created on  :
+* Description : Generic method to
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+ENDMETHOD.
+GET_TVARVC_ENTRIES
+item
+METHOD get_tvarvc_entries.
+*---------------------------------------------------------------------*
+*                    A D M I N I S T R A T I O N
+*---------------------------------------------------------------------*
+* Organization: Incresol Software Services Private Limited            *
+* Created by  : Manik Grandhi                                         *
+* Created on  : 21-Feb-2018                                           *
+* Description : Generic method to select data from                    *
+*               TVARVC into a range table (of any type)               *
+*---------------------------------------------------------------------*
+*                       C H A N G E    L O G
+*---------------------------------------------------------------------*
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*---------------------------------------------------------------------*
+" Local Declarations
+FIELD-SYMBOLS: <lfs_tvarvc_range> TYPE rsdsselopt,
+<lfs_field>        TYPE data.
+
+DATA: lt_tvarvc_range TYPE TABLE OF rsdsselopt,
+ls_range        TYPE rsdsselopt.
+CLEAR:ex_range.
+" Fetch Variant Variables from tvarvc
+SELECT sign    "ABAP: ID: I/E (include/exclude values)
+opti    "ABAP: Selection option (EQ/BT/CP/...)
+low     "Selection Variants: Field Content LOW
+high    "Selection Variants: Field Content HIGH
+FROM tvarvc
+INTO TABLE lt_tvarvc_range
+WHERE name = im_tvarvc_name
+AND type IN ('S','P').
+IF sy-subrc <> 0.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>tvarvc_entry_not_found
+msgv1  = ycx_ss_exception=>format( im_tvarvc_name ).
+ENDIF.
+
+" Build range from returned table
+LOOP AT lt_tvarvc_range ASSIGNING <lfs_tvarvc_range>.
+
+ASSIGN COMPONENT 'SIGN' OF STRUCTURE ls_range TO <lfs_field>.
+" If 'SIGN' is blank, assign as Inclusive(I)
+IF <lfs_tvarvc_range>-sign NE space.
+<lfs_field> = <lfs_tvarvc_range>-sign.
+ELSE.
+<lfs_field> = 'I'.
+ENDIF.
+
+ASSIGN COMPONENT 'OPTION' OF STRUCTURE ls_range TO <lfs_field>.
+" If 'OPTION' is blank, assign as EQUAL TO (EQ)
+IF <lfs_tvarvc_range>-option NE space.
+<lfs_field> = <lfs_tvarvc_range>-option.
+ELSE.
+<lfs_field> = 'EQ'.
+ENDIF.
+
+ASSIGN COMPONENT 'LOW' OF STRUCTURE ls_range TO <lfs_field>.
+<lfs_field> = <lfs_tvarvc_range>-low.
+
+ASSIGN COMPONENT 'HIGH' OF STRUCTURE ls_range TO <lfs_field>.
+<lfs_field> = <lfs_tvarvc_range>-high.
+
+APPEND ls_range TO ex_range.
+ENDLOOP.
+
+IF <lfs_field> IS ASSIGNED.
+UNASSIGN <lfs_field>.
+ENDIF.
+IF <lfs_tvarvc_range> IS ASSIGNED.
+UNASSIGN <lfs_tvarvc_range>.
+ENDIF.
+
+ENDMETHOD.
+VALIDATE_REQUEST_PARAMS
+item
+METHOD validate_request_params.
+"*------------------------------------------------------------------
+*                    A D M I N I S T R A T I O N
+*-----------------------------------------------------------------------
+* Organization: Incresol Software Services Private Limited
+* Created by  :
+* Created on  :
+* Description : Generic method to validate request parameters
+*-----------------------------------------------------------------------
+*                       C H A N G E    L O G
+*-----------------------------------------------------------------------
+* <Changed by> | <Changed on> | <Change ID> like USERNAME.DDMMYY
+* <Description of change>
+*-----------------------------------------------------------------------
+"Local declaration
+DATA : lv_bwkey           TYPE bwkey,
+lv_branch          TYPE bupla,
+lt_range_sales_org TYPE rsdsselopt_t.  "sales org
+
+*Validate empty request parameters
+IF im_req_params IS INITIAL or im_req_params-werks is INITIAL.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>insufficient_req_param.
+ENDIF.
+
+*Validate request params plant
+SELECT SINGLE bwkey FROM t001k
+INTO lv_bwkey
+WHERE bwkey = im_req_params-werks
+AND bukrs EQ yss_cl_type_pool=>yss_c_rmss.
+IF sy-subrc NE 0.
+RAISE EXCEPTION TYPE ycx_ss_exception
+EXPORTING
+textid = ycx_ss_exception=>inavlid_dealer_identity
+msgv1  = ycx_ss_exception=>format( 'Plant'(002) )
+msgv2  = ycx_ss_exception=>format( im_req_params-werks ).
+ENDIF.
+
+CALL METHOD yss_cl_util=>get_tvarvc_entries
+EXPORTING
+im_tvarvc_name = yss_cl_type_pool=>yss_sales_org
+IMPORTING
+ex_range       = lt_range_sales_org.
+
+** Validation for Business Place w.r.t sales org
+*    IF im_req_params-bupla IS NOT INITIAL.
+*      SELECT SINGLE branch
+*                    FROM j_1bbranch
+*                    INTO lv_branch
+*                    WHERE bukrs IN lt_range_sales_org
+*                    AND   branch EQ im_req_params-bupla.
+*      IF sy-subrc NE 0.
+*        RAISE EXCEPTION TYPE ycx_ss_exception
+*          EXPORTING
+*            textid = ycx_ss_exception=>inavlid_dealer_identity
+*            msgv1  = ycx_ss_exception=>format( text-001 )
+*            msgv2  = ycx_ss_exception=>format( im_req_params-bupla ).
+*      ENDIF.
+*    ENDIF.
+
+
+ENDMETHOD.
