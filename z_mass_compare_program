@@ -1,0 +1,809 @@
+REPORT z_mass_compare_program.
+
+*Tables
+
+TABLES : rpy_prog. " rfcdes.
+
+*Selection Screen
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-001.
+SELECT-OPTIONS: s_prn1 FOR rpy_prog-progname.
+PARAMETERS : p_rfcde1 TYPE rfcdes-rfcdest NO-DISPLAY DEFAULT sy-sysid.
+PARAMETERS : p_rfcde2 TYPE rfcdes-rfcdest DEFAULT 'PRDCLNT000'.
+SELECTION-SCREEN END OF BLOCK b1.
+SELECTION-SCREEN SKIP 1.
+
+PARAMETER: p_check AS CHECKBOX.
+
+*DATA DECLARATION
+
+TYPES : BEGIN OF gty_finaltab,
+          progname     TYPE progname,
+          version1     TYPE versno,
+          version2     TYPE versno,
+          changeon1    TYPE rdir_udate,
+          changeon2    TYPE rdir_udate,
+          changeby1    TYPE unam,
+          changeby2    TYPE unam,
+          count_abap1  TYPE sytabix,
+          count_abap2  TYPE sytabix,
+          error_abap   TYPE sytabix,
+          error_text   TYPE sytabix,
+          gen_text(60) TYPE c,
+          selk         TYPE c,
+          color        TYPE lvc_t_scol, " color
+        END OF gty_finaltab.
+
+DATA : gt_source1     TYPE STANDARD TABLE OF abapsource,
+       gt_source11    TYPE STANDARD TABLE OF abaptxt255,
+       ls_source1     TYPE abaptxt255,
+       gt_source2     TYPE STANDARD TABLE OF abapsource,
+       gt_source22    TYPE STANDARD TABLE OF abaptxt255,
+       ls_source2     TYPE abaptxt255,
+       gt_textelem1   TYPE STANDARD TABLE OF textpool,
+       ls_textelem1   TYPE textpool,
+       gt_textelem2   TYPE STANDARD TABLE OF textpool,
+       ls_textelem2   TYPE textpool,
+       ls_progdata1   TYPE rpy_prog,
+       ls_progdata2   TYPE rpy_prog,
+       ld_error_abap  TYPE sytabix,
+       ld_error_text  TYPE sytabix,
+       ld_count_abap1 TYPE sytabix,
+       ld_count_abap2 TYPE sytabix,
+       ld_count1      TYPE sytabix,
+       ld_percent     TYPE i,
+       ld_text(50)    TYPE c,
+       ld_text_pro(4) TYPE c,
+       ld_i_save      TYPE c,
+       gt_finaltab    TYPE STANDARD TABLE OF gty_finaltab,
+       ls_finaltab    TYPE gty_finaltab,
+       ls_bdcdata     TYPE bdcdata,
+       gt_bdcdata     TYPE STANDARD TABLE OF bdcdata.
+
+*ALV DATA ***
+
+CONSTANTS : lc_pick(7) TYPE c VALUE 'PICK'.
+
+TYPE-POOLS: slis.
+
+DATA: gt_fieldcat TYPE slis_t_fieldcat_alv,
+      ls_fieldcat TYPE slis_fieldcat_alv,
+      gs_layout   TYPE slis_layout_alv,
+      repname     TYPE syrepid,
+      gt_events   TYPE slis_t_event.
+*Cell color
+DATA: ls_cellcolor_tab TYPE lvc_s_scol,
+      lt_cellcolor_tab TYPE lvc_t_scol,
+      ls_color         TYPE lvc_s_colo.
+
+CONSTANTS : lc_fname TYPE char7 VALUE 'STATUS'.
+
+START-OF-SELECTION.
+
+*Check Whether You Want To Check SAP Standard Programs
+
+  IF p_check IS INITIAL.
+    SORT s_prn1.
+    DELETE ADJACENT DUPLICATES FROM s_prn1.
+    DESCRIBE TABLE s_prn1 LINES ld_count1.
+
+*Loop Around The Program Internal Table
+    LOOP AT s_prn1.
+      CLEAR: ld_error_abap , ld_error_text, ld_count_abap1,
+      ld_count_abap2, ls_finaltab.
+      PERFORM progressbar USING sy-tabix ld_count1.
+*      initialise the variables
+      CLEAR: gt_source1, gt_source11, gt_textelem1, ls_progdata1.
+*Get Local Version Of The Program
+
+      CALL FUNCTION 'RPY_PROGRAM_READ'
+        DESTINATION p_rfcde1
+        EXPORTING
+          language              = sy-langu
+          program_name          = s_prn1-low
+          with_includelist      = ''
+          only_source           = ' '
+          only_texts            = ' '
+          read_latest_version   = 'X'
+          with_lowercase        = ' '
+        IMPORTING
+          prog_inf              = ls_progdata1
+        TABLES
+          source                = gt_source1
+          source_extended       = gt_source11
+          textelements          = gt_textelem1
+        EXCEPTIONS
+          cancelled             = 1
+          not_found             = 2
+          permission_error      = 3
+          communication_failure = 4
+                                  system
+          failure               = 5.
+
+      CASE sy-subrc.
+
+        WHEN 0.
+
+*Delete Empty Lines
+*          DELETE gt_source11 WHERE line IS INITIAL.
+*Ignore Program Name In Text
+          DELETE gt_textelem1 WHERE id = 'R'.
+          DELETE gt_textelem1 WHERE id = 'H'.
+*Number Of Lines In ABAP Program
+          DESCRIBE TABLE gt_source11[] LINES ld_count_abap1 .
+      ENDCASE.
+
+*Initialise The Variables
+      CLEAR: gt_source2, gt_source22, gt_textelem2, ls_progdata2.
+
+*Get Remote Version
+      CALL FUNCTION 'RPY_PROGRAM_READ'
+        DESTINATION p_rfcde2
+        EXPORTING
+          language              = sy-langu
+          program_name          = s_prn1-low
+          with_includelist      = ''
+          only_source           = ' '
+          only_texts            = ' '
+          read_latest_version   = 'X'
+          with_lowercase        = ' '
+        IMPORTING
+          prog_inf              = ls_progdata2
+        TABLES
+          source                = gt_source2
+          source_extended       = gt_source22
+          textelements          = gt_textelem2
+        EXCEPTIONS
+          cancelled             = 1
+          not_found             = 2
+          permission_error      = 3
+          communication_failure = 4
+                                  system
+          failure               = 5.
+
+      CASE sy-subrc.
+
+        WHEN 0.
+
+*Delete Empty Lines
+*          DELETE gt_source22 WHERE line IS INITIAL.
+*Ignore Program Name In Text
+          DELETE gt_textelem2 WHERE id = 'R'.
+          DELETE gt_textelem2 WHERE id = 'H'.
+*Number Of Lines In ABAP Program
+          DESCRIBE TABLE gt_source22[] LINES ld_count_abap2 .
+      ENDCASE.
+
+*Remove All Spaces
+
+      LOOP AT gt_source11 ASSIGNING FIELD-SYMBOL(<lfs_src>)." ls_source1.
+        CONDENSE <lfs_src>-line NO-GAPS.
+      ENDLOOP.
+
+      LOOP AT gt_source22 ASSIGNING <lfs_src>.
+        CONDENSE <lfs_src>-line NO-GAPS .
+      ENDLOOP.
+
+*Compare ABAP SOURCE
+
+      CLEAR ld_error_abap.
+
+      LOOP AT gt_source11 INTO ls_source1.
+        READ TABLE gt_source22 INTO ls_source2 INDEX sy-tabix.
+        TRANSLATE ls_source1-line TO LOWER CASE.
+        TRANSLATE ls_source2-line TO LOWER CASE.
+        IF ls_source2-line NE ls_source1-line.
+          ld_error_abap = ld_error_abap + 1.
+        ENDIF.
+      ENDLOOP.
+
+*Compare Texts
+
+      CLEAR ld_error_text.
+
+      LOOP AT gt_textelem1 INTO ls_textelem1.
+        READ TABLE gt_textelem2 INTO ls_textelem2 INDEX sy-tabix.
+        TRANSLATE ls_textelem2-entry TO LOWER CASE.
+        TRANSLATE ls_textelem1-entry TO LOWER CASE.
+        IF ls_textelem2-id NE ls_textelem1-id OR
+        ls_textelem2-key NE ls_textelem1-key OR
+        ls_textelem2-entry NE ls_textelem1-entry.
+          ld_error_text = ld_error_text + 1.
+        ENDIF.
+      ENDLOOP.
+
+*Put to ALV output table
+
+      ls_finaltab-progname = s_prn1-low.
+      ls_finaltab-version1 = ls_progdata1-version.
+      ls_finaltab-changeon1 = ls_progdata1-mod_date.
+      ls_finaltab-changeby1 = ls_progdata1-mod_user.
+      ls_finaltab-count_abap1 = ld_count_abap1.
+      ls_finaltab-version2 = ls_progdata2-version.
+      ls_finaltab-changeon2 = ls_progdata2-mod_date.
+      ls_finaltab-changeby2 = ls_progdata2-mod_user.
+      ls_finaltab-count_abap2 = ld_count_abap2.
+      ls_finaltab-error_abap = ld_error_abap.
+*      adding the color.
+      IF ls_finaltab-error_abap IS INITIAL.
+        ls_color-col = 5. "green
+      ELSE.
+        ls_color-col = 6. "red
+      ENDIF.
+
+      CLEAR : ls_cellcolor_tab,lt_cellcolor_tab,ls_finaltab-color.
+
+      ls_cellcolor_tab-fname = 'ERROR_ABAP'. " Field name to color
+      ls_color-int = 1.
+      ls_color-inv = 0.
+
+      MOVE ls_color TO ls_cellcolor_tab-color.
+      INSERT : ls_cellcolor_tab INTO TABLE lt_cellcolor_tab,
+               LINES OF lt_cellcolor_tab INTO TABLE ls_finaltab-color.
+      ls_finaltab-error_text = ld_error_text.
+*      adding the color.
+      IF ls_finaltab-error_text IS INITIAL.
+        ls_color-col = 5. "green
+      ELSE.
+        ls_color-col = 6. "red
+      ENDIF.
+
+      CLEAR : ls_cellcolor_tab, ls_finaltab-color.
+
+      ls_cellcolor_tab-fname = 'ERROR_TEXT'." Field name to color
+      ls_color-int = 1.
+      ls_color-inv = 0.
+      MOVE ls_color TO ls_cellcolor_tab-color.
+      INSERT ls_cellcolor_tab INTO TABLE lt_cellcolor_tab.
+      INSERT LINES OF lt_cellcolor_tab INTO TABLE ls_finaltab-color.
+*Move to internal table
+      APPEND ls_finaltab TO gt_finaltab.
+      CLEAR ls_finaltab.
+    ENDLOOP.
+  ELSE.
+*    compare sap programs
+    PERFORM compare_sap_programs.
+  ENDIF.
+
+  PERFORM process_output.
+  PERFORM fieldcat.
+  PERFORM f4000_events CHANGING gt_events.
+  PERFORM layout_build USING gs_layout.
+  PERFORM grid_disp.
+
+*----------------------------------------*
+*FORM f4000_events_init *
+*----------------------------------------*
+
+FORM f4000_events CHANGING i_events TYPE slis_t_event.
+
+*Local Variable
+  DATA: line_event TYPE slis_alv_event.
+
+  CLEAR line_event.
+
+  line_event-name = 'USER_COMMAND'.
+  line_event-form = 'F4300_USER_COMMAND'.
+  APPEND line_event TO i_events.
+
+ENDFORM. " f3000_events_init
+
+*----------------------------------------*
+*FORM layout_build *
+*----------------------------------------*
+FORM layout_build USING p_layout TYPE slis_layout_alv.
+  p_layout-box_fieldname = 'SELK'. " Checkbox
+  p_layout-get_selinfos = abap_true.
+  p_layout-f2code = 'PICK' . " Double Click Function
+  p_layout-key_hotspot = abap_true.
+  p_layout-info_fieldname = 'COL'.
+  p_layout-coltab_fieldname = 'COLOR'.
+  p_layout-zebra = abap_true. " Stripes
+  p_layout-colwidth_optimize = abap_true. " Optimize
+ENDFORM. " layout_build
+
+*----------------------------------------*
+*FORM GRIDDISP *
+*----------------------------------------*
+
+FORM grid_disp.
+
+*Assign Current Program Name
+  repname = sy-repid.
+*Main Call To Display The Output In ALV Grid
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_callback_program = repname
+      is_layout          = gs_layout
+      it_fieldcat        = gt_fieldcat[]
+      i_default          = 'X'
+      i_save             = ld_i_save
+      it_events          = gt_events[]
+    TABLES
+      t_outtab           = gt_finaltab
+    EXCEPTIONS
+      program_error      = 1
+      OTHERS             = 2.
+  IF sy-subrc <> 0.
+    "Do nothing
+  ENDIF.
+ENDFORM. " grid_disp
+
+*----------------------------------------*
+*Form fieldcat *
+*----------------------------------------*
+
+FORM fieldcat.
+
+  DATA: pos TYPE i.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'PROGNAME'.
+  ls_fieldcat-seltext_m = 'Program'.
+  ls_fieldcat-seltext_s = 'Program'.
+  ls_fieldcat-seltext_l = 'Program'.
+  ls_fieldcat-ddictxt = 'L'.
+  ls_fieldcat-hotspot = abap_true.
+
+  APPEND ls_fieldcat TO gt_fieldcat.
+
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'VERSION1'.
+  ls_fieldcat-seltext_m = 'Version(curr.sys)'.
+  ls_fieldcat-seltext_s = 'Version(curr.sys)'.
+  ls_fieldcat-seltext_l = 'Version(curr.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'VERSION2'.
+  ls_fieldcat-seltext_m = 'Version(target.sys)'.
+  ls_fieldcat-seltext_s = 'Version(target.sys)'.
+  ls_fieldcat-seltext_l = 'Version(target.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'CHANGEON1'.
+  ls_fieldcat-seltext_m = 'Changed On(curr.sys)'.
+  ls_fieldcat-seltext_s = 'Changed On(curr.sys)'.
+  ls_fieldcat-seltext_l = 'Changed On(curr.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'CHANGEON2'.
+  ls_fieldcat-seltext_m = 'Changed On(target.sys)'.
+  ls_fieldcat-seltext_s = 'Changed On(target.sys)'.
+  ls_fieldcat-seltext_l = 'Changed On(target.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'CHANGEBY1'.
+  ls_fieldcat-seltext_m = 'Changed By(curr.sys)'.
+  ls_fieldcat-seltext_s = 'Changed By(curr.sys)'.
+  ls_fieldcat-seltext_l = 'Changed By(curr.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'CHANGEBY2'.
+  ls_fieldcat-seltext_m = 'Changed By(target.sys)'.
+  ls_fieldcat-seltext_s = 'Changed By(target.sys)'.
+  ls_fieldcat-seltext_l = 'Changed By(target.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'COUNT_ABAP1'.
+  ls_fieldcat-seltext_m = 'No of line(curr.sys)'.
+  ls_fieldcat-seltext_s = 'No of line(curr.sys)'.
+  ls_fieldcat-seltext_l = 'No of line(curr.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'COUNT_ABAP2'.
+  ls_fieldcat-seltext_m = 'No of line(target.sys)'.
+  ls_fieldcat-seltext_s = 'No of line(target.sys)'.
+  ls_fieldcat-seltext_l = 'No of line(target.sys)'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'ERROR_ABAP'.
+  ls_fieldcat-seltext_m = 'ABAP Diff.'.
+  ls_fieldcat-seltext_s = 'ABAP Diff.'.
+  ls_fieldcat-seltext_l = 'ABAP Diff.'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'ERROR_TEXT'.
+  ls_fieldcat-seltext_m = 'Text Diff.'.
+  ls_fieldcat-seltext_s = 'Text Diff.'.
+  ls_fieldcat-seltext_l = 'Text Diff.'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+  pos = pos + 1.
+
+  ls_fieldcat-col_pos = pos.
+  ls_fieldcat-tabname = 'gt_fulltab'.
+  ls_fieldcat-fieldname = 'GEN_TEXT'.
+  ls_fieldcat-seltext_m = 'Status'.
+  ls_fieldcat-seltext_s = 'Status'.
+  ls_fieldcat-seltext_l = 'Status'.
+  ls_fieldcat-ddictxt = 'L'.
+  APPEND ls_fieldcat TO gt_fieldcat.
+  CLEAR ls_fieldcat.
+
+ENDFORM. " fieldcat
+
+*----------------------------------------*
+*Form progressbar *
+*----------------------------------------*
+
+FORM progressbar USING p_tabix p_count.
+
+  ld_percent = 100 * ( p_tabix - 1 ) / p_count.
+  MOVE ld_percent TO ld_text_pro.
+  ld_text = '% of programs processed'.
+  CONCATENATE ld_text_pro ld_text
+  INTO ld_text
+  SEPARATED BY space.
+  CALL FUNCTION 'SAPGUI_PROGRESS_INDICATOR'
+    EXPORTING
+      percentage = ld_percent
+      text       = ld_text.
+ENDFORM. " progressbar
+
+*----------------------------------------*
+*FORM f4300_user_command *
+*----------------------------------------*
+
+FORM f4300_user_command USING ucomm LIKE sy-ucomm
+ls_selfield TYPE slis_selfield.
+
+*Per default, keep position and refresh screen with DISPLAY
+  ls_selfield-col_stable = abap_true.
+  ls_selfield-row_stable = abap_true.
+  ls_selfield-refresh = abap_true.
+
+  CASE ucomm.
+*Double-click **********************
+    WHEN lc_pick. " Doubleclick anywhere on line + hotspot
+      READ TABLE gt_finaltab INDEX ls_selfield-tabindex
+      INTO ls_finaltab.
+      CLEAR gt_bdcdata.
+*      PERFORM bdc_dynpro USING 'SAPLWBABAP' '0100'.
+*      PERFORM bdc_field USING 'RS38M-FUNC_EDIT' abap_true.
+*      PERFORM bdc_field USING 'rs38m-programm' ls_finaltab-progname.
+*      PERFORM bdc_field USING 'BDC_OKCODE' '=SHOP'.
+*      CALL TRANSACTION 'SE38' USING gt_bdcdata MODE 'E'.
+      PERFORM bdc_dynpro      USING 'SAPLS_WB_SPLIT_EDITOR_INITIAL' '0220'.
+      PERFORM bdc_field       USING 'BDC_CURSOR' 'RSEDR-REPID'.
+      PERFORM bdc_field       USING 'BDC_OKCODE' '=SYST'.
+      PERFORM bdc_field       USING 'RSEDL-FLG_PROG' abap_true.
+      PERFORM bdc_field       USING 'RSEDL-REPID' ls_finaltab-progname.
+      PERFORM bdc_field       USING 'RSEDL-FLG_DEFAUL' abap_true.
+      PERFORM bdc_field       USING 'RSEDR-FLG_PROG' abap_true.
+      PERFORM bdc_field       USING 'RSEDR-REPID' ls_finaltab-progname.
+      PERFORM bdc_field       USING 'RSEDR-FLG_DEFAUL' abap_true.
+      PERFORM bdc_dynpro      USING 'SAPLS_WB_SPLIT_EDITOR_INITIAL' '0220'.
+      PERFORM bdc_field       USING 'BDC_CURSOR' 'RSEDR-SYSID'.
+      PERFORM bdc_field       USING 'BDC_OKCODE' '=DISP'.
+      PERFORM bdc_field       USING 'RSEDL-FLG_PROG' abap_true.
+      PERFORM bdc_field       USING 'RSEDL-REPID' ls_finaltab-progname.
+      PERFORM bdc_field       USING 'RSEDL-FLG_DEFAUL' abap_true.
+      PERFORM bdc_field       USING 'RSEDR-FLG_PROG' abap_true.
+      PERFORM bdc_field       USING 'RSEDR-REPID' ls_finaltab-progname.
+      PERFORM bdc_field       USING 'RSEDR-SYSID' 'PRDCLNT000'.
+      CALL TRANSACTION 'SE39' USING gt_bdcdata MODE 'E'.
+    WHEN OTHERS.
+  ENDCASE.
+
+  CLEAR ucomm.
+ENDFORM. " f4300_user_command
+
+*----------------------------------------*
+
+*Form bdc_dynpro *
+
+*----------------------------------------*
+
+FORM bdc_dynpro USING program dynpro.
+
+  CLEAR ls_bdcdata.
+  ls_bdcdata-program = program.
+  ls_bdcdata-dynpro = dynpro.
+  ls_bdcdata-dynbegin = abap_true.
+  APPEND ls_bdcdata TO gt_bdcdata.
+
+ENDFORM. " bdc_dynpro
+
+*----------------------------------------*
+*FORM BDC_FIELD *
+*----------------------------------------*
+
+FORM bdc_field USING fnam fval.
+
+  CLEAR ls_bdcdata.
+  ls_bdcdata-fnam = fnam.
+  MOVE fval TO ls_bdcdata-fval .
+  APPEND ls_bdcdata TO gt_bdcdata.
+
+ENDFORM. " bdc_field
+
+*----------------------------------------*
+*Form Compare_SAP_Programs *
+*----------------------------------------*
+
+FORM compare_sap_programs .
+  TYPES: BEGIN OF t_trdir,
+           name TYPE reposrc-progname,
+         END OF t_trdir.
+*Local Variables
+
+  DATA: lt_trdir TYPE STANDARD TABLE OF t_trdir,
+        ls_trdir TYPE t_trdir.
+
+  SELECT name
+  INTO TABLE lt_trdir
+  FROM trdir WHERE name IN s_prn1.
+
+  SORT lt_trdir.
+
+  DELETE ADJACENT DUPLICATES FROM lt_trdir.
+  DESCRIBE TABLE lt_trdir LINES ld_count1.
+
+*Loop Around The Program Internal Table
+
+  LOOP AT lt_trdir INTO ls_trdir.
+    CLEAR: ld_error_abap , ld_error_text, ld_count_abap1,
+    ld_count_abap2, ls_finaltab.
+    PERFORM progressbar USING sy-tabix ld_count1.
+*    initialise the variables
+    CLEAR: gt_source1, gt_source11, gt_textelem1, ls_progdata1.
+*Get Local Version Of The Program
+
+    CALL FUNCTION 'RPY_PROGRAM_READ'
+      EXPORTING
+        language              = sy-langu
+        program_name          = ls_trdir-name
+        with_includelist      = ''
+        only_source           = ' '
+        only_texts            = ' '
+        read_latest_version   = 'X'
+        with_lowercase        = ' '
+      IMPORTING
+        prog_inf              = ls_progdata1
+      TABLES
+        source                = gt_source1
+        source_extended       = gt_source11
+        textelements          = gt_textelem1
+      EXCEPTIONS
+        cancelled             = 1
+        not_found             = 2
+        permission_error      = 3
+        communication_failure = 4
+                                system
+        failure               = 5.
+
+    CASE sy-subrc.
+
+      WHEN 0.
+*Delete Empty Lines
+*        DELETE gt_source11 WHERE line IS INITIAL.
+*Ignore Program Name In Text
+        DELETE gt_textelem1 WHERE id = 'R'.
+        DELETE gt_textelem1 WHERE id = 'H'.
+*        number of lines in abap program
+        DESCRIBE TABLE gt_source11[] LINES ld_count_abap1 .
+      WHEN OTHERS.
+        CONTINUE.
+    ENDCASE.
+
+*Initialise The Variables
+
+    CLEAR: gt_source2, gt_source22, gt_textelem2, ls_progdata2.
+
+*Second RFC Call For Program Details
+
+*Get Remote Version
+
+    CALL FUNCTION 'RPY_PROGRAM_READ'
+      DESTINATION p_rfcde2
+      EXPORTING
+        language              = sy-langu
+        program_name          = ls_trdir-name
+        with_includelist      = ''
+        only_source           = ' '
+        only_texts            = ' '
+        read_latest_version   = 'X'
+        with_lowercase        = ' '
+      IMPORTING
+        prog_inf              = ls_progdata2
+      TABLES
+        source                = gt_source2
+        source_extended       = gt_source22
+        textelements          = gt_textelem2
+      EXCEPTIONS
+        cancelled             = 1
+        not_found             = 2
+        permission_error      = 3
+        communication_failure = 4
+                                system
+        failure               = 5.
+
+    CASE sy-subrc.
+      WHEN 0.
+*Delete Empty Lines
+*        DELETE gt_source22 WHERE line IS INITIAL.
+*Ignore Program Name In Text
+        DELETE gt_textelem2 WHERE id = 'R'.
+        DELETE gt_textelem2 WHERE id = 'H'.
+*        number of lines in abap program
+        DESCRIBE TABLE gt_source22[] LINES ld_count_abap2 .
+    ENDCASE.
+
+*Remove All Spaces
+
+    LOOP AT gt_source11 INTO ls_source1.
+      CONDENSE ls_source1-line NO-GAPS.
+      MODIFY gt_source11 FROM ls_source1 TRANSPORTING line.
+    ENDLOOP.
+
+    LOOP AT gt_source22 INTO ls_source2.
+      CONDENSE ls_source2-line NO-GAPS .
+      MODIFY gt_source22 FROM ls_source2 TRANSPORTING line.
+    ENDLOOP.
+
+*Compare ABAP SOURCE
+
+    CLEAR ld_error_abap.
+    LOOP AT gt_source11 INTO ls_source1.
+      READ TABLE gt_source22 INTO ls_source2 INDEX sy-tabix.
+      TRANSLATE ls_source1-line TO LOWER CASE.
+      TRANSLATE ls_source2-line TO LOWER CASE.
+      IF ls_source2-line NE ls_source1-line.
+        ld_error_abap = ld_error_abap + 1.
+      ENDIF.
+    ENDLOOP.
+
+*Compare Texts
+
+    CLEAR ld_error_text.
+
+    LOOP AT gt_textelem1 INTO ls_textelem1.
+      READ TABLE gt_textelem2 INTO ls_textelem2 INDEX sy-tabix.
+      TRANSLATE ls_textelem2-entry TO LOWER CASE.
+      TRANSLATE ls_textelem1-entry TO LOWER CASE.
+      IF ls_textelem2-id NE ls_textelem1-id OR
+      ls_textelem2-key NE ls_textelem1-key OR
+      ls_textelem2-entry NE ls_textelem1-entry.
+        ld_error_text = ld_error_text + 1.
+      ENDIF.
+    ENDLOOP.
+
+*Put to ALV output table
+
+    ls_finaltab-progname = ls_trdir-name.
+    ls_finaltab-version1 = ls_progdata1-version.
+    ls_finaltab-version2 = ls_progdata2-version.
+    ls_finaltab-changeon1 = ls_progdata1-mod_date.
+    ls_finaltab-changeon2 = ls_progdata2-mod_date.
+    ls_finaltab-changeby1 = ls_progdata1-mod_user.
+    ls_finaltab-changeby2 = ls_progdata2-mod_user.
+    ls_finaltab-count_abap1 = ld_count_abap1.
+    ls_finaltab-count_abap2 = ld_count_abap2.
+    ls_finaltab-error_abap = ld_error_abap.
+
+*Adding the color.
+
+    IF ls_finaltab-error_abap IS INITIAL.
+      ls_color-col = 5. "green
+    ELSE.
+      ls_color-col = 6. "red
+    ENDIF.
+
+    CLEAR ls_cellcolor_tab.
+    CLEAR lt_cellcolor_tab.
+    CLEAR ls_finaltab-color.
+
+    ls_cellcolor_tab-fname = 'ERROR_ABAP'. " Field name to color
+    ls_color-int = 1.
+    ls_color-inv = 0.
+    MOVE ls_color TO ls_cellcolor_tab-color.
+    INSERT ls_cellcolor_tab INTO TABLE lt_cellcolor_tab.
+    INSERT LINES OF lt_cellcolor_tab INTO TABLE ls_finaltab-color.
+    ls_finaltab-error_text = ld_error_text.
+
+*Adding the color.
+
+    IF ls_finaltab-error_text IS INITIAL.
+      ls_color-col = 5. "green
+    ELSE.
+      ls_color-col = 6. "red
+    ENDIF.
+    CLEAR ls_cellcolor_tab.
+    CLEAR ls_finaltab-color.
+    ls_cellcolor_tab-fname = 'ERROR_TEXT'." Field name to color
+    ls_color-int = 1.
+    ls_color-inv = 0.
+    MOVE ls_color TO ls_cellcolor_tab-color.
+    INSERT ls_cellcolor_tab INTO TABLE lt_cellcolor_tab.
+    INSERT LINES OF lt_cellcolor_tab INTO TABLE ls_finaltab-color.
+*Move to internal table
+    APPEND ls_finaltab TO gt_finaltab.
+  ENDLOOP.
+
+ENDFORM. " Compare_SAP_Programs
+
+
+*Form display_output *
+
+FORM process_output .
+*Local Variables
+  DATA: lv_abap TYPE i,
+        lv_text TYPE i.
+*Loop Around Ther Internal Table gt_finaltab
+  LOOP AT gt_finaltab ASSIGNING FIELD-SYMBOL(<lfs_finaltab>).
+*Assign The Values To Variables
+    lv_abap = <lfs_finaltab>-error_abap.
+    lv_text = <lfs_finaltab>-error_text.
+    IF lv_abap = 0 AND lv_text = 0.
+      <lfs_finaltab>-gen_text = 'No differences'.
+    ELSE.
+      <lfs_finaltab>-gen_text = 'Differences found'.
+    ENDIF.
+  ENDLOOP.
+ENDFORM.
