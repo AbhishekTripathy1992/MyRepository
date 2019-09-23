@@ -1,0 +1,146 @@
+*&---------------------------------------------------------------------*
+*&Program Name      : ZCHECKLIST_ADM                                   *
+*&Description       : Relatório de Cockpit da Lista
+*&Company           : Incresol Software Services                       *
+*&Author            : Abhishek                                         *
+*&Transport Request : DEVK9A0Y47                                       *
+*&---------------------------------------------------------------------*
+
+"---Structure declarations------
+
+types  : begin of gty_zlojas,
+           id_lojas type werks_d,                   "----  Plant
+           nome     type zlj_nome,                  "----  Plant name
+           orgeh    type orgeh,                  "Organizational Unit
+           subarea  type btrtl,                  "Subárea de RH
+         end of  gty_zlojas,
+         gty_t_zlojas type standard table of gty_zlojas.
+
+types :   begin of gty_final,
+            centro       type werks_d, "--Plant
+            nome         type zlj_nome, "--plant name
+            data_y       type char4, "--Audition year
+            periodicity  type ze_ck_periodicidade,
+            period       type numc2, "---period of audition
+            data         type datum, "---audition date
+            id_avaliacao type ze_ck_id_avaliacao, "--Audition Id
+            seq_number   type ze_seq_num, "--Revision number
+            id_seq       type ze_seq_num, "--Delete sequence number   "-new
+            matricula    type zid_usuario, "--Personel number
+            versao       type ze_ck_version_id_h, "--Version Id
+            tipo_id      type ze_ck_tipo_id, "--Tipo Id
+            rev_flag(1)  type c, "--flag for revision
+            revisao(2)   type c, "--Flag for revision of the assessment
+            data_end     type datum, "--End date of revision
+            nota_total   type ze_ck_nota_total, "--Its total point, 10 - each subtopic points
+            aprovado(1)  type c, "--Aproved flag
+            config_email type flag, "--Email configured flag
+            envio_email  type flag, "--Email sent flag
+            status(21)   type c, "--Approved or not based on flag value
+            email(11)    type c, "--E mail sent or not based on flag value
+            deletado(1)  type c, "--Audition delete flag
+          end of  gty_final,
+          gty_t_final type standard table of gty_final.
+
+types: gty_data_item   type zck_aval_i_s,
+       gty_t_data_item type zck_aval_i_tt.
+
+types:  begin of gty_data_grid,
+          id_avaliacao     type ze_ck_id_avaliacao,
+          seq_number       type ze_seq_num,
+          id_seq           type ze_seq_num,   "--new
+          indice_topico    type ze_ck_ind_top,
+          indice_subtopico type ze_ck_ind_sub_top,
+          checklist        type char50,
+          pontuacao        type ze_ck_pont,
+          pontuacao_1      type char10,
+          pontuacao_flag   type flag,
+          comentario       type ze_ck_coment,
+          var1(5)          type c,
+          var2(5)          type c,
+          var3(5)          type c,
+          id_foto1         type ze_ck_foto_id,
+          id_foto2         type ze_ck_foto_id,
+          id_foto3         type ze_ck_foto_id,
+          foto1            type flag,
+          foto2            type flag,
+          foto3            type flag,
+          celltab          type lvc_t_styl,
+        end of  gty_data_grid,
+        gty_t_data_grid type standard table of gty_data_grid.
+
+types : begin of gty_zca_funcionario,
+          id_funcionario type zid_usuario,  "---Personnel number (Same as matricula)
+          nome           type char40,       "---Name of the person
+        end   of gty_zca_funcionario,
+        gty_t_zca_funcionario type standard table of gty_zca_funcionario.
+
+"""""""""""Screen 100 data declarations""""""""""""""
+data : gt_final            type                   gty_t_final, "#EC NEEDED
+       gt_final_dummy      type                   gty_t_final, "#EC NEEDED
+       gt_zlojas           type                   gty_t_zlojas, "#EC NEEDED
+       gt_zca_funcionario  type                   gty_t_zca_funcionario, "#EC NEEDED
+       gt_zck_aval_h       type standard table of zck_aval_h, "#EC NEEDED
+       gt_fcat_tree        type                   lvc_t_fcat, "#EC NEEDED
+       gt_event            type                   cntl_simple_events, "#EC NEEDED
+
+       gwa_final           type                   gty_final, "#EC NEEDED
+       gwa_zlojas          type                   gty_zlojas, "#EC NEEDED
+       gwa_zca_funcionario type                   gty_zca_funcionario, "#EC NEEDED
+       gwa_zck_aval_h      type                   zck_aval_h, "#EC NEEDED
+       gwa_fcat_tree       type                   lvc_s_fcat, "#EC NEEDED
+       gwa_event           type                   cntl_simple_event, "#EC NEEDED
+       gwa_out_tab         type                   gty_final, "#EC NEEDED
+       ok_code             type                   sy-ucomm, "#EC NEEDED
+       gobj_tree           type ref to            cl_gui_alv_tree, "#EC NEEDED
+       gobj_container      type ref to            cl_gui_custom_container. "#EC NEEDED
+"""""""""""Screen 200 and 300 and 400 data declarations""""""""""""""
+data:  gwa_data_item        type                   gty_data_item, "#EC NEEDED
+       gwa_subtopics        type                   zck_subtopics, "#EC NEEDED
+       gwa_data_grid        type                   gty_data_grid, "#EC NEEDED
+       gwa_topics           type                   zck_topics, "#EC NEEDED
+       gwa_layout_grid      type                   lvc_s_layo, "#EC NEEDED
+       gwa_fcat_grid        type                   lvc_s_fcat, "#EC NEEDED
+
+       gt_fcat_grid         type                   lvc_t_fcat, "#EC NEEDED
+       gt_data_item         type                   gty_t_data_item, "#EC NEEDED
+       gt_data_grid         type                   gty_t_data_grid, "#EC NEEDED
+       gt_data_grid_mirror  type                   gty_t_data_grid, "#EC NEEDED
+       gt_topics            type standard table of zck_topics, "#EC NEEDED
+       gt_subtopics         type standard table of zck_subtopics, "#EC NEEDED
+
+       gobj_grid            type ref to            cl_gui_alv_grid, "#EC NEEDED
+       gobj_cus_cont        type ref to            cl_gui_custom_container, "#EC NEEDED
+       gobj_html_viewer     type ref to            cl_gui_html_viewer, "#EC NEEDED
+       gobj_html_cont       type ref to            cl_gui_custom_container, "#EC NEEDED
+       gobj_editor_popup    type ref to            cl_gui_textedit, "#EC NEEDED
+       gobj_popup_container type ref to            cl_gui_custom_container, "#EC NEEDED
+       gv_objid             type                   string, "w3objid,
+       gv_is_edit(1)        type                   c,       "#EC NEEDED
+       gv_del(1)            type                   c,       "#EC NEEDED
+       gv_editor_text       type                   string,  "#EC NEEDED
+       gv_mod_status        type                   i,       "#EC NEEDED
+       gv_centro            type                   zck_aval_h-centro, "#EC NEEDED
+       gv_matricula         type                   n length 9, "zid_usuario, "#EC NEEDED
+       gv_data              type                   datum,   "#EC NEEDED
+       gv_param_topics      type                   zparametro_valor,
+       gv_line              type                   sy-tabix,
+       lt_emails            type table of zdig_emails,
+       lwa_emails           type          zdig_emails.
+
+data :   begin of gwa_validate,                             "#EC NEEDED
+           centro type werks_d,
+           matric type zid_usuario,
+           data   type datum,
+         end of gwa_validate,
+         gt_validate like table of gwa_validate.
+
+data: gv_store_aud type flag,
+      gv_position  type flag.
+"--Selection screen---Subscreen 101---"
+
+selection-screen : begin of screen 101 as subscreen.
+select-options : s_centro for gv_centro,
+                 s_matric for gv_matricula matchcode object zck_sh_metricula modif id mat,
+                 s_data   for gv_data .
+selection-screen : end of screen 101.

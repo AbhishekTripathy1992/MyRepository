@@ -1,0 +1,42 @@
+*&---------------------------------------------------------------------*
+*&Program Name      : ZCHECKLIST_ADM                                   *
+*&Description       : Relatório de Cockpit da Lista
+*&Company           : Incresol Software Services                       *
+*&Author            : Abhishek Tripathy                                *
+*&Transport Request : DEVK9A0Y47                                       *
+*&---------------------------------------------------------------------*
+
+PROGRAM zchecklist_adm MESSAGE-ID zck.
+
+*Top Include for Data Declarations
+INCLUDE zchecklist_adm_top.
+
+*Include for Classes
+INCLUDE zchecklist_adm_class.
+
+*Include for PBO-Modules (All screens)
+INCLUDE zchecklist_adm_pbo.
+
+*Include for PAI-Modules (All screens)
+INCLUDE zchecklist_adm_pai.
+
+AT SELECTION-SCREEN OUTPUT.
+  "Disabling S_MATRIC fieid for Store Auditors
+  IF gv_position = 'A'.
+    REFRESH: s_matric[].
+    s_matric-sign = 'I'.
+    s_matric-option = 'EQ'.
+    s_matric-low = sy-uname.
+    IF s_matric-low CO ' 0123456789'.
+      UNPACK s_matric-low TO s_matric-low.
+    ENDIF.
+
+    APPEND s_matric.
+    LOOP AT SCREEN.
+      IF screen-group1 = 'MAT'.
+        screen-input = 0.
+        screen-invisible = 1.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.

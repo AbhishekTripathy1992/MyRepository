@@ -1,0 +1,1908 @@
+*&---------------------------------------------------------------------*
+*&Program Name      : ZCHECKLIST_ADM                                   *
+*&Description       : Relatório de Cockpit da Lista
+*&Company           : Incresol Software Services                       *
+*&Author            : Abhishek                                         *
+*&Transport Request : DEVK9A0Y47                                       *
+*&---------------------------------------------------------------------*
+CLASS gcl_operation DEFINITION FINAL.
+  PUBLIC SECTION.
+    METHODS :
+*Method to fetch data from ZCK_AVAL_H header table
+      get_data,
+*Creating tree field catalog
+      create_fieldcat ,
+      create_singlefieldcat IMPORTING im_fieldname TYPE lvc_fname
+                                      im_coltext   TYPE lvc_txtcol
+                                      im_outputlen TYPE lvc_outlen
+                                      im_no_zero   TYPE lvc_nozero,
+*Creating conatiner and tree through object
+      create_tree,
+*display tree alv
+      display_tree,
+*Registering the events for tree
+      register_event,
+*Method for double click event on tree (screen 100)
+      node_double_click
+      FOR EVENT node_double_click
+                    OF cl_gui_alv_tree
+        IMPORTING node_key.
+ENDCLASS.
+
+CLASS gcl_process_grid DEFINITION FINAL.
+  PUBLIC SECTION.
+    METHODS:
+*Fetch item table data
+      fetchdata_item,
+*preparing final grid internal table
+      combine_data,
+*Building field catalog for grid
+      buildfieldcatalog_grid,
+      buildcat_eachfield IMPORTING col_pos   TYPE i
+                                   fieldname TYPE char30
+                                   outlen    TYPE i
+                                   coltext   TYPE char40
+                                   hotspot   TYPE c
+                                   just      TYPE c
+                                   no_out    TYPE c
+                                   no_zero   TYPE c
+                                   checkbox  TYPE lvc_checkb,
+*Layout for grid
+      build_layout_grid,
+
+*Display grid
+      display_grid,
+*Event hotspot on commentario field
+      ##NEEDED
+      hotspot_click FOR EVENT   hotspot_click
+                    OF          cl_gui_alv_grid
+        IMPORTING e_row_id
+                    e_column_id
+                    es_row_no,
+
+      button_click  FOR EVENT button_click
+                    OF        cl_gui_alv_grid
+        IMPORTING es_col_id
+                    es_row_no,
+
+      send_email,
+      send_email_new,
+      format_html CHANGING ch_obj_relatorio TYPE REF TO zcl_dig_relatorio
+                           ch_string        TYPE string.
+
+ENDCLASS.
+
+CLASS gcl_operation IMPLEMENTATION.
+
+  METHOD : get_data.
+
+    REFRESH : gt_zck_aval_h,gt_zlojas,gt_final.
+    "Fetching Audit data
+    SELECT *
+      FROM zck_aval_h
+      INTO TABLE gt_zck_aval_h
+      WHERE centro    IN s_centro
+      AND   matricula IN s_matric
+      AND   data      IN s_data
+      AND   deletado  EQ space.
+    IF sy-subrc <> 0.
+      MESSAGE 'Nenhum dado encontrado'(029) TYPE 'S' DISPLAY LIKE 'E'.
+      EXIT.
+    ENDIF.
+*    SORT gt_zck_aval_h BY id_avaliacao seq_number DESCENDING.               "+++HARISH20170413
+*    DELETE ADJACENT DUPLICATES FROM gt_zck_aval_h COMPARING id_avaliacao.   "+++HARISH20170413
+    SORT gt_zck_aval_h BY centro.
+
+    "--Fetching data from ZLOJAS table for plant name (nome)
+    IF gt_zck_aval_h IS NOT INITIAL.
+      SELECT   id_loja
+               nome
+               orgeh
+               subarea
+         FROM  zlojas
+         INTO TABLE gt_zlojas
+         FOR ALL ENTRIES IN gt_zck_aval_h
+         WHERE id_loja = gt_zck_aval_h-centro.
+      IF sy-subrc EQ 0.
+        SORT gt_zlojas BY nome.
+      ENDIF.
+
+*      --Fetching data from ZCA_FUNCIONARIO for matricula name
+      SELECT id_funcionario
+             nome
+        FROM zca_funcionario
+        INTO TABLE gt_zca_funcionario
+        FOR ALL ENTRIES IN gt_zck_aval_h
+        WHERE id_funcionario = gt_zck_aval_h-matricula.
+      IF sy-subrc EQ 0.
+        SORT gt_zca_funcionario BY id_funcionario.
+      ENDIF.
+    ENDIF.
+
+    "----Populating data to a final internal table for tree----
+    LOOP AT gt_zck_aval_h INTO gwa_zck_aval_h.
+
+      gwa_final-id_avaliacao = gwa_zck_aval_h-id_avaliacao.
+      gwa_final-seq_number   = gwa_zck_aval_h-seq_number.
+      gwa_final-id_seq       = gwa_zck_aval_h-id_seq.
+      gwa_final-periodicity  = gwa_zck_aval_h-id_avaliacao+7(2).
+
+
+      READ TABLE gt_zlojas INTO gwa_zlojas  WITH KEY  id_lojas = gwa_zck_aval_h-centro.
+
+      IF sy-subrc = 0.
+        CALL FUNCTION 'ISP_CONVERT_FIRSTCHARS_TOUPPER'
+          EXPORTING
+            input_string  = gwa_zlojas-nome
+          IMPORTING
+            output_string = gwa_zlojas-nome.
+
+        gwa_final-nome = gwa_zlojas-nome.
+        MODIFY gt_zlojas FROM gwa_zlojas TRANSPORTING nome WHERE id_lojas = gwa_zck_aval_h-centro.
+      ENDIF.
+
+      gwa_final-nota_total   = gwa_zck_aval_h-nota_total.
+      gwa_final-matricula    = gwa_zck_aval_h-matricula.
+      gwa_final-centro       = gwa_zck_aval_h-centro.
+      gwa_final-period       = gwa_zck_aval_h-period.
+      gwa_final-versao       = gwa_zck_aval_h-version_id.
+      gwa_final-tipo_id      = gwa_zck_aval_h-tipo_id.
+      gwa_final-aprovado     = gwa_zck_aval_h-aprovado.
+      gwa_final-config_email = gwa_zck_aval_h-config_email.
+      gwa_final-envio_email  = gwa_zck_aval_h-envio_email.
+      gwa_final-rev_flag     = gwa_zck_aval_h-revisao.
+      gwa_final-data_y       = gwa_zck_aval_h-data(4).
+      gwa_final-data         = gwa_zck_aval_h-data.
+      gwa_final-data_end     = gwa_zck_aval_h-period_end.
+      gwa_final-revisao      = gwa_zck_aval_h-seq_number.
+
+      IF gwa_zck_aval_h-aprovado EQ 'X'.
+        gwa_final-status = 'Aprovado'(001).
+      ELSE.
+        gwa_final-status = 'Aguardando aprovação'(002).
+      ENDIF.
+
+      IF gwa_zck_aval_h-envio_email = 'X'.
+        gwa_final-email = 'Enviado'(025).
+      ELSEIF gwa_zck_aval_h-config_email = 'X'.
+        gwa_final-email = 'Configurado'(004).
+      ELSE.
+        gwa_final-email = space.
+      ENDIF.
+
+      gwa_final-deletado = gwa_zck_aval_h-deletado.
+
+      APPEND gwa_final TO gt_final.
+      CLEAR : gwa_final,gwa_zck_aval_h,gwa_zlojas.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD create_singlefieldcat.
+
+    CLEAR gwa_fcat_tree.
+    gwa_fcat_tree-fieldname = im_fieldname.
+    gwa_fcat_tree-coltext   = im_coltext  .
+    gwa_fcat_tree-outputlen = im_outputlen.
+    gwa_fcat_tree-no_zero   = im_no_zero  .
+    APPEND gwa_fcat_tree TO gt_fcat_tree.
+
+  ENDMETHOD.
+
+  METHOD create_fieldcat.
+
+    IF gt_fcat_tree IS NOT INITIAL.
+      RETURN.
+    ENDIF.
+
+    CALL METHOD me->create_singlefieldcat
+      EXPORTING
+        im_fieldname = 'REVISAO'
+        im_coltext   = 'Revisão'(005)
+        im_outputlen = 20
+        im_no_zero   = 'X'.
+
+    CALL METHOD me->create_singlefieldcat
+      EXPORTING
+        im_fieldname = 'NOTA_TOTAL'
+        im_coltext   = 'Nota Total'(006)
+        im_outputlen = 20
+        im_no_zero   = 'X'.
+
+    CALL METHOD me->create_singlefieldcat
+      EXPORTING
+        im_fieldname = 'STATUS'
+        im_coltext   = 'Status'(007)
+        im_outputlen = 40
+        im_no_zero   = 'X'.
+
+    CALL METHOD me->create_singlefieldcat
+      EXPORTING
+        im_fieldname = 'EMAIL'
+        im_coltext   = 'E-mail'(008)
+        im_outputlen = 30
+        im_no_zero   = 'X'.
+
+  ENDMETHOD.
+
+  METHOD create_tree.
+    "----creating container for tree---
+    IF gobj_container IS INITIAL.
+      CREATE OBJECT gobj_container
+        EXPORTING
+          container_name              = 'CUSTOM'
+        EXCEPTIONS
+          cntl_error                  = 1
+          cntl_system_error           = 2
+          create_error                = 3
+          lifetime_error              = 4
+          lifetime_dynpro_dynpro_link = 5
+          OTHERS                      = 6.
+      IF sy-subrc EQ 0.
+        "-----creating tree-------
+        CREATE OBJECT gobj_tree
+          EXPORTING
+            parent                      = gobj_container
+            node_selection_mode         = cl_gui_column_tree=>node_sel_mode_single
+            item_selection              = ' '
+            no_toolbar                  = 'X'
+            no_html_header              = 'X'
+          EXCEPTIONS
+            cntl_error                  = 1
+            cntl_system_error           = 2
+            create_error                = 3
+            lifetime_error              = 4
+            illegal_node_selection_mode = 5
+            failed                      = 6
+            illegal_column_name         = 7
+            OTHERS                      = 8.
+        IF sy-subrc <> 0.
+          MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                     WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+
+  "-----
+  METHOD display_tree.
+
+    DATA : lv_key1         TYPE          lvc_nkey,
+           lv_key2         TYPE          lvc_nkey,
+           lv_key3         TYPE          lvc_nkey,
+           lv_t_key        TYPE          lvc_t_nkey,
+           node_text       TYPE          lvc_value,
+           lwa_header      TYPE          treev_hhdr,
+           lwa_layout      TYPE          lvc_s_layn,
+           lwa_period_text TYPE          zck_period_text,
+           lv_char         TYPE          char2,
+           lv_period       TYPE          numc2,
+           lwa_final       TYPE          gty_final,
+           lt_period_text  TYPE TABLE OF zck_period_text.
+
+    REFRESH : gt_final_dummy.
+
+    IF lt_period_text IS INITIAL.
+      SELECT * FROM zck_period_text INTO TABLE lt_period_text.
+    ENDIF.
+
+    lwa_header-width = 75.
+    lwa_header-heading = 'Centro'(010).
+    lwa_header-tooltip =  'Centro'(010).
+
+    CALL METHOD gobj_tree->set_table_for_first_display
+      EXPORTING
+        is_hierarchy_header = lwa_header
+      CHANGING
+        it_outtab           = gt_final_dummy
+        it_fieldcatalog     = gt_fcat_tree.
+
+    SORT gt_final BY nome data_y DESCENDING periodicity period.
+    LOOP AT gt_final INTO lwa_final.
+      gwa_final = lwa_final.
+      AT NEW centro.
+        READ TABLE gt_zlojas INTO gwa_zlojas WITH KEY id_lojas = gwa_final-centro.
+        IF sy-subrc = 0.
+          "Adding Folder for Lojas
+          node_text = gwa_zlojas-nome.
+          CALL METHOD gobj_tree->add_node
+            EXPORTING
+              i_relat_node_key     = ''
+              i_relationship       = cl_gui_column_tree=>relat_last_child
+              i_node_text          = node_text
+            IMPORTING
+              e_new_node_key       = lv_key1
+            EXCEPTIONS
+              relat_node_not_found = 1
+              node_not_found       = 2
+              OTHERS               = 3.
+          CLEAR : node_text.
+        ENDIF.
+      ENDAT.
+      "Adding Node For Years
+      AT NEW data_y.
+        lwa_layout-n_image = 'BNONE'(011). "--for removing folder icon in the second node--
+        node_text = gwa_final-data_y.
+        CALL METHOD gobj_tree->add_node
+          EXPORTING
+            i_relat_node_key     = lv_key1
+            i_relationship       = cl_gui_column_tree=>relat_last_child
+            i_node_text          = node_text
+            is_node_layout       = lwa_layout
+          IMPORTING
+            e_new_node_key       = lv_key2
+          EXCEPTIONS
+            relat_node_not_found = 1
+            node_not_found       = 2
+            OTHERS               = 3.
+        CLEAR : node_text.
+      ENDAT.
+
+      "Adding a node for PERIODICITY
+      lv_period = gwa_final-period.
+      AT NEW period.
+        lwa_layout-n_image = 'BNONE'(011). "--for removing folder icon in the second node--
+        READ TABLE lt_period_text INTO lwa_period_text WITH KEY periodicidade = gwa_final-periodicity BINARY SEARCH.
+        IF sy-subrc = 0.
+          SHIFT lv_period LEFT DELETING LEADING '0'.
+          CONCATENATE lv_period '°' INTO node_text.
+          CONCATENATE node_text lwa_period_text-period_text INTO node_text SEPARATED BY space.
+        ELSE.
+          CONCATENATE 'Periodicidade inválida'(038) gwa_final-periodicity INTO node_text SEPARATED BY space.
+        ENDIF.
+
+        CALL METHOD gobj_tree->add_node
+          EXPORTING
+            i_relat_node_key     = lv_key2
+            i_relationship       = cl_gui_column_tree=>relat_last_child
+            i_node_text          = node_text
+            is_node_layout       = lwa_layout
+          IMPORTING
+            e_new_node_key       = lv_key3
+          EXCEPTIONS
+            relat_node_not_found = 1
+            node_not_found       = 2
+            OTHERS               = 3.
+      ENDAT.
+
+      READ TABLE gt_zca_funcionario INTO gwa_zca_funcionario WITH KEY id_funcionario = gwa_final-matricula.
+      IF sy-subrc = 0.
+        CALL FUNCTION 'ISP_CONVERT_FIRSTCHARS_TOUPPER'
+          EXPORTING
+            input_string  = gwa_zca_funcionario-nome
+          IMPORTING
+            output_string = gwa_zca_funcionario-nome.
+        CONCATENATE gwa_final-matricula gwa_zca_funcionario-nome INTO node_text SEPARATED BY '-'.
+      ENDIF.
+      SHIFT node_text LEFT DELETING LEADING '0'.
+
+      CALL METHOD gobj_tree->add_node
+        EXPORTING
+          i_relat_node_key     = lv_key3
+          i_relationship       = cl_gui_column_tree=>relat_last_child
+          is_outtab_line       = gwa_final
+          i_node_text          = node_text
+        EXCEPTIONS
+          relat_node_not_found = 1
+          node_not_found       = 2
+          OTHERS               = 3.
+      APPEND lv_key3 TO lv_t_key.
+      CLEAR: node_text, lv_period.
+    ENDLOOP.
+    "Expanding all nodes of the tree
+    CALL METHOD gobj_tree->expand_nodes
+      EXPORTING
+        it_node_key             = lv_t_key
+      EXCEPTIONS
+        failed                  = 1
+        cntl_system_error       = 2
+        error_in_node_key_table = 3
+        dp_error                = 4
+        node_not_found          = 5
+        OTHERS                  = 6.
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+    CLEAR :  node_text,
+             gwa_final,
+             gwa_zca_funcionario,
+             lwa_period_text.
+    REFRESH : lv_t_key.
+
+    CALL METHOD gobj_tree->frontend_update. "----Sends the control to the front end--
+
+  ENDMETHOD.
+
+
+  METHOD register_event.
+
+    DATA : lobj_handle TYPE REF TO gcl_operation.
+
+    CALL METHOD gobj_tree->get_registered_events
+      IMPORTING
+        events     = gt_event
+      EXCEPTIONS
+        cntl_error = 1
+        OTHERS     = 2.
+    "----Registering node double click event explicitly--
+
+    gwa_event-eventid = cl_gui_column_tree=>eventid_node_double_click.
+    APPEND gwa_event TO gt_event.
+    CLEAR gwa_event.
+
+    CALL METHOD gobj_tree->set_registered_events
+      EXPORTING
+        events                    = gt_event
+      EXCEPTIONS
+        cntl_error                = 1
+        cntl_system_error         = 2
+        illegal_event_combination = 3
+        OTHERS                    = 4.
+    IF lobj_handle IS INITIAL.
+      CREATE OBJECT lobj_handle.
+    ENDIF.
+
+    SET HANDLER lobj_handle->node_double_click FOR gobj_tree.
+  ENDMETHOD.
+
+  METHOD node_double_click.
+
+    DATA : lwa_layout_outtab TYPE lvc_s_layn,
+           lwa_zck_topics    TYPE zck_topics.
+
+    FIELD-SYMBOLS: <lfs_out_tab> TYPE gty_final.
+
+    CLEAR : gwa_out_tab,lwa_zck_topics,lwa_layout_outtab.
+
+    CALL METHOD gobj_tree->get_outtab_line
+      EXPORTING
+        i_node_key     = node_key
+      IMPORTING
+        e_outtab_line  = gwa_out_tab
+        es_node_layout = lwa_layout_outtab.
+    IF lwa_layout_outtab-isfolder = 'X'.
+      MESSAGE s011.
+      LEAVE SCREEN.
+    ENDIF.
+
+    SELECT  SINGLE *
+      FROM zck_topics
+      INTO lwa_zck_topics
+      WHERE versao        = gwa_out_tab-versao
+      AND   tipo_id       = gwa_out_tab-tipo_id
+      AND   periodicidade = gwa_out_tab-id_avaliacao+7(2).
+    IF sy-subrc EQ 0.
+      CALL SCREEN 200.
+
+      READ TABLE gt_final_dummy ASSIGNING <lfs_out_tab> WITH KEY id_avaliacao = gwa_out_tab-id_avaliacao
+                                                                  seq_number = gwa_out_tab-seq_number
+                                                                  id_seq = gwa_out_tab-id_seq.
+      IF sy-subrc = 0.
+        <lfs_out_tab> = gwa_out_tab.
+      ENDIF.
+    ELSE.
+      MESSAGE s012.
+    ENDIF.
+
+  ENDMETHOD.
+ENDCLASS.
+
+""""""""""""""""200 screen methods"""""""""""""""""""""""
+CLASS gcl_process_grid IMPLEMENTATION.
+  METHOD send_email.
+    ##DECL_MODUL
+    TYPES : BEGIN OF lty_comento,
+              index    TYPE i,
+              coment   TYPE ze_ck_coment,
+              point(5) TYPE c,
+            END OF lty_comento.
+
+    TYPES: BEGIN OF lty_html,
+             line TYPE string,
+           END OF lty_html.
+
+    DATA :
+      lv_data            TYPE          string,
+      lv_topic_desc      TYPE          string,
+      lv_string          TYPE          string,
+      lv_string1         TYPE          string,
+      lv_string2         TYPE          string,
+      lv_string3         TYPE          string,
+      lv_string4         TYPE          string,
+      lv_string5         TYPE          string,
+      lv_point           TYPE          char10,
+      lv_images          TYPE          string,
+      lv_image1          TYPE          string,
+      lv_image2          TYPE          string,
+      lv_image3          TYPE          string,
+      lv_image4          TYPE          string,
+      lv_titulo          TYPE          string,"zdig_titulo_email,
+      lv_email_ids       TYPE          string,
+      lv_len             TYPE          i,
+      lv_image_count     TYPE          i,
+      lv_nota_total      TYPE          char10,
+      lv_period          TYPE          char20,
+      lv_float           TYPE          p LENGTH 4 DECIMALS 2,
+      lobj_excecao       TYPE REF TO   zcx_dig_excecao,
+      lobj_relatorio     TYPE REF TO   zcl_dig_relatorio,
+      lt_zrh_dados       TYPE TABLE OF zrh_dados_gestor,
+      lwa_zrh_dados      TYPE          zrh_dados_gestor,
+      lv_orgeh           TYPE          orgeh,
+      lv_subarea         TYPE          btrtl,
+      lwa_zlojas         TYPE          gty_zlojas,"zlojas.
+      lv_char            TYPE          char2,
+      lv_ans             TYPE          char1,
+      lv_topic_pontuacao TYPE          ze_ck_pont,
+      lv_topic           TYPE          string,
+      lwa_data_item      TYPE          gty_data_item,
+      lt_zrh_dados_grp_ger TYPE TABLE OF zrh_dados_gestor.
+
+    ##DECL_MODUL
+    ##NEEDED
+    DATA :lwa_html_image TYPE          lty_html,
+          lt_html_image  TYPE TABLE OF lty_html,
+          lwa_comment    TYPE          lty_html,
+          lt_comment     TYPE TABLE OF lty_html,
+          lwa_comento    TYPE          lty_comento,
+          lt_comento     TYPE TABLE OF lty_comento.
+
+    CONSTANTS:  lc_table_end    TYPE char100 VALUE '</tbody></table>',
+                lc_row_start    TYPE char100 VALUE '<tr>',
+                lc_td_start     TYPE char100 VALUE '<td>',"
+                lc_image1       TYPE char100 VALUE '<img src="&foto1&" style="width:300px;height:200px"></td>',
+                lc_image2       TYPE char100 VALUE '<img src="&foto2&" style="width:300px;height:200px"></td>',
+                lc_image3       TYPE char100 VALUE '<img src="&foto3&" style="width:300px;height:200px"></td>',
+                lc_row_end      TYPE char100 VALUE '</tr>',
+                lc_table_start  TYPE char100 VALUE '<table><tbody>',
+                lc_success      TYPE char10 VALUE 'success_24',
+                lc_conf         TYPE char8 VALUE 'Conforme',
+                lc_del          TYPE char6 VALUE 'del_24',
+                lc_nao_confermo TYPE char12 VALUE 'Não conforme',
+                lc_div_left     TYPE char100 VALUE '<div style="float:left;margin:0 auto;">',
+                lc_div          TYPE char100 VALUE '<div style="float:right;vertical-align:middle;">',
+                lc_img_confermo TYPE string VALUE '<img style="vertical-align:middle;" src="http://kb.mailchimp.com/binaries/content/gallery/&IMG&.png">',
+                lc_confermo     TYPE char100 VALUE '<span style="vertical-align:middle; padding-left:5px; padding-right: 20px;">&CONF&</span></div>'.
+
+    IF gobj_grid->is_ready_for_input( ) EQ 1.
+      MESSAGE e020.
+    ELSE.
+
+      CLEAR : lv_titulo,lv_period,lv_orgeh,lv_subarea,
+              lv_char,lv_float,lv_string,lv_data,
+              lv_string1,lv_string2,lv_string3,lv_string4.
+
+*To get the ORGEH of that particular Centro
+      READ TABLE gt_zlojas INTO lwa_zlojas WITH KEY id_lojas = gwa_out_tab-centro.
+      IF sy-subrc EQ 0.
+        lv_orgeh = lwa_zlojas-orgeh.
+        lv_subarea = lwa_zlojas-subarea.
+      ENDIF.
+
+      CALL FUNCTION 'ZRH_GET_GESTORES'
+        EXPORTING
+          i_unidade = lv_orgeh
+        TABLES
+          t_gestor  = lt_zrh_dados.
+
+      CALL FUNCTION 'ZRH_GRP_GERENCIA'
+        EXPORTING
+          I_SUB_AREA           = lv_subarea
+        TABLES
+          T_GRP_GERENCIA       = LT_ZRH_DADOS_GRP_GER.
+
+      LOOP AT lt_zrh_dados INTO lwa_zrh_dados.
+        CHECK lwa_zrh_dados-usrid_long IS NOT INITIAL.
+        CONCATENATE lwa_zrh_dados-usrid_long ',' lv_email_ids INTO lv_email_ids.
+        CLEAR : lwa_zrh_dados.
+      ENDLOOP.
+
+      LOOP AT LT_ZRH_DADOS_GRP_GER INTO lwa_zrh_dados.
+        CHECK lwa_zrh_dados-usrid_long IS NOT INITIAL.
+        CONCATENATE lwa_zrh_dados-usrid_long ',' lv_email_ids INTO lv_email_ids.
+        CLEAR : lwa_zrh_dados.
+      ENDLOOP.
+
+      REFRESH: LT_EMAILS. CLEAR: LWA_EMAILS.
+      SELECT * FROM ZDIG_EMAILS INTO TABLE LT_EMAILS WHERE TIPO = 'CHL'.
+      LOOP AT LT_EMAILS INTO LWA_EMAILS.
+        CONCATENATE lv_email_ids ',' lwa_emails-email_relatorio INTO lv_email_ids.
+        CLEAR: LWA_EMAILS.
+      ENDLOOP.
+
+      IF lv_email_ids IS INITIAL.
+        MESSAGE e027.             "For No Email IDs
+        EXIT.
+      ENDIF.
+
+      lv_float = gwa_out_tab-data_end+4(2) / gwa_out_tab-id_avaliacao+7(2).
+      lv_char = ceil( lv_float ).
+
+      "Copying periodicity name based on period id's here.
+      IF gwa_out_tab-id_avaliacao+7(2)    EQ '01'.
+        CONCATENATE lv_char '° Mês' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '02'.
+        CONCATENATE lv_char '° Bimestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '03'.
+        CONCATENATE lv_char '° Trimestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '04'.
+        CONCATENATE lv_char '° Quadrimestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '06'.
+        CONCATENATE lv_char '° Semestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '12'.
+        CONCATENATE lv_char '° Ano' INTO lv_period.
+      ENDIF.
+
+      CONCATENATE 'Relatório de avaliação de loja'(022)
+                  gwa_out_tab-nome
+                  ' - '
+                  lv_period
+                  INTO lv_titulo SEPARATED BY space.
+
+      WRITE gwa_out_tab-nota_total TO lv_nota_total.
+
+      CONCATENATE sy-datum+6(2) '/'
+                  sy-datum+4(2) '/'
+                  sy-datum+0(4)
+                  INTO lv_data.
+
+      READ TABLE gt_zca_funcionario
+      INTO gwa_zca_funcionario WITH KEY id_funcionario = gwa_out_tab-matricula.
+      IF sy-subrc EQ 0.
+        CALL FUNCTION 'ISP_CONVERT_FIRSTCHARS_TOUPPER'
+          EXPORTING
+            input_string  = gwa_zca_funcionario-nome
+          IMPORTING
+            output_string = gwa_zca_funcionario-nome.
+      ENDIF.
+
+      CHECK lv_email_ids IS NOT INITIAL.
+
+      CREATE OBJECT lobj_excecao.
+
+*  Creating obj for Designing and Sending email
+      CREATE OBJECT lobj_relatorio
+        EXPORTING
+          im_tipo = 'DET'.
+
+      IF sy-subrc = 0.
+        lobj_relatorio->titulo = lv_titulo.
+      ENDIF.
+      """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+      lv_string = '<table style="width:100%">'.
+      lobj_relatorio->adicionar_html( lv_string ).
+      lv_string = '<tr style="height:41px">'.
+      lobj_relatorio->adicionar_html( lv_string ).
+      lv_string = '<td colspan="2" style="padding:2px 3px;font-family:arial;font-size:140%;font-weight:bold;color:rgb(11,83,148);vertical-align:middle;background-color:rgb(239,239,239)">'.
+      lobj_relatorio->adicionar_html( lv_string ).
+      lv_string2 = '<div style="float:left;padding:0 auto">&nbsp;Data: &lv_data&</div><div style="float:left;padding:0 5px">-</div><div style="float:left;padding:0 0px">Nota: &lv_nota_total&</div>' .
+      REPLACE '&lv_data&'         IN lv_string2 WITH lv_data.
+      REPLACE '&lv_nota_total&'   IN lv_string2 WITH lv_nota_total.
+      lobj_relatorio->adicionar_html( lv_string2 ).
+      lv_string3 = '<div style="float:right;padding:0 0px 0px 21px;">&nbsp;Auditor: &gwa_zca_funcionario-nome&</div></td></tr></table>'.
+      REPLACE '&gwa_zca_funcionario-nome&' IN lv_string3 WITH gwa_zca_funcionario-nome.
+*      CONCATENATE lv_string lv_string2 lv_string3 INTO lv_string4.
+      lobj_relatorio->adicionar_html( lv_string3 ).
+      """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+      TRY.
+*
+          LOOP AT gt_data_grid INTO gwa_data_grid.
+            CHECK gwa_data_grid-indice_topico IS NOT INITIAL
+              AND gwa_data_grid-indice_subtopico IS NOT INITIAL.
+
+            AT NEW indice_topico.
+              READ TABLE gt_zck_aval_h INTO gwa_zck_aval_h WITH KEY id_avaliacao = gwa_data_grid-id_avaliacao.
+              IF sy-subrc = 0.
+                READ TABLE gt_topics INTO gwa_topics WITH KEY   tipo_id = gwa_zck_aval_h-tipo_id
+                                                                versao = gwa_zck_aval_h-version_id
+                                                                indice_topico = gwa_data_grid-indice_topico.
+                IF sy-subrc = 0.
+                  lv_topic_desc = gwa_topics-topico.
+                ENDIF.
+              ENDIF.
+            ENDAT.
+
+            WRITE gwa_data_grid-pontuacao TO lv_point.
+            REPLACE '-' INTO lv_point WITH space.
+            IF sy-subrc = 0.
+              CONDENSE lv_point NO-GAPS.
+              CONCATENATE '-' lv_point INTO lv_point.
+            ENDIF.
+
+            IF gwa_data_grid-foto1 IS NOT INITIAL.
+              IF lv_image_count = 0.
+                lwa_html_image-line = lc_row_start.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+              lv_image_count = lv_image_count + 1.
+              lwa_html_image-line = lc_td_start.
+              APPEND lwa_html_image TO lt_html_image.
+              lv_image2 = lc_image1.
+              REPLACE '&foto1&' IN lv_image2 WITH gwa_data_grid-id_foto1.
+              lwa_html_image-line = lv_image2.
+              APPEND lwa_html_image TO lt_html_image.
+              IF lv_image_count = 3.
+                CLEAR: lv_image_count.
+                lwa_html_image-line = lc_row_end.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+            ENDIF.
+
+            IF gwa_data_grid-foto2 IS NOT INITIAL.
+              IF lv_image_count = 0.
+                lwa_html_image-line = lc_row_start.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+              lv_image_count = lv_image_count + 1.
+              lv_image3 = lc_image2.
+              lwa_html_image-line = lc_td_start.
+              APPEND lwa_html_image TO lt_html_image.
+              REPLACE '&foto2&' IN lv_image3 WITH gwa_data_grid-id_foto2.
+              lwa_html_image-line = lv_image3.
+              APPEND lwa_html_image TO lt_html_image.
+              IF lv_image_count = 3.
+                CLEAR: lv_image_count.
+                lwa_html_image-line = lc_row_end.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+            ENDIF.
+
+            IF gwa_data_grid-foto3 IS NOT INITIAL.
+              IF lv_image_count = 0.
+                lwa_html_image-line = lc_row_start.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+              lv_image_count = lv_image_count + 1.
+              lv_image4 = lc_image3.
+              lwa_html_image-line = lc_td_start.
+              APPEND lwa_html_image TO lt_html_image.
+              REPLACE '&foto3&' IN lv_image4 WITH gwa_data_grid-id_foto3.
+              lwa_html_image-line = lv_image4.
+              APPEND lwa_html_image TO lt_html_image.
+              IF lv_image_count = 3.
+                CLEAR: lv_image_count.
+                lwa_html_image-line = lc_row_end.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+            ENDIF.
+
+            READ TABLE gt_data_item INTO lwa_data_item WITH KEY indice_topico = gwa_data_grid-indice_topico
+                                                                 id_avaliacao = gwa_data_grid-id_avaliacao
+                                                                 indice_subtopico = 0.
+            IF sy-subrc EQ 0.
+              lv_string5 = lwa_data_item-comentario.
+              CONCATENATE lv_string5 '.' INTO lv_string5.
+            ENDIF.
+            lv_string1 = '<p style="font-family:arial;text-align:justify;text-indent:4em;">&lv_string5&</p>'.
+            REPLACE '&lv_string5&' IN lv_string1 WITH lv_string5.
+
+            lv_topic_pontuacao = gwa_data_grid-pontuacao + lv_topic_pontuacao.
+
+            AT END OF indice_topico.
+              lv_topic_desc = lv_topic_desc && lc_div && lc_img_confermo && lc_confermo.
+              "Compare the Points from the Total topic points and Points from ZCK_PARAMETERS
+              IF lv_topic_pontuacao GT gv_param_topics.
+                REPLACE '&IMG&' INTO lv_topic_desc WITH lc_success.
+                REPLACE '&CONF&' INTO lv_topic_desc WITH lc_conf.
+              ELSE.
+                REPLACE '&IMG&' INTO lv_topic_desc WITH lc_del.
+                REPLACE '&CONF&' INTO lv_topic_desc WITH lc_nao_confermo.
+              ENDIF.
+              lobj_relatorio->adicionar_secao( lv_topic_desc ).
+              IF lv_image_count > 0.
+                lwa_html_image-line = lc_row_end.
+                APPEND lwa_html_image TO lt_html_image.
+              ENDIF.
+
+              lobj_relatorio->adicionar_html('<p style="font-family:arial;font-weight:bold;">Comentários:</p>').
+              format_html( CHANGING ch_obj_relatorio = lobj_relatorio
+                                    ch_string = lv_string5 ).
+
+              LOOP AT lt_html_image INTO lwa_html_image.
+                AT FIRST.
+                  lv_images = '</table>' && lc_table_start.
+                  lobj_relatorio->adicionar_html( lv_images ).
+                ENDAT.
+
+                lobj_relatorio->adicionar_html( lwa_html_image-line ).
+                AT LAST.
+                  lv_images = lc_table_end.
+                  lobj_relatorio->adicionar_html( lv_images ).
+                ENDAT.
+              ENDLOOP.
+              REFRESH: lt_html_image.
+              CLEAR : lv_string1,lv_images,lv_len,lv_string5,lv_image_count, lv_topic_pontuacao,lwa_data_item.
+            ENDAT.
+            CLEAR : lv_image1,lv_image2,lv_image3,
+                    lv_image4,lv_point.
+          ENDLOOP.
+          """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+        CATCH zcx_dig_excecao INTO lobj_excecao.
+          MESSAGE lobj_excecao->get_text( ) TYPE 'E'.
+      ENDTRY.
+
+      IF lobj_excecao->erro IS INITIAL.
+        CALL FUNCTION 'POPUP_TO_CONFIRM'
+          EXPORTING
+            text_question         = 'Salvar as alterações?'(026)
+            text_button_1         = 'Sim'(027)
+            text_button_2         = 'Não'(028)
+            display_cancel_button = 'X'
+          IMPORTING
+            answer                = lv_ans.
+
+        IF lv_ans EQ '1'.
+
+          lobj_relatorio->set_assunto_email( 'Relatório de avaliação de loja' ).
+          IF lv_email_ids IS NOT INITIAL.
+            lobj_relatorio->enviar_email( lv_email_ids ).
+          ENDIF.
+
+          UPDATE zck_aval_h SET envio_email  = 'X'
+                                     aenam   = sy-uname
+                                     aedat   = sy-datum
+                                     aezet   = sy-uzeit
+                          WHERE id_avaliacao = gwa_out_tab-id_avaliacao
+                          AND     seq_number = gwa_out_tab-seq_number.
+          IF sy-subrc EQ 0.
+            MESSAGE s019.
+            gwa_out_tab-email = 'Enviado'(025).
+            gwa_out_tab-envio_email = 'X'.
+            gv_del = 'X'.
+          ENDIF.
+        ELSEIF lv_ans EQ '2' OR lv_ans EQ 'A'.
+          MESSAGE s013.
+        ENDIF.
+      ELSE.
+      ENDIF.
+
+      CALL METHOD gobj_grid->set_ready_for_input
+        EXPORTING
+          i_ready_for_input = 0.
+    ENDIF.
+  ENDMETHOD.
+  METHOD format_html.
+    DATA: lv_string      TYPE string,
+          lv_string_temp TYPE string,
+          lv_num         TYPE i.
+
+    lv_string_temp = ch_string.
+    lv_num = strlen( ch_string ).
+
+    WHILE lv_num > 0.
+      IF lv_num > 255.
+        lv_num = lv_num - 255.
+        lv_string = lv_string_temp(255).
+        SHIFT lv_string_temp LEFT BY 255 PLACES.
+      ELSE.
+        lv_string = lv_string_temp.
+        lv_num = 0.
+      ENDIF.
+      ch_obj_relatorio->adicionar_html( lv_string ).
+    ENDWHILE.
+
+  ENDMETHOD.
+  METHOD buildfieldcatalog_grid.
+
+    REFRESH gt_fcat_grid.
+
+    CALL METHOD me->buildcat_eachfield
+      EXPORTING
+        col_pos   = 1
+        fieldname = 'ID_AVALIACAO'
+        outlen    = '10'
+        coltext   = 'Núm. Avaliação'(012)
+        hotspot   = space
+        just      = 'L'
+        no_out    = 'X'
+        no_zero   = 'X'
+        checkbox  = space.
+
+    CALL METHOD me->buildcat_eachfield
+      EXPORTING
+        col_pos   = 2
+        fieldname = 'INDICE_TOPICO'
+        outlen    = '10'
+        just      = 'L'
+        coltext   = 'Núm. Tópico'(013)
+        hotspot   = space
+        no_out    = 'X'
+        no_zero   = 'X'
+        checkbox  = space.
+
+    CALL METHOD me->buildcat_eachfield
+      EXPORTING
+        col_pos   = 3
+        fieldname = 'INDICE_SUBTOPICO'
+        outlen    = '10'
+        just      = 'L'
+        coltext   = 'Núm. Subtópico'(014)
+        hotspot   = space
+        no_out    = 'X'
+        no_zero   = 'X'
+        checkbox  = space.
+
+    CALL METHOD me->buildcat_eachfield
+      EXPORTING
+        col_pos   = 4
+        fieldname = 'CHECKLIST'
+        outlen    = '60'
+        just      = 'L'
+        coltext   = 'Checklist'(015)
+        hotspot   = space
+        no_out    = space
+        no_zero   = 'X'
+        checkbox  = space.
+
+    CALL METHOD me->buildcat_eachfield
+      EXPORTING
+        col_pos   = 5
+        fieldname = 'PONTUACAO_1'
+        outlen    = '10'
+        just      = 'R'
+        coltext   = 'Nota'(016)
+        hotspot   = space
+        no_out    = space
+        no_zero   = space
+        checkbox  = space.
+
+    CALL METHOD me->buildcat_eachfield
+      EXPORTING
+        col_pos   = 6
+        fieldname = 'COMENTARIO'
+        outlen    = '60'
+        just      = 'L'
+        coltext   = 'Comentário'(017)
+        hotspot   = 'X'
+        no_out    = space
+        no_zero   = 'X'
+        checkbox  = space.
+
+    IF gv_is_edit NE 'X'.          "Putting condition to fieldcatalog based on edit or display mode
+      CALL METHOD me->buildcat_eachfield
+        EXPORTING
+          col_pos   = 7
+          fieldname = 'VAR1'
+          outlen    = '10'
+          just      = 'C'
+          coltext   = 'Foto1'(018)
+          hotspot   = space
+          no_out    = space
+          no_zero   = space
+          checkbox  = space.
+
+      CALL METHOD me->buildcat_eachfield
+        EXPORTING
+          col_pos   = 8
+          fieldname = 'VAR2'
+          outlen    = '10'
+          just      = 'C'
+          coltext   = 'Foto2'(019)
+          hotspot   = space
+          no_out    = space
+          no_zero   = space
+          checkbox  = space.
+
+      CALL METHOD me->buildcat_eachfield
+        EXPORTING
+          col_pos   = 9
+          fieldname = 'VAR3'
+          outlen    = '10'
+          just      = 'C'
+          coltext   = 'Foto3'(020)
+          hotspot   = space
+          no_out    = space
+          no_zero   = space
+          checkbox  = space.
+    ELSE.
+      CALL METHOD me->buildcat_eachfield
+        EXPORTING
+          col_pos   = 7
+          fieldname = 'FOTO1'
+          outlen    = '10'
+          just      = 'C'
+          coltext   = 'Foto1'(018)
+          hotspot   = space
+          no_out    = space
+          no_zero   = space
+          checkbox  = 'X'.
+
+      CALL METHOD me->buildcat_eachfield
+        EXPORTING
+          col_pos   = 8
+          fieldname = 'FOTO2'
+          outlen    = '10'
+          just      = 'C'
+          coltext   = 'Foto2'(019)
+          hotspot   = space
+          no_out    = space
+          no_zero   = space
+          checkbox  = 'X'.
+
+      CALL METHOD me->buildcat_eachfield
+        EXPORTING
+          col_pos   = 9
+          fieldname = 'FOTO3'
+          outlen    = '10'
+          just      = 'C'
+          coltext   = 'Foto3'(020)
+          hotspot   = space
+          no_out    = space
+          no_zero   = space
+          checkbox  = 'X'.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD buildcat_eachfield.
+
+    CLEAR:gwa_fcat_grid.
+    gwa_fcat_grid-col_pos = col_pos.
+    gwa_fcat_grid-fieldname = fieldname.
+    gwa_fcat_grid-outputlen = outlen.
+    gwa_fcat_grid-just = just.
+    gwa_fcat_grid-coltext = coltext.
+    gwa_fcat_grid-hotspot = hotspot.
+    gwa_fcat_grid-no_out = no_out.
+    gwa_fcat_grid-no_zero = no_zero.
+    gwa_fcat_grid-checkbox = checkbox.
+    APPEND gwa_fcat_grid TO gt_fcat_grid.
+
+  ENDMETHOD.
+
+  METHOD build_layout_grid.
+    IF gwa_layout_grid IS INITIAL.
+      gwa_layout_grid-stylefname = 'CELLTAB'.
+      gwa_layout_grid-no_toolbar = 'X'.
+      gwa_layout_grid-no_rowmark = 'X'.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD fetchdata_item.
+    DATA: lt_audit_tab TYPE zck_aval_i_tt,
+          lt_results   TYPE zreturn_t,
+          lv_char      TYPE c LENGTH 2,
+          lv_num       TYPE n LENGTH 2.
+
+    REFRESH  : gt_data_item, gt_topics, gt_subtopics.
+    lv_num = gwa_out_tab-revisao.
+*    lv_num = lv_num + 1.
+    lv_char = lv_num.
+    "Fetching data from item table
+    CALL FUNCTION 'ZRFC_CK_GET_AUDIT_DETAILS'
+      EXPORTING
+        im_id_avaliacao = gwa_out_tab-id_avaliacao
+        im_sequence     = lv_char
+        im_subtopic     = 'X'
+      TABLES
+        t_audit_tab     = gt_data_item
+        t_result        = lt_results.
+
+*Fetching topics data
+    SELECT *
+    FROM zck_topics
+    INTO TABLE gt_topics
+    WHERE tipo_id      EQ gwa_out_tab-tipo_id
+    AND    versao      EQ gwa_out_tab-versao
+    AND periodicidade  EQ gwa_out_tab-id_avaliacao+7(2)
+    AND deleted = space.
+    IF sy-subrc EQ 0.
+      SORT gt_topics BY indice_topico.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD combine_data.
+    DATA:lv_topic_index(2)    TYPE          c,
+         lv_subtopic_index(2) TYPE          c,
+         lv_id_avaliacao      TYPE          ze_ck_id_avaliacao,
+         lwa_celltab          TYPE          lvc_s_styl,
+         lt_celltab           TYPE          lvc_t_styl,
+         lwa_data_item        TYPE          gty_data_item,
+         lwa_data_item_temp   TYPE          gty_data_item,
+         lt_data_item         TYPE TABLE OF gty_data_item,
+         lv_flag              TYPE          i.
+
+    REFRESH  : gt_data_grid.
+
+    CLEAR:   gwa_data_grid,
+             gwa_data_item,
+             gwa_topics,
+             gwa_subtopics,
+             lv_topic_index,
+             lv_subtopic_index,
+             lv_id_avaliacao.
+
+    LOOP AT gt_data_item INTO gwa_data_item.
+      REFRESH:lt_celltab.
+      MOVE gwa_data_item TO lwa_data_item.
+      lv_id_avaliacao = gwa_data_item-id_avaliacao.
+
+      AT NEW indice_topico.
+
+        gwa_data_grid-checklist = space.
+        APPEND gwa_data_grid TO gt_data_grid.
+        CLEAR gwa_data_grid.
+
+        MOVE lwa_data_item-topico TO gwa_data_grid-checklist.
+        gwa_data_grid-id_avaliacao = lv_id_avaliacao.
+        """"""""""""""
+        lwa_celltab-fieldname = 'COMENTARIO'.
+        lwa_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
+        INSERT lwa_celltab INTO TABLE lt_celltab.
+        gwa_data_grid-celltab  = lt_celltab.
+        CLEAR:lwa_celltab.
+        """""""""""""
+        IF lwa_data_item-indice_subtopico IS INITIAL AND
+              lwa_data_item-indice_topico IS NOT INITIAL AND
+               lwa_data_item-id_avaliacao IS NOT INITIAL.
+          gwa_data_grid-comentario       =  lwa_data_item-comentario.
+        ENDIF.
+        gwa_data_grid-indice_topico = lwa_data_item-indice_topico.
+        gwa_data_grid-seq_number = lwa_data_item-seq_number.
+        gwa_data_grid-id_seq = lwa_data_item-id_seq. "--new
+        APPEND gwa_data_grid TO gt_data_grid.
+        CLEAR:gwa_data_grid,lv_subtopic_index.
+      ENDAT.
+      IF gwa_data_item-indice_subtopico IS NOT INITIAL.
+        gwa_data_grid-checklist        =  gwa_data_item-subtopico.
+        gwa_data_grid-id_avaliacao     =  gwa_data_item-id_avaliacao.
+        gwa_data_grid-seq_number       =  gwa_data_item-seq_number.
+        gwa_data_grid-id_seq           =  gwa_data_item-id_seq.   "--new
+        gwa_data_grid-indice_topico    =  gwa_data_item-indice_topico.
+        gwa_data_grid-indice_subtopico =  gwa_data_item-indice_subtopico.
+
+        IF gwa_data_item-pontuacao_flag EQ 'X'.
+          gwa_data_grid-pontuacao        =  gwa_data_item-pontuacao.
+          WRITE gwa_data_grid-pontuacao TO gwa_data_grid-pontuacao_1.
+          CONDENSE gwa_data_grid-pontuacao_1.
+          IF gwa_data_grid-pontuacao_1 CA '-'. ""--to put negetive sign prior the number
+            REPLACE '-' IN gwa_data_grid-pontuacao_1 WITH space.
+            gwa_data_grid-pontuacao_1 = '-' && gwa_data_grid-pontuacao_1.
+            CONDENSE gwa_data_grid-pontuacao_1.
+          ENDIF.
+
+        ELSEIF gwa_data_item-pontuacao_flag EQ space.
+          gwa_data_grid-pontuacao_1      = space.
+        ENDIF.
+
+        gwa_data_grid-comentario       =  gwa_data_item-comentario.
+        gwa_data_grid-foto1            =  gwa_data_item-foto1.
+        gwa_data_grid-foto2            =  gwa_data_item-foto2.
+        gwa_data_grid-foto3            =  gwa_data_item-foto3.
+
+        IF gwa_data_item-id_foto1 IS NOT INITIAL.
+          gwa_data_grid-var1 = 'Abrir'(021).
+          gwa_data_grid-id_foto1 = gwa_data_item-id_foto1.
+        ENDIF.
+
+        IF gwa_data_item-id_foto2 IS NOT INITIAL.
+          gwa_data_grid-var2 = 'Abrir'(021).
+          gwa_data_grid-id_foto2 = gwa_data_item-id_foto2.
+        ENDIF.
+
+        IF gwa_data_item-id_foto3 IS NOT INITIAL.
+          gwa_data_grid-var3 = 'Abrir'(021).
+          gwa_data_grid-id_foto3 = gwa_data_item-id_foto3.
+        ENDIF.
+
+        "----making as editable fields--
+        lwa_celltab-fieldname = 'PONTUACAO_1'.
+        lwa_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
+        INSERT lwa_celltab INTO TABLE lt_celltab.
+        CLEAR:lwa_celltab.
+
+        lwa_celltab-fieldname = 'COMENTARIO'.
+        lwa_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
+        INSERT lwa_celltab INTO TABLE lt_celltab.
+        CLEAR:lwa_celltab.
+        gwa_data_grid-celltab  = lt_celltab.
+
+        "---giving conditions for style
+        IF gwa_data_item-id_foto1 IS NOT INITIAL AND gv_is_edit NE 'X'.
+          lwa_celltab-fieldname = 'VAR1'.
+          lwa_celltab-style = cl_gui_alv_grid=>mc_style_button.
+          INSERT lwa_celltab INTO TABLE lt_celltab.
+          gwa_data_grid-celltab  = lt_celltab.
+          CLEAR:lwa_celltab.
+        ELSEIF gwa_data_item-id_foto1 IS NOT INITIAL AND gv_is_edit EQ 'X'.
+          lwa_celltab-fieldname = 'FOTO1'.
+          lwa_celltab-style = cl_gui_alv_grid=>mc_style_enabled .
+          INSERT lwa_celltab INTO TABLE lt_celltab.
+          gwa_data_grid-celltab  = lt_celltab.
+          CLEAR:lwa_celltab.
+        ENDIF.
+
+        IF gwa_data_item-id_foto2 IS NOT INITIAL AND gv_is_edit NE 'X'.
+          lwa_celltab-fieldname = 'VAR2'.
+          lwa_celltab-style = cl_gui_alv_grid=>mc_style_button.
+          INSERT lwa_celltab INTO TABLE lt_celltab.
+          gwa_data_grid-celltab  = lt_celltab.
+          CLEAR:lwa_celltab.
+        ELSEIF gwa_data_item-id_foto2 IS NOT INITIAL AND gv_is_edit EQ 'X'.
+          lwa_celltab-fieldname = 'FOTO2'.
+          lwa_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
+          INSERT lwa_celltab INTO TABLE lt_celltab.
+          gwa_data_grid-celltab  = lt_celltab.
+          CLEAR:lwa_celltab.
+        ENDIF.
+
+        IF gwa_data_item-id_foto3 IS NOT INITIAL AND gv_is_edit NE 'X'.
+          lwa_celltab-fieldname = 'VAR3'.
+          lwa_celltab-style = cl_gui_alv_grid=>mc_style_button.
+          INSERT lwa_celltab INTO TABLE lt_celltab.
+          gwa_data_grid-celltab  = lt_celltab.
+          CLEAR:lwa_celltab.
+        ELSEIF gwa_data_item-id_foto3 IS NOT INITIAL AND gv_is_edit EQ 'X'.
+          lwa_celltab-fieldname = 'FOTO3'.
+          lwa_celltab-style = cl_gui_alv_grid=>mc_style_enabled.
+          INSERT lwa_celltab INTO TABLE lt_celltab.
+          gwa_data_grid-celltab  = lt_celltab.
+          CLEAR:lwa_celltab.
+        ENDIF.
+
+        APPEND gwa_data_grid TO gt_data_grid.
+      ENDIF.
+      CLEAR: gwa_data_grid,gwa_data_item,gwa_topics,lwa_data_item,
+             gwa_subtopics,lv_id_avaliacao.
+    ENDLOOP.
+    CLEAR : lv_topic_index,
+            lv_subtopic_index.
+
+    gt_data_grid_mirror = gt_data_grid.
+    DELETE gt_data_grid INDEX 1.
+    DELETE gt_data_grid_mirror INDEX 1.
+  ENDMETHOD.
+
+  METHOD display_grid.
+
+    DATA: lv_cont_name TYPE c LENGTH 50.
+    IF gobj_grid IS INITIAL.
+
+      lv_cont_name = 'GRID'.
+      "---creating container for gird---
+      CREATE OBJECT gobj_cus_cont
+        EXPORTING
+          container_name = lv_cont_name.
+
+      "----creating grid control----
+
+      CREATE OBJECT gobj_grid
+        EXPORTING
+          i_parent = gobj_cus_cont.
+    ENDIF.
+
+*    ENDIF.
+    "----Table display for grid---
+    CALL METHOD gobj_grid->set_table_for_first_display
+      EXPORTING
+        is_layout       = gwa_layout_grid
+      CHANGING
+        it_outtab       = gt_data_grid
+        it_fieldcatalog = gt_fcat_grid.
+
+    SET HANDLER me->hotspot_click FOR gobj_grid.
+    SET HANDLER me->button_click FOR gobj_grid.
+
+  ENDMETHOD.
+
+  METHOD hotspot_click.
+
+    DATA:lv_index TYPE i.
+
+    CLEAR:gwa_data_grid,lv_index,gv_mod_status,gv_line.
+    gv_line = es_row_no-row_id.
+    IF e_column_id-fieldname = 'COMENTARIO' AND gv_is_edit EQ 'X'.
+
+      READ TABLE gt_data_grid INTO gwa_data_grid INDEX es_row_no-row_id.
+
+      IF sy-subrc EQ 0.
+        lv_index = sy-tabix.
+
+        IF gwa_data_grid-id_avaliacao IS NOT INITIAL.
+          CALL SCREEN 300 STARTING AT 2 2.
+        ENDIF.
+
+        IF gv_mod_status EQ 1.
+          MODIFY gt_data_grid FROM gwa_data_grid INDEX lv_index.
+          CALL METHOD gobj_grid->refresh_table_display.
+        ENDIF.
+
+        CLEAR:gwa_data_grid,lv_index,gv_mod_status.
+
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD button_click.
+    CLEAR : gwa_data_grid,gv_objid.
+    DATA:   lt_data_table TYPE STANDARD TABLE OF char255.
+
+*    CALL METHOD gobj_grid->check_changed_data.
+
+    READ TABLE gt_data_grid INTO gwa_data_grid INDEX es_row_no-row_id.
+    IF es_col_id EQ 'VAR1'.
+      gv_objid = gwa_data_grid-id_foto1.
+    ELSEIF es_col_id EQ 'VAR2'.
+      gv_objid = gwa_data_grid-id_foto2.
+    ELSEIF es_col_id EQ 'VAR3'.
+      gv_objid = gwa_data_grid-id_foto3.
+    ENDIF.
+
+    CALL METHOD cl_gui_control=>set_focus
+      EXPORTING
+        control = gobj_grid.
+
+    DATA : lv_html_link TYPE char255.
+    IF gobj_html_cont IS INITIAL.
+      CREATE OBJECT gobj_html_cont
+        EXPORTING
+          container_name              = 'CUSTOM_PIC'
+        EXCEPTIONS
+          cntl_error                  = 1
+          cntl_system_error           = 2
+          create_error                = 3
+          lifetime_error              = 4
+          lifetime_dynpro_dynpro_link = 5
+          OTHERS                      = 6.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                   WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+
+      CREATE OBJECT gobj_html_viewer
+        EXPORTING
+          parent             = gobj_html_cont
+        EXCEPTIONS
+          cntl_error         = 1
+          cntl_install_error = 2
+          dp_install_error   = 3
+          dp_error           = 4
+          OTHERS             = 5.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                   WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+
+    ENDIF.
+
+    IF gobj_html_viewer IS NOT INITIAL.
+
+      CALL METHOD gobj_html_viewer->load_data
+        EXPORTING
+          type                   = 'text'
+          subtype                = 'html'
+        IMPORTING
+          assigned_url           = lv_html_link
+        CHANGING
+          data_table             = lt_data_table
+        EXCEPTIONS
+          dp_invalid_parameter   = 1
+          dp_error_general       = 2
+          cntl_error             = 3
+          html_syntax_notcorrect = 4
+          OTHERS                 = 5.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                    WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+
+      lv_html_link = gv_objid.
+      CALL METHOD gobj_html_viewer->show_url
+        EXPORTING
+          url                    = lv_html_link
+          frame                  = 'X'
+        EXCEPTIONS
+          cntl_error             = 1
+          cnht_error_not_allowed = 2
+          cnht_error_parameter   = 3
+          dp_error_general       = 4
+          OTHERS                 = 5.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                   WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+
+    ENDIF.
+
+    CLEAR:ok_code.
+    CALL METHOD cl_gui_cfw=>flush.
+
+  ENDMETHOD.
+
+  METHOD send_email_new.
+    ##DECL_MODUL
+
+    TYPES : BEGIN OF lty_comento,
+              index    TYPE i,
+              coment   TYPE ze_ck_coment,
+              point(5) TYPE c,
+            END OF lty_comento.
+
+    TYPES: BEGIN OF lty_html,
+             line TYPE string,
+           END OF lty_html.
+
+    DATA :
+      lv_data            TYPE          string,
+      lv_topic_desc      TYPE          string,
+      lv_string          TYPE          string,
+      lv_string1         TYPE          string,
+      lv_string2         TYPE          string,
+      lv_string3         TYPE          string,
+      lv_string4         TYPE          string,
+      lv_string5         TYPE          string,
+      lv_point           TYPE          char10,
+      lv_images          TYPE          string,
+      lv_image1          TYPE          string,
+      lv_image2          TYPE          string,
+      lv_image3          TYPE          string,
+      lv_image4          TYPE          string,
+      lv_titulo          TYPE          string,"zdig_titulo_email,
+      lv_email_ids       TYPE          string,
+      lv_len             TYPE          i,
+      lv_image_count     TYPE          i,
+      lv_nota_total      TYPE          char10,
+      lv_period          TYPE          char20,
+      lv_float           TYPE          p LENGTH 4 DECIMALS 2,
+      lt_zrh_dados       TYPE TABLE OF zrh_dados_gestor,
+      lwa_zrh_dados      TYPE          zrh_dados_gestor,
+      lv_orgeh           TYPE          orgeh,
+      lv_subarea         TYPE          btrtl,
+      lwa_zlojas         TYPE          gty_zlojas,"zlojas.
+      lv_char            TYPE          char2,
+      lv_ans             TYPE          char1,
+      lv_topic_pontuacao TYPE          ze_ck_pont,
+      lv_topic           TYPE          string,
+      lwa_data_item      TYPE          gty_data_item,
+      lv_topnum          TYPE          i,             "++Shiva
+      lv_topic_num       TYPE          char2,              "++Shiva
+      LT_ZRH_DADOS_GRP_GER TYPE TABLE OF zrh_dados_gestor.
+
+    ##DECL_MODUL
+    ##NEEDED
+    DATA :lwa_html_image TYPE          lty_html,
+          lt_html_image  TYPE TABLE OF lty_html,
+          lwa_comment    TYPE          lty_html,
+          lt_comment     TYPE TABLE OF lty_html,
+          lwa_comento    TYPE          lty_comento,
+          lt_comento     TYPE TABLE OF lty_comento.
+
+    CONSTANTS:  lc_table_end    TYPE char100 VALUE '</table>',
+                lc_table_start  TYPE char100 VALUE '<table style="margin: 0px auto;table-layout:fixed;font-size: 15px;border-spacing: 0;width: 100%;">',
+                lc_colgroup     TYPE char100 VALUE '<colgroup><col width="48"><col width="975"></colgroup>',
+                lc_row_start    TYPE char100 VALUE '<tr>',
+                lc_td_start     TYPE char100 VALUE '<td style="text-align:center;">',
+                lc_image1       TYPE char100 VALUE '<img src="&foto1&" style="width:300px;height:188px;margin-right:5px">',
+                lc_image2       TYPE char100 VALUE '<img src="&foto2&" style="width:300px;height:188px;margin-right:5px">',
+                lc_image3       TYPE char100 VALUE '<img src="&foto3&" style="width:300px;height:188px;margin-right:5px">',
+                lc_row_end      TYPE char100 VALUE '</tr>',
+                lc_success      TYPE char10 VALUE 'success_24',
+                lc_conf         TYPE char8 VALUE 'Conforme',
+                lc_del          TYPE char6 VALUE 'del_24',
+                lc_nao_confermo TYPE char12 VALUE 'Não conforme',
+                lc_div_left     TYPE char100 VALUE '<div style="float:left;margin:0 auto;">',
+                lc_div          TYPE char100 VALUE '<div style="float:right;vertical-align:middle;">',
+                lc_img_confermo TYPE string VALUE '<img style="vertical-align:middle;" src="http://kb.mailchimp.com/binaries/content/gallery/&IMG&.png">',
+                lc_confermo     TYPE char100 VALUE '<span style="vertical-align:middle; padding-left:5px; padding-right: 20px;">&CONF&</span></div>'.
+
+    IF gobj_grid->is_ready_for_input( ) EQ 1.
+      MESSAGE e020.
+    ELSE.
+
+      CLEAR : lv_titulo,lv_period,lv_orgeh,lv_subarea,
+              lv_char,lv_float,lv_string,lv_data,
+              lv_string1,lv_string2,lv_string3,lv_string4.
+
+
+*<<<START SHIVA20170417
+
+      CONSTANTS: lc_path TYPE filename-fileintern VALUE 'ZCHECKLIST'.
+      CONSTANTS:  lc_doc_type TYPE so_obj_tp   VALUE 'HTM'.
+
+      TYPES : BEGIN OF  lty_table,
+                line(255) TYPE c,
+              END   OF  lty_table.
+
+      DATA: lt_lines  TYPE STANDARD TABLE OF tline,
+            lwa_lines TYPE                   tline.
+
+      DATA: lt_body  TYPE bcsy_text,                " Mail body
+            lwa_body TYPE soli,
+            lv_line  TYPE string,
+            lv_len1  TYPE int3,
+            lv_msg   TYPE string,
+            lv_fpath TYPE string.
+
+      DATA: lt_html     TYPE TABLE OF lty_table,
+            lwa_html    TYPE          lty_table,
+            lv_mail_to  TYPE          string,
+            lv_subject  TYPE          string VALUE 'Relatório de avaliação de loja &STORE&',
+            lv_doc_desc TYPE          so_obj_des," VALUE 'Relatório de avaliação de loja &STORE&',
+            lv_email    TYPE          ad_smtpadr.
+*<<<<Abhishek
+      DATA : lv_x      TYPE p,
+             lv_como   TYPE string,
+             lv_y      TYPE i,
+             lv_z      TYPE i,
+             lv_m      TYPE i,
+             lv_append TYPE string.
+* abhishek>>>>>>
+* Get the Logical File Path of the Email Template
+      CALL FUNCTION 'FILE_GET_NAME'
+        EXPORTING
+          client           = sy-mandt
+          logical_filename = lc_path
+          operating_system = sy-opsys
+          eleminate_blanks = space
+        IMPORTING
+          file_name        = lv_fpath
+        EXCEPTIONS
+          file_not_found   = 1
+          OTHERS           = 2.
+      IF sy-subrc <> 0.
+        MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+      ENDIF.
+*>>>START SHIVA20170417
+
+*To get the ORGEH of that particular Centro
+      READ TABLE gt_zlojas INTO lwa_zlojas WITH KEY id_lojas = gwa_out_tab-centro.
+      IF sy-subrc EQ 0.
+        lv_orgeh = lwa_zlojas-orgeh.
+        lv_subarea = lwa_zlojas-subarea.
+      ENDIF.
+
+      "Fetching the Email IDs of the Store Managers
+      CALL FUNCTION 'ZRH_GET_GESTORES'
+        EXPORTING
+          i_unidade = lv_orgeh
+        TABLES
+          t_gestor  = lt_zrh_dados.
+
+      CALL FUNCTION 'ZRH_GRP_GERENCIA'
+        EXPORTING
+          I_SUB_AREA           = lv_subarea
+        TABLES
+          T_GRP_GERENCIA       = LT_ZRH_DADOS_GRP_GER.
+
+      LOOP AT lt_zrh_dados INTO lwa_zrh_dados.
+        CHECK lwa_zrh_dados-usrid_long IS NOT INITIAL.
+        CONCATENATE lwa_zrh_dados-usrid_long ',' lv_email_ids INTO lv_email_ids.
+        CLEAR : lwa_zrh_dados.
+      ENDLOOP.
+
+      LOOP AT LT_ZRH_DADOS_GRP_GER INTO lwa_zrh_dados.
+        CHECK lwa_zrh_dados-usrid_long IS NOT INITIAL.
+        CONCATENATE lwa_zrh_dados-usrid_long ',' lv_email_ids INTO lv_email_ids.
+        CLEAR : lwa_zrh_dados.
+      ENDLOOP.
+
+      REFRESH: LT_EMAILS. CLEAR: LWA_EMAILS.
+      SELECT * FROM ZDIG_EMAILS INTO TABLE LT_EMAILS WHERE TIPO = 'CHL'.
+      LOOP AT LT_EMAILS INTO LWA_EMAILS.
+        CONCATENATE lv_email_ids ';' lwa_emails-email_relatorio INTO lv_email_ids.
+        CLEAR: LWA_EMAILS.
+      ENDLOOP.
+
+      IF lv_email_ids IS INITIAL.
+        MESSAGE e027.             "For No Email IDs
+        EXIT.
+      ENDIF.
+
+      lv_float = gwa_out_tab-data_end+4(2) / gwa_out_tab-id_avaliacao+7(2).
+      lv_char = ceil( lv_float ).
+
+      "Copying periodicity name based on period id's here.
+      IF gwa_out_tab-id_avaliacao+7(2)    EQ '01'.
+        CONCATENATE lv_char '° Mês' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '02'.
+        CONCATENATE lv_char '° Bimestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '03'.
+        CONCATENATE lv_char '° Trimestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '04'.
+        CONCATENATE lv_char '° Quadrimestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '06'.
+        CONCATENATE lv_char '° Semestre' INTO lv_period.
+      ELSEIF gwa_out_tab-id_avaliacao+7(2) EQ '12'.
+        CONCATENATE lv_char '° Ano' INTO lv_period.
+      ENDIF.
+
+      CONCATENATE gwa_out_tab-nome ' - ' lv_period
+                  INTO lv_titulo SEPARATED BY space.
+
+      WRITE gwa_out_tab-nota_total TO lv_nota_total.
+
+      CONCATENATE sy-datum+6(2) '/'
+                  sy-datum+4(2) '/'
+                  sy-datum+0(4)
+                  INTO lv_data.
+
+      READ TABLE gt_zca_funcionario
+      INTO gwa_zca_funcionario WITH KEY id_funcionario = gwa_out_tab-matricula.
+      IF sy-subrc EQ 0.
+        CALL FUNCTION 'ISP_CONVERT_FIRSTCHARS_TOUPPER'
+          EXPORTING
+            input_string  = gwa_zca_funcionario-nome
+          IMPORTING
+            output_string = gwa_zca_funcionario-nome.
+      ENDIF.
+
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          text_question         = 'Enviar e-mail??'(036)
+          text_button_1         = 'Sim'(027)
+          text_button_2         = 'Não'(028)
+          display_cancel_button = 'X'
+        IMPORTING
+          answer                = lv_ans.
+
+      IF lv_ans EQ '1'.
+*<<<START SHIVA20170417
+* Read the email template from the Application Server
+        IF lv_fpath IS NOT INITIAL.
+* Open The Applicatione Server File
+          OPEN DATASET lv_fpath FOR INPUT IN TEXT MODE ENCODING UTF-8 IGNORING CONVERSION ERRORS MESSAGE lv_msg.
+          IF sy-subrc EQ 0.
+            DO.
+              READ DATASET lv_fpath INTO lv_line.
+              IF sy-subrc EQ 0.
+                IF lv_line = '&CONTENT&'.
+                  LOOP AT gt_data_grid INTO gwa_data_grid.
+                    CHECK gwa_data_grid-id_avaliacao IS NOT INITIAL.
+*                      AND gwa_data_grid-indice_subtopico IS NOT INITIAL.
+
+                    AT NEW indice_topico.
+                      "Fetching Topic name
+                      READ TABLE gt_zck_aval_h INTO gwa_zck_aval_h WITH KEY id_avaliacao = gwa_data_grid-id_avaliacao.
+                      IF sy-subrc = 0.
+                        READ TABLE gt_topics INTO gwa_topics WITH KEY   tipo_id = gwa_zck_aval_h-tipo_id
+                                                                        versao = gwa_zck_aval_h-version_id
+                                                                        indice_topico = gwa_data_grid-indice_topico.
+                        IF sy-subrc = 0.
+                          lv_topic_desc = gwa_topics-topico.
+                        ENDIF.
+                      ENDIF.
+                    ENDAT.
+
+                    "Image 1
+                    IF gwa_data_grid-foto1 IS NOT INITIAL.
+                      IF lv_image_count = 0.
+                        lwa_html_image-line = lc_row_start.
+                        APPEND lwa_html_image TO lt_html_image.
+                        lwa_html_image-line = lc_td_start.
+                        APPEND lwa_html_image TO lt_html_image.
+                      ENDIF.
+                      lv_image_count = lv_image_count + 1.
+                      lv_image2 = lc_image1.
+                      TRANSLATE gwa_data_grid-id_foto1 TO LOWER CASE.
+                      REPLACE '180.200.3.134' IN gwa_data_grid-id_foto1 WITH 'blog.bemol.com.br'.
+                      REPLACE '&foto1&' IN lv_image2 WITH gwa_data_grid-id_foto1.
+                      lwa_html_image-line = lv_image2.
+                      APPEND lwa_html_image TO lt_html_image.
+                      IF lv_image_count = 3.
+                        CLEAR: lv_image_count.
+                        lwa_html_image-line = '</td>' && lc_row_end.
+                        APPEND lwa_html_image TO lt_html_image.
+                      ENDIF.
+                    ENDIF.
+                    "Image 2
+                    IF gwa_data_grid-foto2 IS NOT INITIAL.
+                      IF lv_image_count = 0.
+                        lwa_html_image-line = lc_row_start.
+                        APPEND lwa_html_image TO lt_html_image.
+                        lwa_html_image-line = lc_td_start.
+                        APPEND lwa_html_image TO lt_html_image.
+                      ENDIF.
+                      lv_image_count = lv_image_count + 1.
+                      lv_image3 = lc_image2.
+                      TRANSLATE gwa_data_grid-id_foto2 TO LOWER CASE.
+                      REPLACE '180.200.3.134' IN gwa_data_grid-id_foto2 WITH 'blog.bemol.com.br'.
+                      REPLACE '&foto2&' IN lv_image3 WITH gwa_data_grid-id_foto2.
+                      lwa_html_image-line = lv_image3.
+                      APPEND lwa_html_image TO lt_html_image.
+                      IF lv_image_count = 3.
+                        CLEAR: lv_image_count.
+                        lwa_html_image-line = '</td>' && lc_row_end.
+                        APPEND lwa_html_image TO lt_html_image.
+                      ENDIF.
+                    ENDIF.
+                    "Image 3
+                    IF gwa_data_grid-foto3 IS NOT INITIAL.
+                      IF lv_image_count = 0.
+                        lwa_html_image-line = lc_row_start.
+                        APPEND lwa_html_image TO lt_html_image.
+                        lwa_html_image-line = lc_td_start.
+                        APPEND lwa_html_image TO lt_html_image.
+                      ENDIF.
+                      lv_image_count = lv_image_count + 1.
+                      lv_image4 = lc_image3.
+                      TRANSLATE gwa_data_grid-id_foto3 TO LOWER CASE.
+                      REPLACE '180.200.3.134' IN gwa_data_grid-id_foto3 WITH 'blog.bemol.com.br'.
+                      REPLACE '&foto3&' IN lv_image4 WITH gwa_data_grid-id_foto3.
+                      lwa_html_image-line = lv_image4.
+                      APPEND lwa_html_image TO lt_html_image.
+                      IF lv_image_count = 3.
+                        CLEAR: lv_image_count.
+                        lwa_html_image-line = '</td>' && lc_row_end.
+                        APPEND lwa_html_image TO lt_html_image.
+                      ENDIF.
+                    ENDIF.
+
+                    READ TABLE gt_data_item INTO lwa_data_item WITH KEY indice_topico = gwa_data_grid-indice_topico
+                                                                         id_avaliacao = gwa_data_grid-id_avaliacao
+                                                                         indice_subtopico = 0.
+                    IF sy-subrc EQ 0.
+                      lv_string5 = lwa_data_item-comentario.
+                    ENDIF.
+
+                    lv_topic_pontuacao = gwa_data_grid-pontuacao + lv_topic_pontuacao.
+
+                    AT END OF indice_topico.
+*************************************************************************************************
+                      "Building the Tags for Topic name
+                      lwa_body-line = '<table style="font-size:13px;border-collapse:collapse;border:1px solid #CCCCCC; width: 100%">'.
+                      APPEND lwa_body TO lt_body.
+                      lwa_body-line = lc_colgroup.
+                      APPEND lwa_body TO lt_body.
+                      lwa_body-line = '<tr style="height:41px">'."lc_row_start.
+                      APPEND lwa_body TO lt_body.
+                      lwa_body-line = '<td style="padding:2px 3px;font-family:arial;font-size:140%;'.
+                      APPEND lwa_body TO lt_body.
+                      lwa_body-line = 'font-weight:bold;color:#FFFFFF;vertical-align:middle;text-align:center;background-color:#0B5394;">&NO&</td>'.
+                      lv_topnum = lv_topnum + 1.
+                      lv_topic_num = lv_topnum.
+                      REPLACE '&NO&' IN lwa_body-line WITH lv_topic_num.
+                      APPEND lwa_body-line TO lt_body.
+                      lwa_body-line = '<td style="padding:2px 3px;font-family:arial;font-size:140%;font-weight:bold;color:#0B5394;vertical-align:middle;background-color:#EFEFEF">'.
+                      APPEND lwa_body-line TO lt_body.
+                      lwa_body-line = '<div style="float:left;margin:0 auto;">&TOPIC_NAME&</div>'.
+                      REPLACE '&TOPIC_NAME&' IN lwa_body-line WITH lv_topic_desc.
+                      APPEND lwa_body-line TO lt_body.
+                      lwa_body-line = '<div style="float:right;vertical-align:middle;">'.
+                      APPEND lwa_body-line TO lt_body.
+                      "Commented to not display "Conforme" and "Não Conforme" as resquested by the users
+*                      IF lv_topic_pontuacao GT gv_param_topics.
+*                        lwa_body-line = '<img style="vertical-align:middle;" src="http://kb.mailchimp.com/binaries/content/gallery/&IMAGE&.png"/>'.
+*                        REPLACE '&IMAGE&' IN lwa_body-line WITH lc_success.
+*                        APPEND lwa_body-line TO lt_body.
+*
+*                        lwa_body-line = '<span style="vertical-align:middle;padding-left:5px; padding-right: 20px;">&LV_CONF&</span>'.
+*                        REPLACE '&LV_CONF&' IN lwa_body-line WITH lc_conf.
+*                        APPEND lwa_body-line TO lt_body.
+*
+*                      ELSE.
+*                        lwa_body-line = '<img style="vertical-align:middle;" src="http://kb.mailchimp.com/binaries/content/gallery/&IMAGE&.png"/>'.
+*                        REPLACE '&IMAGE&' IN lwa_body-line WITH lc_del.
+*                        APPEND lwa_body-line TO lt_body.
+*
+*                        lwa_body-line = '<span style="vertical-align:middle;padding-left:5px; padding-right: 20px;">&LV_CONF&</span>'.
+*                        REPLACE '&LV_CONF&' IN lwa_body-line WITH lc_nao_confermo.
+*                        APPEND lwa_body-line TO lt_body.
+*                      ENDIF.
+
+                      lwa_body-line = '</div></td></tr></tbody></table>'.
+                      APPEND lwa_body-line TO lt_body.
+*--------Commentario------------
+                      lwa_body-line = '<p style="font-family:arial;font-weight:bold;">Comentário:</p>'.
+                      APPEND lwa_body-line TO lt_body.
+                      lwa_body-line = '<p style="font-family:arial;text-align: justify;text-indent: 4em;">'.
+                      APPEND lwa_body-line TO lt_body.
+*                      <<<Abhishek>>>
+                      lv_x = strlen( lv_string5 ).
+                      IF lv_x > 125.
+                        lv_y = floor( lv_x / 125 ).
+                        lv_como = lv_string5.
+                        IF lv_x MOD 125 NE 0.
+                          lv_y = lv_y + 1.
+                        ENDIF.
+                        DO lv_y TIMES.
+                          IF sy-index EQ lv_y.
+                            lv_m = lv_x - lv_z.
+                            lwa_body-line = lv_como+lv_z(lv_m).
+                            APPEND lwa_body TO lt_body.
+                            CONTINUE.
+                          ENDIF.
+                          lv_append = lv_como+lv_z(125).
+                          lv_z = lv_z  + 125.
+                          lwa_body-line = lv_append.
+                          APPEND lwa_body TO lt_body.
+                          CLEAR : lwa_body, lv_append.
+                        ENDDO.
+                        CLEAR : lv_y,lv_x,lv_append,lv_como,lv_z,lv_m.
+                      ELSE.
+                        lwa_body-line = lv_string5.
+                        APPEND lwa_body-line TO lt_body.
+                      ENDIF.
+*                     <<<Abhishek>>>
+
+                      lwa_body-line = '</p>'.
+                      APPEND lwa_body-line TO lt_body.
+*
+
+                      "Building images in Email
+                      LOOP AT lt_html_image INTO lwa_html_image.
+                        AT FIRST.
+                          lwa_body-line = lc_table_start.
+                          APPEND lwa_body TO lt_body.
+                        ENDAT.
+                        lwa_body-line = lwa_html_image-line.
+                        APPEND lwa_body TO lt_body.
+                        AT LAST.
+                          lwa_body-line = lc_table_end.
+                          APPEND lwa_body TO lt_body.
+                        ENDAT.
+                      ENDLOOP.
+                      REFRESH: lt_html_image.
+                      CLEAR: lv_string1,lv_images,
+                             lv_len,lv_string5,lv_image_count,
+                             lv_topic_pontuacao,lwa_data_item.
+                    ENDAT.
+                    CLEAR : lv_image1,lv_image2,lv_image3,
+                            lv_image4,lv_point.
+                  ENDLOOP.
+                ELSE.
+                  lwa_body-line = lv_line.
+                  APPEND lwa_body TO lt_body.
+                ENDIF.
+              ELSE.
+                EXIT.
+              ENDIF.
+            ENDDO.
+            CLOSE DATASET lv_fpath.
+          ENDIF.
+        ENDIF.
+*>>>END SHIVA20170417
+
+        "Replacing the header details
+        REPLACE ALL OCCURRENCES OF '&STORE&' IN TABLE lt_body WITH lv_titulo.
+        REPLACE ALL OCCURRENCES OF '&DATE&' IN TABLE lt_body WITH lv_data.
+        REPLACE ALL OCCURRENCES OF '&POINTS&' IN TABLE lt_body WITH lv_nota_total.
+        REPLACE ALL OCCURRENCES OF '&NAME&' IN TABLE lt_body WITH gwa_zca_funcionario-nome.
+
+        REPLACE '&STORE&' IN lv_subject WITH lv_titulo.
+
+
+        IF lv_email_ids IS NOT INITIAL.
+          lv_doc_desc = lv_subject.
+          CALL METHOD zcl_email=>send_email_xml
+            EXPORTING
+              im_mail_sender    = 'BEMOL <no-reply@bemol.com.br>'
+              im_mail_ids       = lv_email_ids
+              im_subject        = lv_subject
+              im_document_type  = lc_doc_type
+              im_body           = lt_body
+              im_doc            = lv_doc_desc
+            EXCEPTIONS
+              no_receiver_found = 1
+              OTHERS            = 2.
+          IF sy-subrc <> 0.
+* do nothing
+          ENDIF.
+        ENDIF.
+
+        UPDATE zck_aval_h SET envio_email  = 'X'
+                                   aenam   = sy-uname
+                                   aedat   = sy-datum
+                                   aezet   = sy-uzeit
+                        WHERE id_avaliacao = gwa_out_tab-id_avaliacao
+                        AND     seq_number = gwa_out_tab-seq_number
+                        AND     id_seq     = gwa_out_tab-id_seq. "---new
+        IF sy-subrc EQ 0.
+          MESSAGE s019.
+          gwa_out_tab-email = 'Enviado'(025).
+          gwa_out_tab-envio_email = 'X'.
+          gv_del = 'X'.
+        ENDIF.
+      ELSEIF lv_ans EQ '2' OR lv_ans EQ 'A'.
+        MESSAGE s013.
+      ENDIF.
+*      ELSE.
+*      ENDIF.
+
+      CALL METHOD gobj_grid->set_ready_for_input
+        EXPORTING
+          i_ready_for_input = 0.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.

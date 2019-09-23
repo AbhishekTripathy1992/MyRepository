@@ -1,0 +1,533 @@
+*&---------------------------------------------------------------------*
+*&Program Name      : ZCHECKLIST_ADM                                   *
+*&Description       : Relatório de Cockpit da Lista
+*&Company           : Incresol Software Services                       *
+*&Author            : Abhishek                                         *
+*&Transport Request : DEVK9A0Y47                                       *
+*&---------------------------------------------------------------------*
+MODULE exit INPUT.
+
+  CASE ok_code.
+    WHEN 'BACK' OR 'EXIT' OR 'CANCEL'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.                 " EXIT  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  CASE ok_code.
+    WHEN 'ENTR'.
+* When execute button is selected
+    WHEN 'EXEC'.
+      IF gobj_container IS NOT INITIAL.
+        CALL METHOD gobj_container->free.
+        FREE : gobj_container.
+      ENDIF.
+      "Fetching data for the Tree ALV
+      CALL METHOD lobj_zcl_opr->get_data.
+      "Creating Field catalog
+      CALL METHOD lobj_zcl_opr->create_fieldcat.
+      "Creating Tree ALV
+      CALL METHOD lobj_zcl_opr->create_tree.
+      "Displaying Tree ALV
+      CALL METHOD lobj_zcl_opr->display_tree.
+      "Regitring events
+      CALL METHOD lobj_zcl_opr->register_event.
+      CALL METHOD gobj_tree->frontend_update. "----Sends the control to the front end--
+  ENDCASE.
+ENDMODULE.                 " USER_COMMAND_0100  INPUT
+
+*&---------------------------------------------------------------------*
+*&  Include           ZCHECKLIST_ADM_TEMP_PAI
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+  ##DECL_MODUL
+  ##NEEDED
+  DATA : lv_parent_node_key TYPE lvc_nkey.
+
+  CASE ok_code.
+    WHEN 'BACK' OR 'CANCEL'.
+
+      IF gv_del EQ 'X'.
+        CLEAR gv_del.
+        IF gobj_container IS NOT INITIAL.
+          CALL METHOD gobj_container->free.
+          FREE : gobj_container.
+        ENDIF.
+
+        CALL METHOD lobj_zcl_opr->create_tree.
+        CALL METHOD lobj_zcl_opr->get_data.
+        CALL METHOD lobj_zcl_opr->display_tree.
+        CALL METHOD lobj_zcl_opr->register_event.
+        CALL METHOD gobj_tree->frontend_update.
+      ENDIF.
+
+      CALL METHOD gobj_grid->free.
+      FREE:gobj_grid.
+
+      CALL METHOD gobj_cus_cont->free.
+      FREE:gobj_cus_cont.
+
+      CLEAR:gv_is_edit.
+
+      LEAVE TO SCREEN 100.
+
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.                 " USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  EDIT_FIELDSGRID  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE edit_fieldsgrid INPUT.
+  CASE ok_code.
+
+    WHEN 'EDIT'.
+      CLEAR : gv_is_edit.
+
+      IF gobj_grid->is_ready_for_input( ) EQ 0.
+        CALL METHOD gobj_grid->set_ready_for_input
+          EXPORTING
+            i_ready_for_input = 1.
+        gv_is_edit = 'X'.
+      ELSEIF gobj_grid->is_ready_for_input( ) EQ 1.
+        CALL METHOD gobj_grid->set_ready_for_input
+          EXPORTING
+            i_ready_for_input = 0.
+      ENDIF.
+
+  ENDCASE.
+ENDMODULE.                 " EDIT_FIELDSGRID  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0300 INPUT.
+  DATA : lwa_data_grid1 TYPE gty_data_grid.
+  CASE ok_code.
+
+    WHEN 'SAVE'.
+
+      CLEAR:gv_editor_text,gv_mod_status.
+      CALL METHOD gobj_editor_popup->get_textstream
+        EXPORTING
+          only_when_modified = cl_gui_textedit=>true
+        IMPORTING
+          text               = gv_editor_text
+          is_modified        = gv_mod_status.
+
+    WHEN 'ENTER'.
+      CLEAR : lwa_data_grid1.
+      READ TABLE gt_data_grid INTO lwa_data_grid1 INDEX gv_line.
+
+      IF strlen( gv_editor_text ) > 1024 AND
+      lwa_data_grid1-indice_subtopico IS INITIAL AND
+      lwa_data_grid1-id_avaliacao IS NOT INITIAL.
+        MESSAGE e017.
+      ELSEIF strlen( gv_editor_text ) > 255 AND
+    lwa_data_grid1-indice_subtopico IS NOT INITIAL AND
+    lwa_data_grid1-id_avaliacao IS NOT INITIAL.
+        MESSAGE e028.
+      ELSE.
+        gwa_data_grid-comentario = gv_editor_text.
+
+        CALL METHOD gobj_editor_popup->free.
+        FREE:gobj_editor_popup.
+
+        CALL METHOD gobj_popup_container->free.
+        FREE:gobj_popup_container.
+        LEAVE TO SCREEN 0.
+      ENDIF.
+
+    WHEN 'CANCEL'.
+      CALL METHOD gobj_editor_popup->free.
+      FREE:gobj_editor_popup.
+      CALL METHOD gobj_popup_container->free.
+      FREE:gobj_popup_container.
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+ENDMODULE.                 " USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*&      Module  SAVE_CHANGES  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE save_changes_set_flags INPUT. "---For save button on screen 200
+  ##DECL_MODUL
+  ##NEEDED
+  DATA:  lv_ans(1)          TYPE          c,
+         lv_count           TYPE          i,
+         lv_flag(1)         TYPE          c,
+         lv_flag_upd(1)     TYPE          c,
+         lv_uname           TYPE          sy-uname,
+         lv_datum           TYPE          sy-datum,
+         lv_uzeit           TYPE          sy-uzeit,
+         lv_revisao         TYPE          flag,
+         lv_matricula       TYPE          zid_usuario,
+         lv_count_point     TYPE          ze_ck_nota_total,
+         lwa_aval_i         TYPE          zck_aval_i,
+         lt_aval_i          TYPE TABLE OF zck_aval_i,
+         lwa_data_grid_temp TYPE          gty_data_grid,
+         lwa_temp           TYPE          gty_data_grid,
+         lv_index           TYPE          sy-tabix,
+         lwa_data_grid      TYPE          gty_data_grid.
+
+
+  lv_matricula = sy-uname.
+  IF sy-uname CO ' 0123456789'.
+    UNPACK lv_matricula TO lv_matricula.
+  ENDIF.
+
+  CASE ok_code.
+    WHEN 'SAVE'.
+
+      CLEAR  : lv_ans,lv_count,lv_count_point.
+      CALL METHOD gobj_grid->check_changed_data.
+
+      IF gobj_grid->is_ready_for_input( ) EQ 1.
+
+        LOOP AT gt_data_grid INTO lwa_data_grid.
+          CHECK lwa_data_grid-id_avaliacao IS NOT INITIAL.
+          gwa_data_grid = lwa_data_grid.
+          "----for topic comment not to be blank--
+*          IF gwa_data_grid-id_avaliacao IS NOT INITIAL AND
+*             gwa_data_grid-indice_subtopico IS INITIAL AND
+*             gwa_data_grid-comentario IS INITIAL.
+*            MESSAGE w016.
+*          ENDIF.
+
+          IF gwa_data_grid-pontuacao_1 CA sy-abcde.
+            MESSAGE  'Please enter numeric values'(031) TYPE 'E'.
+          ELSEIF strlen( gwa_data_grid-pontuacao_1 ) GT 6.
+            MESSAGE 'Please enter a smaller value'(033) TYPE 'E'.
+          ELSEIF gwa_data_grid-pontuacao_1 CA '.'.
+            MESSAGE 'For decimal value use comma(,)'(034) TYPE 'E'.
+          ELSEIF gwa_data_grid-pontuacao_1 CA '/:;"[]{}<>?\|@#$%^&*()~`!_=+'.
+            MESSAGE 'Special characters are not allowed'(039) TYPE 'E'.
+          ENDIF.
+
+          CALL FUNCTION 'MOVE_CHAR_TO_NUM'
+            EXPORTING
+              chr             = gwa_data_grid-pontuacao_1
+            IMPORTING
+              num             = gwa_data_grid-pontuacao
+            EXCEPTIONS
+              convt_no_number = 1
+              convt_overflow  = 2
+              OTHERS          = 3.
+
+          IF gwa_data_grid-pontuacao GT 0 .
+            MESSAGE  'Only negative value is accepted'(003) TYPE 'E'.
+          ENDIF.
+
+          IF gwa_data_grid-foto1 EQ 'X'.
+            lv_count = lv_count + 1.
+          ENDIF.
+
+          IF gwa_data_grid-foto2 EQ 'X'.
+            lv_count = lv_count + 1.
+          ENDIF.
+
+          IF gwa_data_grid-foto3 EQ 'X'.
+            lv_count = lv_count + 1.
+          ENDIF.
+
+          "--Checks number of photos per topic should be LE 9
+
+          AT END OF indice_topico.
+            IF lv_count GT lwa_zck_param_image-valor.
+              MESSAGE e015 WITH lwa_zck_param_image-valor.
+            ENDIF.
+            CLEAR lv_count.
+          ENDAT.
+          CLEAR : gwa_data_grid.
+        ENDLOOP.
+      ENDIF.
+
+      "--checks for same dsplay internal table
+      IF gt_data_grid EQ gt_data_grid_mirror.
+        MESSAGE s013.
+      ELSE.
+        "--if any changes are there--"
+        CALL FUNCTION 'POPUP_TO_CONFIRM'
+          EXPORTING
+            text_question         = 'Salvar as alterações?'(026)
+            text_button_1         = 'Sim'(027)
+            text_button_2         = 'Não'(028)
+            display_cancel_button = 'X'
+          IMPORTING
+            answer                = lv_ans.
+*if 'yes'
+        IF lv_ans EQ '1'.
+          lv_uname = sy-uname.
+          lv_datum = sy-datum.
+          lv_uzeit = sy-uzeit.
+
+          gwa_out_tab-email = 'Configurado'(004).
+          gwa_out_tab-config_email = 'X'.
+          lv_flag = 'X'.
+
+          LOOP AT gt_data_grid INTO lwa_data_grid_temp.
+            CHECK lwa_data_grid_temp-id_avaliacao IS NOT INITIAL."Blank lines are not looped
+            gwa_data_grid = lwa_data_grid_temp.
+
+            CLEAR gwa_data_item.
+*changing charcter to number format
+            CALL FUNCTION 'MOVE_CHAR_TO_NUM'
+              EXPORTING
+                chr             = gwa_data_grid-pontuacao_1
+              IMPORTING
+                num             = gwa_data_grid-pontuacao
+              EXCEPTIONS
+                convt_no_number = 1
+                convt_overflow  = 2
+                OTHERS          = 3.
+*calculating the total points of subtopics
+            lv_count_point = gwa_data_grid-pontuacao + lv_count_point.
+
+            AT LAST.
+              lv_count_point = 10 + lv_count_point.
+            ENDAT.
+*creating record in item table for topic comments
+            IF lwa_data_grid_temp-indice_subtopico = 0.
+              lwa_aval_i-comentario = lwa_data_grid_temp-comentario.
+              lv_index = sy-tabix + 1.
+              READ TABLE gt_data_item TRANSPORTING NO FIELDS WITH KEY id_avaliacao     = gwa_data_grid-id_avaliacao
+                                                                      seq_number       = gwa_data_grid-seq_number
+                                                                      indice_topico    = gwa_data_grid-indice_topico
+                                                                      indice_subtopico = gwa_data_grid-indice_subtopico.
+              IF sy-subrc NE 0.
+                lwa_aval_i-id_avaliacao      = gwa_data_grid-id_avaliacao.
+                lwa_aval_i-seq_number        = gwa_data_grid-seq_number.
+                lwa_aval_i-id_seq            = gwa_data_grid-id_seq.
+                lwa_aval_i-indice_topico     = gwa_data_grid-indice_topico.
+                lwa_aval_i-indice_subtopico  = 0.
+                lwa_aval_i-comentario        = gwa_data_grid-comentario.
+                lwa_aval_i-ernam             = lv_uname.
+                lwa_aval_i-erdat             = lv_datum.
+                lwa_aval_i-erzet             = lv_uzeit.
+
+                MODIFY zck_aval_i FROM lwa_aval_i.
+                IF sy-subrc EQ 0.
+                  COMMIT WORK.
+                ENDIF.
+              ENDIF.
+
+              CLEAR: lwa_aval_i,lwa_temp,lv_index.
+            ENDIF.
+
+
+            READ TABLE gt_data_item INTO gwa_data_item WITH KEY id_avaliacao      =   gwa_data_grid-id_avaliacao
+                                                                seq_number        =   gwa_data_grid-seq_number
+                                                                id_seq            =   gwa_data_grid-id_seq
+                                                                indice_topico     =   gwa_data_grid-indice_topico
+                                                                indice_subtopico  =   gwa_data_grid-indice_subtopico BINARY SEARCH.
+
+            IF sy-subrc EQ 0.
+              IF gwa_data_grid-pontuacao_1 IS NOT INITIAL AND gwa_data_item-pontuacao_flag EQ space.
+                gwa_data_grid-pontuacao_flag = 'X'.
+              ELSEIF gwa_data_grid-pontuacao_1 IS NOT INITIAL AND gwa_data_item-pontuacao_flag NE space.
+                gwa_data_grid-pontuacao_flag = 'X'.
+              ELSEIF gwa_data_grid-pontuacao_1 IS INITIAL AND gwa_data_item-pontuacao_flag NE space.
+                gwa_data_grid-pontuacao_flag = space.
+              ELSEIF gwa_data_grid-pontuacao_1 IS INITIAL AND gwa_data_item-pontuacao_flag EQ space.
+                gwa_data_grid-pontuacao_flag = space.
+              ENDIF.
+              "This check verifies if any changes have been made or not
+              IF gwa_data_grid-comentario    <> gwa_data_item-comentario     OR
+                gwa_data_grid-foto1          <> gwa_data_item-foto1          OR
+                gwa_data_grid-foto2          <> gwa_data_item-foto2          OR
+                gwa_data_grid-foto3          <> gwa_data_item-foto3          OR
+                gwa_data_grid-pontuacao_flag <> gwa_data_item-pontuacao_flag OR
+                gwa_data_grid-pontuacao      <> gwa_data_item-pontuacao.
+
+                UPDATE zck_aval_i SET pontuacao_flag   = gwa_data_grid-pontuacao_flag
+                                      pontuacao        = gwa_data_grid-pontuacao
+                                      comentario       = gwa_data_grid-comentario
+                                      foto1            = gwa_data_grid-foto1
+                                      foto2            = gwa_data_grid-foto2
+                                      foto3            = gwa_data_grid-foto3
+                                      aenam            = lv_uname
+                                      aedat            = lv_datum
+                                      aezet            = lv_uzeit
+                             WHERE    id_avaliacao     = gwa_data_grid-id_avaliacao
+                             AND      seq_number       = gwa_data_grid-seq_number
+                             AND      id_seq           = gwa_data_grid-id_seq   ""---NEEW
+                             AND      indice_topico    = gwa_data_grid-indice_topico
+                             AND      indice_subtopico = gwa_data_grid-indice_subtopico.
+                IF sy-subrc = 0.
+                  lv_flag_upd = 'X'.
+                  COMMIT WORK.
+                ENDIF.
+              ENDIF.
+
+            ENDIF.
+            CLEAR:gwa_data_grid,lwa_data_grid_temp.
+          ENDLOOP.
+*updating total points in header table(if item points change)--"
+          IF gwa_out_tab-nota_total <> lv_count_point OR gwa_out_tab-email IS NOT INITIAL. "++++ MANIK 18042017
+            gwa_out_tab-nota_total = lv_count_point.
+            UPDATE zck_aval_h SET nota_total    = gwa_out_tab-nota_total
+                                  config_email  = lv_flag
+                                   aenam        = lv_uname
+                                   aedat        = lv_datum
+                                   aezet        = lv_uzeit
+                            WHERE  id_avaliacao = gwa_out_tab-id_avaliacao
+                              AND  seq_number   = gwa_out_tab-seq_number
+                              AND  id_seq       = gwa_out_tab-id_seq.  ""--NEW
+            IF sy-subrc = 0.
+              COMMIT WORK.
+              lv_flag_upd = 'X'.
+            ENDIF.
+          ENDIF.
+*Modify the database table
+          IF lv_flag_upd IS NOT INITIAL.
+            MESSAGE s005.
+            CLEAR: lv_flag_upd.
+            gv_del = 'X'.
+          ENDIF.
+        ELSEIF lv_ans EQ 'A' OR lv_ans EQ '2'."If no changes done
+          MESSAGE s013.
+          gt_data_grid = gt_data_grid_mirror.
+        ENDIF.
+      ENDIF.
+*making the grid to display mode at the end
+      CALL METHOD gobj_grid->set_ready_for_input
+        EXPORTING
+          i_ready_for_input = 0.
+
+      CLEAR:gv_is_edit,lv_flag,lv_count_point.
+      REFRESH : gt_data_grid_mirror.
+
+**********************************************************************************************
+    WHEN 'APPROVE'.
+      CLEAR : lv_ans,lv_count.
+
+      IF  gwa_out_tab-aprovado = 'X'.
+        MESSAGE s025.
+        EXIT.
+      ENDIF.
+*Comparing total point values with standard point
+*if less than standard value revision will be set
+      IF gwa_out_tab-nota_total < lwa_zck_param_points-valor.
+        IF gwa_out_tab-seq_number > lwa_zck_param_rev_max-valor.
+          MESSAGE s023.
+        ELSE.
+          lv_revisao = 'X'.
+          gwa_out_tab-rev_flag = 'X'.
+          MESSAGE s010 WITH gwa_out_tab-nota_total.
+        ENDIF.
+      ENDIF.
+
+*Topic comments check (Should not be blank before approving)
+*      LOOP AT gt_data_grid TRANSPORTING NO FIELDS WHERE id_avaliacao IS NOT INITIAL
+*                                                    AND indice_subtopico IS INITIAL
+*                                                   AND comentario IS INITIAL.
+*        IF sy-subrc EQ 0.
+*          MESSAGE 'Please fill all the topic Comments'(032) TYPE 'S' DISPLAY LIKE 'W'.
+*          RETURN.
+*        ELSE.
+*          CONTINUE.
+*        ENDIF.
+*      ENDLOOP.
+
+
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          text_question         = 'Aprovar?'(037)
+          text_button_1         = 'Sim'(027)
+          text_button_2         = 'Não'(028)
+          display_cancel_button = 'X'
+        IMPORTING
+          answer                = lv_ans.
+
+      IF lv_ans EQ '1'.
+        UPDATE zck_aval_h
+          SET  aprovado     = 'X'
+               config_email = 'X'
+               revisao      = lv_revisao
+               aenam        = sy-uname
+               aedat        = sy-datum
+               aezet        = sy-uzeit
+        WHERE id_avaliacao  = gwa_out_tab-id_avaliacao
+          AND seq_number    = gwa_out_tab-seq_number
+          AND id_seq        = gwa_out_tab-id_seq. "----NEW
+        IF sy-subrc EQ 0.
+          gv_del = 'X'.
+          gwa_out_tab-aprovado = 'X'.
+          gwa_out_tab-config_email = 'X'.
+          gwa_out_tab-email = 'Configurado'(004).
+          MESSAGE s006.
+        ENDIF.
+      ELSEIF lv_ans EQ '2' OR lv_ans EQ 'A'.
+        CLEAR : gv_is_edit.
+        MESSAGE s013.
+
+      ENDIF.
+
+      CALL METHOD gobj_grid->set_ready_for_input
+        EXPORTING
+          i_ready_for_input = 0.
+
+**********************************************************************************************
+    WHEN 'DELETE'.
+      CLEAR : lv_ans.
+
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          text_question         = 'Excluir registros selecionado?'(035)
+          text_button_1         = 'Sim'(027)
+          text_button_2         = 'Não'(028)
+          display_cancel_button = 'X'
+        IMPORTING
+          answer                = lv_ans.
+
+      IF lv_ans EQ '1'.
+        UPDATE zck_aval_h SET deletado = 'X'
+                                 aenam = sy-uname
+                                 aedat = sy-datum
+                                 aezet = sy-uzeit
+                          WHERE id_avaliacao = gwa_out_tab-id_avaliacao
+                          AND seq_number = gwa_out_tab-seq_number
+                          AND id_seq     = gwa_out_tab-id_seq. "--new
+        IF sy-subrc EQ 0.
+          gv_del = 'X'.
+          MESSAGE s008.
+          gwa_out_tab-deletado = 'X'.
+        ENDIF.
+      ELSEIF lv_ans EQ '2' OR lv_ans EQ 'A'.
+        MESSAGE s013.
+      ENDIF.
+**********************************************************************************************
+    WHEN 'EMAIL_S'.
+      ##DECL_MODUL
+      ##NEEDED
+      lobj_grid->send_email_new( ).
+  ENDCASE.
+  CLEAR: lv_revisao.
+ENDMODULE.                 " SAVE_CHANGES  INPUT
+
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0400  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0400 INPUT.
+  CASE ok_code.
+    WHEN 'CANCEL'.
+      CALL METHOD gobj_html_viewer->free.
+      FREE:gobj_html_viewer.
+      CALL METHOD gobj_html_cont->free.
+      FREE:gobj_html_cont.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.                 " USER_COMMAND_0400  INPUT

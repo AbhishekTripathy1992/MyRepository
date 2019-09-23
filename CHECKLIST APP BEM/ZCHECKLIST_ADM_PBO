@@ -1,0 +1,348 @@
+*&---------------------------------------------------------------------*
+*&Program Name      : ZCHECKLIST_ADM                                   *
+*&Description       : Relatório de Cockpit da Lista
+*&Company           : Incresol Software Services                       *
+*&Author            : Abhishek                                         *
+*&Transport Request : DEVK9A0Y47                                       *
+*&---------------------------------------------------------------------*
+
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0100  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'STATUS_100'.
+
+  IF gv_position = 'A'.
+    SET TITLEBAR 'TITLE_200_AUDITOR'.
+  ELSE.
+    SET TITLEBAR 'TITLE_200'.
+  ENDIF.
+ENDMODULE.
+
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_100_OBJ_CREATE  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_100_obj_create OUTPUT.
+  ##DECL_MODUL
+  ##NEEDED
+  DATA : lobj_zcl_opr TYPE REF TO gcl_operation.
+
+  IF gobj_tree IS INITIAL.
+    CREATE OBJECT lobj_zcl_opr.
+  ENDIF.
+
+  IF gobj_container IS INITIAL.
+    "Creating Field catalog
+    CALL METHOD lobj_zcl_opr->create_fieldcat.
+    "Creating Tree
+    CALL METHOD lobj_zcl_opr->create_tree.
+    "Tree Display
+    CALL METHOD lobj_zcl_opr->display_tree.
+  ELSE.
+
+    CALL METHOD gobj_tree->frontend_update. "----Sends the control to the front end--
+
+  ENDIF.
+
+  CLEAR:ok_code.
+  CALL METHOD cl_gui_cfw=>flush.
+ENDMODULE.                 " STATUS_100_OBJ_CREATE  OUTPUT
+*&---------------------------------------------------------------------*
+*&  Include           ZCHECKLIST_ADM_TEMP_PBO
+*----------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'STATUS_200'.
+ENDMODULE.                 " STATUS_0200  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  AUTHORIZATION_CHECK  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE authorization_check OUTPUT.
+  IF gv_position = 'A'.
+    SET TITLEBAR 'TITLE_200_AUDITOR'.
+  ELSE.
+    SET TITLEBAR 'TITLE_200'.
+  ENDIF.
+ENDMODULE.                 " AUTHORIZATION_CHECK  OUTPUT
+
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_200_CREATE_OBJ_PROCESS  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_200_create_obj_process OUTPUT.
+  ##DECL_MODUL
+  ##NEEDED
+  DATA:lobj_grid TYPE REF TO gcl_process_grid.
+
+  IF gobj_grid IS INITIAL.
+    CREATE OBJECT lobj_grid.
+  ENDIF.
+
+  CALL METHOD lobj_grid->fetchdata_item.
+  CALL METHOD lobj_grid->build_layout_grid.
+  CALL METHOD lobj_grid->combine_data.
+  CALL METHOD lobj_grid->buildfieldcatalog_grid.
+  CALL METHOD lobj_grid->display_grid.
+
+  CLEAR:ok_code.
+  CALL METHOD cl_gui_cfw=>flush.
+
+ENDMODULE.                 " STATUS_200_CREATE_OBJ_PROCESS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0300  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_0300 OUTPUT.
+  SET PF-STATUS 'ZSTATUS_POPUP'.
+  SET TITLEBAR 'TITLE_300'.
+ENDMODULE.                 " STATUS_0300  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_300_PROCESS  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_300_process OUTPUT.
+  ##DECL_MODUL
+  ##NEEDED
+  DATA:lv_editor_text_set TYPE string.
+
+  IF gobj_editor_popup IS INITIAL.
+    CLEAR:lv_editor_text_set.
+
+    lv_editor_text_set = gwa_data_grid-comentario.
+
+    CREATE OBJECT gobj_popup_container
+      EXPORTING
+        container_name = 'POPUP'.
+
+    CREATE OBJECT gobj_editor_popup
+      EXPORTING
+        parent = gobj_popup_container.
+
+*send text as string to control
+    CALL METHOD gobj_editor_popup->set_textstream
+      EXPORTING
+        text = lv_editor_text_set.
+  ENDIF.
+  CALL METHOD cl_gui_cfw=>flush.
+  CLEAR:ok_code.
+ENDMODULE.                 " STATUS_300_PROCESS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0400  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_0400 OUTPUT.
+  SET PF-STATUS 'STATUS_400'.
+  SET TITLEBAR 'TITLE_400'.
+ENDMODULE.                 " STATUS_0400  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  STATUS_0400_FOTO_DISPLAY  OUTPUT
+*----------------------------------------------------------------------*
+MODULE status_0400_foto_display OUTPUT.
+  ##DECL_MODUL
+  ##NEEDED
+  DATA : lv_html_link  TYPE          char255,
+         lv_valor_temp TYPE          zparametro_valor,
+         lt_data_table TYPE TABLE OF char255.
+
+  IF gobj_html_cont IS INITIAL.
+    CREATE OBJECT gobj_html_cont
+      EXPORTING
+        container_name              = 'CUSTOM_PIC'
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+    CREATE OBJECT gobj_html_viewer
+      EXPORTING
+        parent             = gobj_html_cont
+      EXCEPTIONS
+        cntl_error         = 1
+        cntl_install_error = 2
+        dp_install_error   = 3
+        dp_error           = 4
+        OTHERS             = 5.
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+  ENDIF.
+
+  IF gobj_html_viewer IS NOT INITIAL.
+
+    CALL METHOD gobj_html_viewer->load_data
+      EXPORTING
+        type                   = 'text'
+        subtype                = 'html'
+      IMPORTING
+        assigned_url           = lv_html_link
+      CHANGING
+        data_table             = lt_data_table
+      EXCEPTIONS
+        dp_invalid_parameter   = 1
+        dp_error_general       = 2
+        cntl_error             = 3
+        html_syntax_notcorrect = 4
+        OTHERS                 = 5.
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+    lv_html_link = gv_objid.
+    CALL METHOD gobj_html_viewer->show_url
+      EXPORTING
+        url                    = lv_html_link
+        frame                  = 'X'
+      EXCEPTIONS
+        cntl_error             = 1
+        cnht_error_not_allowed = 2
+        cnht_error_parameter   = 3
+        dp_error_general       = 4
+        OTHERS                 = 5.
+    IF sy-subrc <> 0.
+      MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
+                 WITH sy-msgv1 sy-msgv2 sy-msgv3 sy-msgv4.
+    ENDIF.
+
+  ENDIF.
+
+  CLEAR:ok_code.
+  CALL METHOD cl_gui_cfw=>flush.
+ENDMODULE.                 " STATUS_0400_FOTO_DISPLAY  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  EMAIL_CHECK  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE email_check OUTPUT.
+
+  IF gv_position EQ 'M'.
+    LOOP AT SCREEN.
+      "If Audit is deleted
+      IF gwa_out_tab-deletado = 'X'.
+        IF screen-name = 'EDIT' OR
+           screen-name = 'SAVE' OR
+           screen-name = 'APPROVE' OR
+           screen-name = 'DELETE' OR
+          screen-name = 'SEND_EMAIL'.
+          screen-input = 0.
+          MODIFY SCREEN.
+        ENDIF.
+      ENDIF.
+      "When Email is sent, then all buttons(except SEND_EMAIL) should be disabled   +++ZAREENA 20170410
+      IF gwa_out_tab-envio_email = 'X'.
+        IF screen-name = 'EDIT' OR screen-name = 'SAVE' OR
+         screen-name = 'APPROVE' OR screen-name = 'DELETE'.
+          screen-input = 0.
+          MODIFY SCREEN.
+        ENDIF.
+      ENDIF.
+      "If Audit is not Aproved, then SEND_EMAIL has to disabled    "+++ZAREENA 20170410
+      IF gwa_out_tab-aprovado = space.
+        IF screen-name = 'SEND_EMAIL'.
+          screen-input = 0.
+          MODIFY SCREEN.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+
+  IF gv_position EQ 'A'.
+    LOOP AT SCREEN.
+      IF gwa_out_tab-aprovado = 'X' OR gwa_out_tab-deletado = 'X'.
+        IF screen-name = 'EDIT' OR
+          screen-name = 'SAVE'.
+          screen-input = 0.
+          MODIFY SCREEN.
+        ENDIF.
+      ENDIF.
+      IF screen-name = 'SEND_EMAIL' OR
+        screen-name = 'APPROVE' OR
+        screen-name = 'DELETE'.
+        screen-invisible = 1.
+        screen-active = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+
+ENDMODULE.                 " EMAIL_CHECK  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  FETCH_ZCK_PARAMETERS  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE fetch_zck_parameters OUTPUT.
+  DATA :  lt_parameters  TYPE STANDARD TABLE OF zck_parameters,
+          lwa_parameters TYPE                   zck_parameters.
+
+  DATA : lwa_zck_param_image   TYPE zck_parameters,
+         lwa_zck_param_points  TYPE zck_parameters,
+         lwa_zck_param_rev_max TYPE zck_parameters.
+
+  SELECT *
+  FROM zck_parameters
+  INTO TABLE lt_parameters
+  WHERE parametro IN ('REVISAO_MAX','MIN_NEGATIVE','MAX_IMAGES','EMAIL_TOPIC_OK').
+  IF sy-subrc EQ 0.
+    SORT lt_parameters BY parametro.
+  ENDIF.
+  CLEAR lwa_parameters.
+
+* Get Max times Revision can happen
+  READ TABLE lt_parameters INTO lwa_parameters WITH KEY parametro = 'REVISAO_MAX' BINARY SEARCH.
+  IF sy-subrc EQ 0.
+    lwa_zck_param_rev_max-valor = lwa_parameters-valor.
+  ENDIF.
+  CLEAR lwa_parameters.
+
+* Get Mininum Points
+  READ TABLE lt_parameters INTO lwa_parameters WITH KEY parametro = 'MIN_NEGATIVE' BINARY SEARCH.
+  IF sy-subrc EQ 0.
+    lwa_zck_param_points-valor = lwa_parameters-valor.
+  ENDIF.
+  CLEAR lwa_parameters.
+
+* Get Max Images
+  READ TABLE lt_parameters INTO lwa_parameters WITH KEY parametro = 'MAX_IMAGES' BINARY SEARCH.
+  IF sy-subrc EQ 0.
+    lwa_zck_param_image-valor = lwa_parameters-valor.
+  ENDIF.
+  CLEAR lwa_parameters.
+
+
+* Get Max email points
+  READ TABLE lt_parameters INTO lwa_parameters WITH KEY parametro = 'EMAIL_TOPIC_OK' BINARY SEARCH.
+  IF sy-subrc EQ 0.
+    gv_param_topics = lwa_parameters-valor.
+  ENDIF.
+  CLEAR lwa_parameters.
+ENDMODULE.                 " FETCH_ZCK_PARAMETERS  OUTPUT
+*&---------------------------------------------------------------------*
+*&      Module  CHECK_AUTHORIZATION_0100  OUTPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE check_authorization_0100 OUTPUT.
+*Check for Authorization for this transaction
+  AUTHORITY-CHECK OBJECT 'ZCK_STR_AD'
+           ID 'USER' FIELD sy-uname.
+  IF sy-subrc EQ 0.
+    gv_position = 'A'.
+  ENDIF.
+
+  AUTHORITY-CHECK OBJECT 'ZCK_AUD_MG' ID 'USER' FIELD sy-uname.
+  IF sy-subrc EQ 0.
+    gv_position = 'M'.
+  ENDIF.
+
+  IF gv_position IS INITIAL.
+    MESSAGE 'Autorização negada'(030) TYPE 'E'.
+  ENDIF.
+
+ENDMODULE.                 " CHECK_AUTHORIZATION_0100  OUTPUT
